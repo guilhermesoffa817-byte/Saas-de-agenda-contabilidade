@@ -11,6 +11,7 @@ import { VisaoSemana } from "./semana";
 import type {
   AtendimentoNaAgenda,
   BloqueioNaAgenda,
+  ContextoFinanceiro,
   ProfissionalDaAgenda,
   ServicoDaAgenda,
 } from "@/lib/agenda";
@@ -21,6 +22,7 @@ export function PainelDaAgenda({
   titulo,
   fuso,
   nomeDaEmpresa,
+  financeiro,
   profissionalId,
   profissionais,
   servicos,
@@ -34,6 +36,7 @@ export function PainelDaAgenda({
   titulo: string;
   fuso: string;
   nomeDaEmpresa: string;
+  financeiro: ContextoFinanceiro;
   profissionalId?: string;
   profissionais: ProfissionalDaAgenda[];
   servicos: ServicoDaAgenda[];
@@ -72,6 +75,7 @@ export function PainelDaAgenda({
           dia={dia}
           fuso={fuso}
           nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
           profissionais={mostrados}
           atendimentos={atendimentos}
           bloqueios={bloqueios}
@@ -85,6 +89,7 @@ export function PainelDaAgenda({
           dia={dia}
           fuso={fuso}
           nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
           atendimentos={atendimentos}
           profissionais={profissionais}
           aoClicarVazio={(profissional, hora, diaEscolhido) =>
@@ -99,6 +104,7 @@ export function PainelDaAgenda({
           profissionais={profissionais}
           fuso={fuso}
           nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
         />
       ) : null}
 

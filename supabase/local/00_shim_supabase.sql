@@ -42,3 +42,35 @@ language sql stable as $$
 $$;
 
 grant select on auth.users to service_role;
+
+-- Storage do Supabase (só o mínimo para as migrações aplicarem num Postgres local).
+create schema if not exists storage;
+grant usage on schema storage to anon, authenticated, service_role;
+
+create table if not exists storage.buckets (
+  id text primary key,
+  name text not null,
+  public boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists storage.objects (
+  id uuid primary key default gen_random_uuid(),
+  bucket_id text references storage.buckets(id),
+  name text not null,
+  owner uuid,
+  created_at timestamptz not null default now()
+);
+
+alter table storage.objects enable row level security;
+
+-- No Supabase, devolve as pastas do caminho do arquivo: "empresa/2026/nota.pdf" -> {empresa,2026}
+create or replace function storage.foldername(name text)
+returns text[]
+language sql immutable as $$
+  select string_to_array(regexp_replace(name, '/[^/]*$', ''), '/');
+$$;
+
+grant all on storage.objects to service_role;
+grant all on storage.buckets to service_role;
+grant select on storage.objects to authenticated;

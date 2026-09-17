@@ -26,6 +26,7 @@ import {
   minutosParaHora,
   type AtendimentoNaAgenda,
   type BloqueioNaAgenda,
+  type ContextoFinanceiro,
   type ProfissionalDaAgenda,
 } from "@/lib/agenda";
 import { formatarHora } from "@/lib/dates";
@@ -74,6 +75,7 @@ function CartaoAtendimento({
   atendimento,
   fuso,
   nomeDaEmpresa,
+  financeiro,
   profissional,
   topo,
   altura,
@@ -81,6 +83,7 @@ function CartaoAtendimento({
   atendimento: AtendimentoNaAgenda;
   fuso: string;
   nomeDaEmpresa: string;
+  financeiro: ContextoFinanceiro;
   profissional?: string;
   topo: number;
   altura: number;
@@ -133,6 +136,7 @@ function CartaoAtendimento({
           atendimento={atendimento}
           fuso={fuso}
           nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
           profissional={profissional}
           aoFechar={() => setAberto(false)}
         />
@@ -193,6 +197,7 @@ export function GradeDoDia({
   dia,
   fuso,
   nomeDaEmpresa,
+  financeiro,
   profissionais,
   atendimentos,
   bloqueios,
@@ -202,6 +207,7 @@ export function GradeDoDia({
   dia: string;
   fuso: string;
   nomeDaEmpresa: string;
+  financeiro: ContextoFinanceiro;
   profissionais: ProfissionalDaAgenda[];
   atendimentos: AtendimentoNaAgenda[];
   bloqueios: BloqueioNaAgenda[];
@@ -375,6 +381,7 @@ export function GradeDoDia({
                       atendimento={atendimento}
                       fuso={fuso}
                       nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
                       profissional={profissional.nome}
                       topo={
                         (minutosDoDia(atendimento.inicio, fuso) - faixa.inicio) * PIXELS_POR_MINUTO

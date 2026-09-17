@@ -48,7 +48,7 @@ export default async function PaginaAgenda({
 
   const supabase = await createClient();
 
-  const [profissionais, servicos, atendimentos, bloqueios, expediente, { data: clientes }] =
+  const [profissionais, servicos, atendimentos, bloqueios, expediente, { data: clientes }, { data: contas }] =
     await Promise.all([
       carregarProfissionais(empresa.id),
       carregarServicos(empresa.id),
@@ -73,6 +73,13 @@ export default async function PaginaAgenda({
         .is("deleted_at", null)
         .order("name")
         .limit(300),
+      // Contas para o modal "Registrar pagamento" (o recebimento entra direto no financeiro).
+      supabase
+        .from("accounts")
+        .select("id, name")
+        .eq("organization_id", empresa.id)
+        .eq("active", true)
+        .order("name"),
     ]);
 
   const titulo =
@@ -89,6 +96,11 @@ export default async function PaginaAgenda({
       titulo={titulo}
       fuso={empresa.timezone}
       nomeDaEmpresa={empresa.name}
+      financeiro={{
+        contas: (contas ?? []).map((conta) => ({ id: conta.id, nome: conta.name })),
+        chavePix: empresa.pix_key,
+        cidade: empresa.city,
+      }}
       profissionalId={profissionalId}
       profissionais={profissionais}
       servicos={servicos}

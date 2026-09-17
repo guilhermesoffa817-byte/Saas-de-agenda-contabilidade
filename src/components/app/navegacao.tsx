@@ -7,6 +7,7 @@ import {
   Scissors,
   Settings,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -23,6 +24,7 @@ const ICONES: Record<string, LucideIcon> = {
   CalendarDays,
   Users,
   Scissors,
+  Wallet,
   Settings,
 };
 
@@ -39,10 +41,17 @@ export function itensPorPapel(papel: Papel): ItemDeMenu[] {
   if (papel === "dono") {
     return [
       ...agenda,
+      { href: "/app/financeiro", rotulo: "Financeiro", icone: "Wallet" },
       { href: "/app/servicos", rotulo: "Serviços", icone: "Scissors" },
       { href: "/app/configuracoes", rotulo: "Configurações", icone: "Settings" },
     ];
   }
+
+  if (papel === "recepcao") {
+    // A recepção registra recebimentos, mas não vê relatórios nem despesas.
+    return [...agenda, { href: "/app/financeiro/lancamentos", rotulo: "Recebimentos", icone: "Wallet" }];
+  }
+
   return agenda;
 }
 

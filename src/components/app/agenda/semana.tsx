@@ -4,7 +4,12 @@ import { useState } from "react";
 
 import { AcoesDoAtendimento } from "./acoes-atendimento";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CLASSES_STATUS, type AtendimentoNaAgenda, type ProfissionalDaAgenda } from "@/lib/agenda";
+import {
+  CLASSES_STATUS,
+  type AtendimentoNaAgenda,
+  type ContextoFinanceiro,
+  type ProfissionalDaAgenda,
+} from "@/lib/agenda";
 import { diaLocalISO, formatarHora } from "@/lib/dates";
 import { DIAS_SEMANA } from "@/lib/dates";
 import { cn } from "@/lib/utils";
@@ -21,6 +26,7 @@ export function VisaoSemana({
   dia,
   fuso,
   nomeDaEmpresa,
+  financeiro,
   atendimentos,
   profissionais,
   aoClicarVazio,
@@ -28,6 +34,7 @@ export function VisaoSemana({
   dia: string;
   fuso: string;
   nomeDaEmpresa: string;
+  financeiro: ContextoFinanceiro;
   atendimentos: AtendimentoNaAgenda[];
   profissionais: ProfissionalDaAgenda[];
   aoClicarVazio: (profissionalId: string, hora: string, dia: string) => void;
@@ -87,6 +94,7 @@ export function VisaoSemana({
                         atendimento={atendimento}
                         fuso={fuso}
                         nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
                         profissional={profissional?.nome}
                         aoFechar={() => setAbertoId(null)}
                       />

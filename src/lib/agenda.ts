@@ -26,6 +26,13 @@ export type BloqueioNaAgenda = {
 
 export type ProfissionalDaAgenda = { id: string; nome: string; cor: string };
 
+/** O que a agenda precisa saber do financeiro para registrar o pagamento na hora. */
+export type ContextoFinanceiro = {
+  contas: { id: string; nome: string }[];
+  chavePix: string | null;
+  cidade: string | null;
+};
+
 export type ServicoDaAgenda = {
   id: string;
   nome: string;

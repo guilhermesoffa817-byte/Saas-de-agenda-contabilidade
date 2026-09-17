@@ -116,11 +116,20 @@ export const CLIENTES_DEMO = MODELOS.map((modelo, indice) => ({
 export const FINANCEIRO_DEMO = {
   entrouCents: 1_843_000,
   saiuCents: 711_245,
-  mesesAnteriores: [
-    { mes: "Abr", entrouCents: 1_512_000, saiuCents: 690_000 },
-    { mes: "Mai", entrouCents: 1_688_000, saiuCents: 705_500 },
-    { mes: "Jun", entrouCents: 1_594_000, saiuCents: 681_200 },
-    { mes: "Jul", entrouCents: 1_755_000, saiuCents: 722_800 },
-    { mes: "Ago", entrouCents: 1_843_000, saiuCents: 711_245 },
+  anteriorCents: { entrouCents: 1_755_000, saiuCents: 722_800, sobrouCents: 1_032_200 },
+  seisMeses: [
+    { mes: "2026-03", rotulo: "mar", entrouCents: 1_398_000, saiuCents: 668_400 },
+    { mes: "2026-04", rotulo: "abr", entrouCents: 1_512_000, saiuCents: 690_000 },
+    { mes: "2026-05", rotulo: "mai", entrouCents: 1_688_000, saiuCents: 705_500 },
+    { mes: "2026-06", rotulo: "jun", entrouCents: 1_594_000, saiuCents: 681_200 },
+    { mes: "2026-07", rotulo: "jul", entrouCents: 1_755_000, saiuCents: 722_800 },
+    { mes: "2026-08", rotulo: "ago", entrouCents: 1_843_000, saiuCents: 711_245 },
+  ],
+  maioresDespesas: [
+    { categoria: "Aluguel do espaço", valorCents: 280_000 },
+    { categoria: "Materiais e insumos", valorCents: 164_500 },
+    { categoria: "Salários e encargos", valorCents: 130_000 },
+    { categoria: "Energia, água e internet", valorCents: 78_745 },
+    { categoria: "Taxas de maquininha", valorCents: 58_000 },
   ],
 };

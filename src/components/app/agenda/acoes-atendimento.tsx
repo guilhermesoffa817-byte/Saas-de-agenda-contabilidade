@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Check, CheckCheck, MessageCircle, Trash2, UserX } from "lucide-react";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import {
@@ -15,23 +15,27 @@ import { formatarData, formatarHora } from "@/lib/dates";
 import { formatarBRL } from "@/lib/money";
 import { formatarTelefone } from "@/lib/telefone";
 import { linkWhatsApp, mensagemLembrete } from "@/lib/whatsapp";
-import { ROTULO_STATUS, type AtendimentoNaAgenda } from "@/lib/agenda";
+import { DialogoPagamento } from "./dialogo-pagamento";
+import { ROTULO_STATUS, type AtendimentoNaAgenda, type ContextoFinanceiro } from "@/lib/agenda";
 
 /** Detalhes e ações de um atendimento: o que a recepção faz no dia a dia. */
 export function AcoesDoAtendimento({
   atendimento,
   fuso,
   nomeDaEmpresa,
+  financeiro,
   profissional,
   aoFechar,
 }: {
   atendimento: AtendimentoNaAgenda;
   fuso: string;
   nomeDaEmpresa: string;
+  financeiro: ContextoFinanceiro;
   profissional?: string;
   aoFechar?: () => void;
 }) {
   const [processando, iniciar] = useTransition();
+  const [pagamentoAberto, setPagamentoAberto] = useState(false);
 
   function rodar(acao: () => Promise<{ erro?: string; aviso?: string }>) {
     iniciar(async () => {
@@ -113,15 +117,9 @@ export function AcoesDoAtendimento({
                 Confirmar
               </Button>
             ) : null}
-            <Button
-              size="sm"
-              disabled={processando}
-              onClick={() =>
-                rodar(() => alterarStatus({ atendimentoId: atendimento.id, status: "concluido" }))
-              }
-            >
+            <Button size="sm" disabled={processando} onClick={() => setPagamentoAberto(true)}>
               <CheckCheck aria-hidden />
-              Concluir
+              Concluir e receber
             </Button>
             <Button size="sm" variant="outline" disabled={processando} onClick={enviarLembrete}>
               <MessageCircle aria-hidden />
@@ -162,6 +160,23 @@ export function AcoesDoAtendimento({
           </Button>
         )}
       </div>
+
+      {pagamentoAberto ? (
+        <DialogoPagamento
+          atendimento={{
+            id: atendimento.id,
+            cliente: atendimento.cliente.nome,
+            servico: atendimento.servico.nome,
+            precoCents: atendimento.precoCents,
+          }}
+          financeiro={financeiro}
+          nomeDaEmpresa={nomeDaEmpresa}
+          aoFechar={() => {
+            setPagamentoAberto(false);
+            aoFechar?.();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

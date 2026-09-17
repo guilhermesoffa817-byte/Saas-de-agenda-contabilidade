@@ -258,6 +258,228 @@ export type Database = {
           },
         ];
       };
+      accounts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          type: string;
+          accounting_code: string | null;
+          active: boolean;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          type?: string;
+          accounting_code?: string | null;
+          active?: boolean;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          type?: string;
+          accounting_code?: string | null;
+          active?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "accounts_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      categories: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          kind: Database["public"]["Enums"]["tx_kind"];
+          report_group: string;
+          deductible_hint: boolean;
+          accounting_code: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name: string;
+          kind: Database["public"]["Enums"]["tx_kind"];
+          report_group?: string;
+          deductible_hint?: boolean;
+          accounting_code?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          kind?: Database["public"]["Enums"]["tx_kind"];
+          report_group?: string;
+          deductible_hint?: boolean;
+          accounting_code?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "categories_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      monthly_closings: {
+        Row: {
+          id: string;
+          organization_id: string;
+          month: string;
+          closed_at: string;
+          closed_by: string | null;
+          reopened_at: string | null;
+          totals: Json;
+          package_path: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          month: string;
+          closed_at?: string;
+          closed_by?: string | null;
+          reopened_at?: string | null;
+          totals?: Json;
+          package_path?: string | null;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          month?: string;
+          closed_at?: string;
+          closed_by?: string | null;
+          reopened_at?: string | null;
+          totals?: Json;
+          package_path?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "monthly_closings_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      transactions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          kind: Database["public"]["Enums"]["tx_kind"];
+          status: Database["public"]["Enums"]["tx_status"];
+          description: string;
+          amount_cents: number;
+          competence_date: string;
+          due_date: string | null;
+          paid_at: string | null;
+          payment_method: Database["public"]["Enums"]["payment_method"] | null;
+          category_id: string | null;
+          account_id: string | null;
+          appointment_id: string | null;
+          client_id: string | null;
+          payer_type: string | null;
+          revenue_type: string;
+          nota_fiscal_emitida: boolean;
+          receita_saude_emitido: boolean;
+          attachment_path: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          kind: Database["public"]["Enums"]["tx_kind"];
+          status?: Database["public"]["Enums"]["tx_status"];
+          description: string;
+          amount_cents: number;
+          competence_date: string;
+          due_date?: string | null;
+          paid_at?: string | null;
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null;
+          category_id?: string | null;
+          account_id?: string | null;
+          appointment_id?: string | null;
+          client_id?: string | null;
+          payer_type?: string | null;
+          revenue_type?: string;
+          nota_fiscal_emitida?: boolean;
+          receita_saude_emitido?: boolean;
+          attachment_path?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          kind?: Database["public"]["Enums"]["tx_kind"];
+          status?: Database["public"]["Enums"]["tx_status"];
+          description?: string;
+          amount_cents?: number;
+          competence_date?: string;
+          due_date?: string | null;
+          paid_at?: string | null;
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null;
+          category_id?: string | null;
+          account_id?: string | null;
+          appointment_id?: string | null;
+          client_id?: string | null;
+          payer_type?: string | null;
+          revenue_type?: string;
+          nota_fiscal_emitida?: boolean;
+          receita_saude_emitido?: boolean;
+          attachment_path?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_appointment_id_fkey";
+            columns: ["appointment_id"];
+            isOneToOne: true;
+            referencedRelation: "appointments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       booking_attempts: {
         Row: {
           id: number;
@@ -502,6 +724,15 @@ export type Database = {
         Args: { p_token: string };
         Returns: string;
       };
+      concluir_atendimento: {
+        Args: {
+          p_appointment: string;
+          p_metodo: Database["public"]["Enums"]["payment_method"];
+          p_valor_cents: number;
+          p_conta: string | null;
+        };
+        Returns: string;
+      };
       limpar_tentativas_antigas: {
         Args: Record<string, never>;
         Returns: number;
@@ -524,7 +755,17 @@ export type Database = {
     Enums: {
       appointment_status: "agendado" | "confirmado" | "concluido" | "faltou" | "cancelado";
       member_role: "dono" | "profissional" | "recepcao" | "contador";
+      payment_method:
+        | "pix"
+        | "dinheiro"
+        | "cartao_credito"
+        | "cartao_debito"
+        | "boleto"
+        | "transferencia"
+        | "outro";
       tax_regime: "pf_autonomo" | "mei" | "simples_nacional" | "outro";
+      tx_kind: "receita" | "despesa";
+      tx_status: "pendente" | "pago" | "cancelado";
     };
     CompositeTypes: { [_ in never]: never };
   };

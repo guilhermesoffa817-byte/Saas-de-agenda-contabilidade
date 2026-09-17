@@ -29,10 +29,12 @@
   --gold-ink: oklch(48.9% 0.091 81.3);            /* #7A5A17 dourado para texto */
   --success: oklch(52.0% 0.103 154.1);            /* #2F7A4D */
   --warning: oklch(54.9% 0.112 70.5);             /* #9A6412 */
-  --chart-1: oklch(32.4% 0.056 167.5);
+  /* Cores de gráfico validadas (faixa de luminosidade, croma, separação para
+     daltonismo e contraste com o papel). Significado: 1 = entrou, 4 = saiu. */
+  --chart-1: #3E9C66;
   --chart-2: oklch(65.6% 0.120 78.9);
   --chart-3: oklch(55% 0.060 250);
-  --chart-4: oklch(53.3% 0.151 33.7);
+  --chart-4: #A33A25;
   --chart-5: oklch(70% 0.020 90);
 }
 
@@ -60,10 +62,11 @@
   --gold-ink: oklch(83.3% 0.100 88.4);
   --success: oklch(73.5% 0.136 159.3);
   --warning: oklch(76.7% 0.128 77.6);
-  --chart-1: oklch(67.5% 0.132 158.5);
+  /* Passos próprios do tema escuro, validados contra o fundo escuro. */
+  --chart-1: #3AA873;
   --chart-2: oklch(78.9% 0.117 88.5);
   --chart-3: oklch(70% 0.080 250);
-  --chart-4: oklch(68.1% 0.138 34.9);
+  --chart-4: #B85440;
   --chart-5: oklch(60% 0.020 90);
 }
 

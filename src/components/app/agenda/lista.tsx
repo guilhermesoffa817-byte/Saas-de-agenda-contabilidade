@@ -14,7 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ROTULO_STATUS, type AtendimentoNaAgenda, type ProfissionalDaAgenda } from "@/lib/agenda";
+import {
+  ROTULO_STATUS,
+  type AtendimentoNaAgenda,
+  type ContextoFinanceiro,
+  type ProfissionalDaAgenda,
+} from "@/lib/agenda";
 import { formatarData, formatarHora } from "@/lib/dates";
 import { formatarBRL } from "@/lib/money";
 import { formatarTelefone } from "@/lib/telefone";
@@ -32,11 +37,13 @@ export function VisaoLista({
   profissionais,
   fuso,
   nomeDaEmpresa,
+  financeiro,
 }: {
   atendimentos: AtendimentoNaAgenda[];
   profissionais: ProfissionalDaAgenda[];
   fuso: string;
   nomeDaEmpresa: string;
+  financeiro: ContextoFinanceiro;
 }) {
   const [abertoId, setAbertoId] = useState<string | null>(null);
 
@@ -103,6 +110,7 @@ export function VisaoLista({
                         atendimento={atendimento}
                         fuso={fuso}
                         nomeDaEmpresa={nomeDaEmpresa}
+          financeiro={financeiro}
                         profissional={profissional?.nome}
                         aoFechar={() => setAbertoId(null)}
                       />
