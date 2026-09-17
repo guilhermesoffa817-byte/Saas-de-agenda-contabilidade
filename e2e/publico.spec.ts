@@ -30,8 +30,8 @@ test("o cadastro valida e-mail e senha antes de enviar", async ({ page }) => {
 test("a política de privacidade diz quem é controlador e quem é operador", async ({ page }) => {
   await page.goto("/privacidade");
   await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
-  await expect(page.getByText(/é operador/)).toBeVisible();
-  await expect(page.getByText(/não é prontuário eletrônico/)).toBeVisible();
+  await expect(page.getByText(/é operador/).first()).toBeVisible();
+  await expect(page.getByText(/não é prontuário eletrônico/).first()).toBeVisible();
 });
 
 test("sem as chaves do Supabase, o sistema explica o que configurar", async ({ page }) => {

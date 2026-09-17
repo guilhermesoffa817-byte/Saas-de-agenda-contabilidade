@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Termos de uso — Alicerce",
@@ -11,9 +10,6 @@ export default function PaginaTermos() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-14">
       <header className="flex flex-col gap-3">
-        <Link href="/" className="font-display text-xl font-semibold tracking-tight">
-          Alicerce
-        </Link>
         <h1 className="text-3xl font-semibold tracking-tight">Termos de uso</h1>
         <p className="text-sm text-muted-foreground">
           Última atualização: setembro de 2026 · Versão para revisão jurídica

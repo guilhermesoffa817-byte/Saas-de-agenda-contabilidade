@@ -1,15 +1,17 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AlternarTema } from "@/components/app/alternar-tema";
 import { Toaster } from "@/components/ui/sonner";
 
 export default function LayoutAutenticacao({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-secondary/40">
-      <header className="px-6 py-6">
+      <header className="flex items-center justify-between gap-4 px-6 py-6">
         <Link href="/" className="font-display text-xl font-semibold tracking-tight">
           Alicerce
         </Link>
+        <AlternarTema />
       </header>
       <main className="flex flex-1 items-start justify-center px-6 pb-16">
         <div className="w-full max-w-md">{children}</div>

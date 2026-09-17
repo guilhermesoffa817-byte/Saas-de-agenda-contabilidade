@@ -23,7 +23,7 @@ export const PLANOS = {
     maxProfissionais: 5,
     lembretesAutomaticosMes: 500,
     nfse: false,
-    resumo: "Para equipe pequena, com lembrete automático no WhatsApp.",
+    resumo: "Para equipe pequena, com lembrete no WhatsApp da sua conta.",
   },
   negocio: {
     nome: "Negócio",
@@ -32,7 +32,7 @@ export const PLANOS = {
     maxProfissionais: Infinity,
     lembretesAutomaticosMes: 2000,
     nfse: true,
-    resumo: "Equipe sem limite e emissão de nota fiscal de serviço.",
+    resumo: "Para equipe sem limite, com nota fiscal de serviço quando entrar no ar.",
   },
 } as const;
 
