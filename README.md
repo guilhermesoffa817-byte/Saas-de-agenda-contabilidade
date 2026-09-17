@@ -25,8 +25,23 @@ npm run dev                  # http://localhost:3000
 | Testes de unidade | `npm test` |
 | Testes de ponta a ponta | `npm run test:e2e` |
 | Nova migração do banco | `npx supabase migration new <nome>` |
+| Banco local para testes | `npm run db:local` |
 | Aplicar migrações | `npm run db:push` |
 | Gerar tipos do banco | `npm run db:types` |
+
+## Testes de banco
+
+As migrações são testadas num Postgres local, sem Docker e sem depender do projeto da nuvem:
+
+```bash
+npm run db:local   # recria o banco alicerce_test e aplica todas as migrações
+npm test           # roda os testes; os de banco são pulados se o banco não existir
+```
+
+`supabase/local/00_shim_supabase.sql` recria só o que o Supabase já oferece no banco dele (papéis
+`anon`/`authenticated`, schema `auth`, `auth.uid()` e privilégios padrão). Ele nunca é aplicado no
+projeto da nuvem. Os testes de `tests/db` provam, entre outras coisas, que um usuário de uma empresa
+não lê nem altera dados de outra.
 
 ## Variáveis de ambiente
 
