@@ -258,6 +258,41 @@ export type Database = {
           },
         ];
       };
+      booking_attempts: {
+        Row: {
+          id: number;
+          organization_id: string | null;
+          ip_hash: string;
+          phone_e164: string | null;
+          sucesso: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          organization_id?: string | null;
+          ip_hash: string;
+          phone_e164?: string | null;
+          sucesso?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          organization_id?: string | null;
+          ip_hash?: string;
+          phone_e164?: string | null;
+          sucesso?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "booking_attempts_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       clients: {
         Row: {
           id: string;
@@ -466,6 +501,14 @@ export type Database = {
       accept_invite: {
         Args: { p_token: string };
         Returns: string;
+      };
+      limpar_tentativas_antigas: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      marcar_falta: {
+        Args: { p_appointment: string };
+        Returns: undefined;
       };
       create_organization: {
         Args: {

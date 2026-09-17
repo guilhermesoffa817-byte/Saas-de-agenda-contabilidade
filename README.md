@@ -24,6 +24,7 @@ npm run dev                  # http://localhost:3000
 | Tipos | `npm run typecheck` |
 | Testes de unidade | `npm test` |
 | Testes de ponta a ponta | `npm run test:e2e` |
+| Testes com Chromium já instalado | `CHROMIUM_PATH=/caminho/chrome npm run test:e2e` |
 | Nova migração do banco | `npx supabase migration new <nome>` |
 | Banco local para testes | `npm run db:local` |
 | Aplicar migrações | `npm run db:push` |

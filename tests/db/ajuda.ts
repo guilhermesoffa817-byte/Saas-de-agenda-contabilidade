@@ -98,3 +98,77 @@ export async function criarEmpresa(
 export function sufixo() {
   return Math.random().toString(36).slice(2, 10);
 }
+
+/** Cria um profissional (como dono, pela política "dono configura"). */
+export async function criarProfissional(userId: string, empresaId: string, nome: string) {
+  return comoUsuario(userId, async (cliente) => {
+    const { rows } = await cliente.query<{ id: string }>(
+      "insert into public.professionals (organization_id, name) values ($1, $2) returning id",
+      [empresaId, nome],
+    );
+    return rows[0].id;
+  });
+}
+
+export async function criarServico(
+  userId: string,
+  empresaId: string,
+  dados: { nome: string; duracao: number; preco: number; buffer?: number },
+) {
+  return comoUsuario(userId, async (cliente) => {
+    const { rows } = await cliente.query<{ id: string }>(
+      `insert into public.services (organization_id, name, duration_min, buffer_min, price_cents)
+       values ($1, $2, $3, $4, $5) returning id`,
+      [empresaId, dados.nome, dados.duracao, dados.buffer ?? 0, dados.preco],
+    );
+    return rows[0].id;
+  });
+}
+
+export async function criarCliente(
+  userId: string,
+  empresaId: string,
+  dados: { nome: string; telefone?: string },
+) {
+  return comoUsuario(userId, async (cliente) => {
+    const { rows } = await cliente.query<{ id: string }>(
+      "insert into public.clients (organization_id, name, phone_e164) values ($1, $2, $3) returning id",
+      [empresaId, dados.nome, dados.telefone ?? null],
+    );
+    return rows[0].id;
+  });
+}
+
+export async function criarAtendimento(
+  userId: string,
+  dados: {
+    empresaId: string;
+    profissionalId: string;
+    clienteId: string;
+    servicoId: string;
+    inicio: string;
+    fim: string;
+    status?: string;
+    preco?: number;
+  },
+) {
+  return comoUsuario(userId, async (cliente) => {
+    const { rows } = await cliente.query<{ id: string }>(
+      `insert into public.appointments
+         (organization_id, professional_id, client_id, service_id, starts_at, ends_at, status, price_cents)
+       values ($1, $2, $3, $4, $5, $6, coalesce($7, 'agendado')::public.appointment_status, $8)
+       returning id`,
+      [
+        dados.empresaId,
+        dados.profissionalId,
+        dados.clienteId,
+        dados.servicoId,
+        dados.inicio,
+        dados.fim,
+        dados.status ?? null,
+        dados.preco ?? 5000,
+      ],
+    );
+    return rows[0].id;
+  });
+}
