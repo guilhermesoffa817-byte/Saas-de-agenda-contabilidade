@@ -3,6 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { AVISO_SOMENTE_LEITURA, situacaoDaAssinatura } from "@/lib/assinatura";
 import type { Enums, Tables } from "./database.types";
 import { createClient } from "./server";
 
@@ -70,6 +71,20 @@ export async function empresaAtual(): Promise<{ vinculo: Vinculo | null; vinculo
   const escolhida = (await cookies()).get(COOKIE_EMPRESA)?.value;
   const vinculo = vinculos.find((item) => item.empresa.id === escolhida) ?? vinculos[0];
   return { vinculo, vinculos };
+}
+
+/** Situação da cobrança traduzida em permissão de uso. */
+export function situacaoDaEmpresa(empresa: Empresa) {
+  return situacaoDaAssinatura(empresa);
+}
+
+/**
+ * Porteiro das ações que alteram dados. Em modo somente leitura o sistema
+ * continua mostrando e exportando tudo, mas não aceita mudança.
+ */
+export function garantirEscrita(vinculo: Vinculo | null): string | null {
+  if (!vinculo) return "Empresa não encontrada.";
+  return situacaoDaAssinatura(vinculo.empresa).podeEscrever ? null : AVISO_SOMENTE_LEITURA;
 }
 
 /** Dias que faltam para o teste grátis acabar (0 quando já acabou). */

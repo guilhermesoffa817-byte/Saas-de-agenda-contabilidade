@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { enviarEmail, moldura } from "@/lib/email";
+import { limiteDeProfissionais } from "@/lib/planos";
 import { createClient } from "@/lib/supabase/server";
 import { enderecoDoSite } from "@/lib/url";
 import { COOKIE_EMPRESA } from "@/lib/supabase/sessao";
@@ -74,6 +75,19 @@ export async function salvarEquipeEExpediente(
     .eq("organization_id", empresaId);
 
   const nomes = validado.data.profissionais.map((profissional) => profissional.nome);
+
+  // Limite do plano conferido no servidor.
+  const { data: empresa } = await supabase
+    .from("organizations")
+    .select("plan")
+    .eq("id", empresaId)
+    .maybeSingle();
+  const limite = limiteDeProfissionais(empresa?.plan);
+  if (nomes.length > limite) {
+    return {
+      erro: `Seu plano permite ${limite} ${limite === 1 ? "profissional" : "profissionais"}. Deixe ${limite} por agora e troque de plano depois, em Assinatura.`,
+    };
+  }
   const paraCriar = nomes.filter((nome) => !existentes?.some((item) => item.name === nome));
 
   if (paraCriar.length) {

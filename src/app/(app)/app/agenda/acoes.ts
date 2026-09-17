@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { instanteNaEmpresa } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
-import { empresaAtual } from "@/lib/supabase/sessao";
+import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import { normalizarTelefone } from "@/lib/telefone";
 import {
   esquemaBloqueio,
@@ -43,7 +43,8 @@ export async function criarAtendimento(
   }
 
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const empresa = vinculo.empresa;
   const supabase = await createClient();
@@ -138,7 +139,8 @@ export async function remarcarAtendimento(entrada: RemarcacaoInput): Promise<Res
   if (!validado.success) return { erro: "Não foi possível remarcar." };
 
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const empresa = vinculo.empresa;
   const supabase = await createClient();
@@ -182,7 +184,8 @@ export async function alterarStatus(entrada: StatusInput): Promise<Resposta> {
   if (!validado.success) return { erro: "Status inválido." };
 
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const agora = new Date().toISOString();
@@ -215,7 +218,8 @@ export async function alterarStatus(entrada: StatusInput): Promise<Resposta> {
 /** "Faltou" muda o status e soma no contador de faltas do cliente, no banco. */
 export async function marcarFalta(atendimentoId: string): Promise<Resposta> {
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("marcar_falta", { p_appointment: atendimentoId });
@@ -228,7 +232,8 @@ export async function marcarFalta(atendimentoId: string): Promise<Resposta> {
 /** Guarda que o lembrete já saiu, para não mandar duas vezes. */
 export async function registrarLembreteEnviado(atendimentoId: string): Promise<Resposta> {
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -249,7 +254,8 @@ export async function criarBloqueio(entrada: BloqueioInput): Promise<Resposta> {
   }
 
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const empresa = vinculo.empresa;
   const supabase = await createClient();
@@ -272,7 +278,8 @@ export async function criarBloqueio(entrada: BloqueioInput): Promise<Resposta> {
 
 export async function removerBloqueio(bloqueioId: string): Promise<Resposta> {
   const vinculo = await empresaDoUsuario();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const { error } = await supabase

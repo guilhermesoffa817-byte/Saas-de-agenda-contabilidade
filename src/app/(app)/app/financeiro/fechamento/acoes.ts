@@ -13,7 +13,7 @@ import { tabelaParaPDF } from "@/lib/reports/pdf/gerar";
 import { tabelaParaExcel } from "@/lib/reports/xlsx";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { empresaAtual } from "@/lib/supabase/sessao";
+import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import { enderecoDoSite } from "@/lib/url";
 
 export type Resposta<T = undefined> = { erro?: string; aviso?: string; dados?: T };
@@ -32,6 +32,8 @@ export async function fecharMes(mes: string): Promise<Resposta<{ pacote: string 
   const { vinculo } = await empresaAtual();
   if (!vinculo) return { erro: "Empresa não encontrada." };
   if (vinculo.papel !== "dono") return { erro: "Só o dono fecha o mês." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio) return { erro: bloqueio };
 
   const empresa = vinculo.empresa;
   const supabase = await createClient();
@@ -170,6 +172,8 @@ export async function reabrirMes(mes: string): Promise<Resposta> {
   const { vinculo } = await empresaAtual();
   if (!vinculo) return { erro: "Empresa não encontrada." };
   if (vinculo.papel !== "dono") return { erro: "Só o dono reabre o mês." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio) return { erro: bloqueio };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("reabrir_mes", {

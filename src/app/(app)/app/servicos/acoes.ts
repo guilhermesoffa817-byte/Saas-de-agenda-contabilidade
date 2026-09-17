@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
+import { limiteDeProfissionais, planoDe } from "@/lib/planos";
 import { createClient } from "@/lib/supabase/server";
-import { empresaAtual } from "@/lib/supabase/sessao";
+import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import { esquemaServicoCadastro, type ServicoCadastroInput } from "@/lib/validacao/agenda";
 
 export type Resposta<T = undefined> = { erro?: string; aviso?: string; dados?: T };
@@ -14,6 +15,8 @@ async function exigirDono() {
   if (vinculo.papel !== "dono") {
     return { erro: "Só o dono altera os serviços." as const, vinculo: null };
   }
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio) return { erro: bloqueio, vinculo: null };
   return { erro: undefined, vinculo };
 }
 
@@ -91,6 +94,26 @@ export async function salvarProfissional(entrada: {
   if (!/^#[0-9a-fA-F]{6}$/.test(entrada.cor)) return { erro: "Cor inválida." };
 
   const supabase = await createClient();
+
+  // Limite do plano: conferido no servidor, nunca só na tela.
+  if (!entrada.profissionalId && entrada.ativo) {
+    const { count } = await supabase
+      .from("professionals")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", vinculo.empresa.id)
+      .eq("active", true);
+
+    const limite = limiteDeProfissionais(vinculo.empresa.plan);
+    if ((count ?? 0) >= limite) {
+      const plano = planoDe(vinculo.empresa.plan);
+      return {
+        erro: `Seu plano${plano ? ` ${plano.nome}` : ""} permite ${limite} ${
+          limite === 1 ? "profissional" : "profissionais"
+        }. Troque de plano em Assinatura para cadastrar mais.`,
+      };
+    }
+  }
+
   const registro = {
     organization_id: vinculo.empresa.id,
     name: nome,

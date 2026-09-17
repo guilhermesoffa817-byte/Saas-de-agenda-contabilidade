@@ -9,6 +9,7 @@ import {
   Users,
   Wallet,
   FileBarChart,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +28,7 @@ const ICONES: Record<string, LucideIcon> = {
   Scissors,
   Wallet,
   FileBarChart,
+  CreditCard,
   Settings,
 };
 
@@ -46,6 +48,7 @@ export function itensPorPapel(papel: Papel): ItemDeMenu[] {
       { href: "/app/financeiro", rotulo: "Financeiro", icone: "Wallet" },
       { href: "/app/relatorios", rotulo: "Relatórios", icone: "FileBarChart" },
       { href: "/app/servicos", rotulo: "Serviços", icone: "Scissors" },
+      { href: "/app/assinatura", rotulo: "Assinatura", icone: "CreditCard" },
       { href: "/app/configuracoes", rotulo: "Configurações", icone: "Settings" },
     ];
   }

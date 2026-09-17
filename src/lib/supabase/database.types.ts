@@ -28,6 +28,13 @@ export type Database = {
           subscription_status: string;
           trial_ends_at: string;
           created_at: string;
+          asaas_customer_id: string | null;
+          asaas_subscription_id: string | null;
+          billing_cycle: string | null;
+          pending_plan: string | null;
+          referred_by_accountant: string | null;
+          past_due_since: string | null;
+          canceled_at: string | null;
         };
         Insert: {
           id?: string;
@@ -45,6 +52,13 @@ export type Database = {
           subscription_status?: string;
           trial_ends_at?: string;
           created_at?: string;
+          asaas_customer_id?: string | null;
+          asaas_subscription_id?: string | null;
+          billing_cycle?: string | null;
+          pending_plan?: string | null;
+          referred_by_accountant?: string | null;
+          past_due_since?: string | null;
+          canceled_at?: string | null;
         };
         Update: {
           id?: string;
@@ -62,6 +76,13 @@ export type Database = {
           subscription_status?: string;
           trial_ends_at?: string;
           created_at?: string;
+          asaas_customer_id?: string | null;
+          asaas_subscription_id?: string | null;
+          billing_cycle?: string | null;
+          pending_plan?: string | null;
+          referred_by_accountant?: string | null;
+          past_due_since?: string | null;
+          canceled_at?: string | null;
         };
         Relationships: [];
       };
@@ -559,6 +580,27 @@ export type Database = {
           },
         ];
       };
+      billing_events: {
+        Row: {
+          id: string;
+          type: string;
+          payload: Json;
+          received_at: string;
+        };
+        Insert: {
+          id: string;
+          type: string;
+          payload: Json;
+          received_at?: string;
+        };
+        Update: {
+          id?: string;
+          type?: string;
+          payload?: Json;
+          received_at?: string;
+        };
+        Relationships: [];
+      };
       booking_attempts: {
         Row: {
           id: number;
@@ -830,6 +872,10 @@ export type Database = {
           p_conta: string | null;
         };
         Returns: string;
+      };
+      aplicar_status_de_cobranca: {
+        Args: { p_assinatura: string; p_status: string };
+        Returns: string | null;
       };
       definir_codigo_contabil: {
         Args: { p_categoria: string; p_codigo: string };

@@ -14,7 +14,10 @@ import {
   diasDeTesteRestantes,
   empresaAtual,
   exigirUsuario,
+  situacaoDaEmpresa,
 } from "@/lib/supabase/sessao";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 /** O sistema logado lê sessão e cookies em toda visita: nada de pré-renderizar. */
 export const dynamic = "force-dynamic";
@@ -37,6 +40,7 @@ export default async function LayoutSistema({ children }: { children: ReactNode 
 
   const itens = itensPorPapel(vinculo.papel);
   const dias = diasDeTesteRestantes(vinculo.empresa);
+  const situacao = situacaoDaEmpresa(vinculo.empresa);
   const nome = (usuario.user_metadata?.nome as string | undefined) ?? usuario.email ?? "Você";
 
   return (
@@ -77,7 +81,29 @@ export default async function LayoutSistema({ children }: { children: ReactNode 
 
       <div className="flex flex-1">
         <NavegacaoLateral itens={itens} />
-        <main className="min-w-0 flex-1 px-4 py-6 md:px-8">{children}</main>
+        <main className="min-w-0 flex-1 px-4 py-6 md:px-8">
+          {situacao.modo === "somente_leitura" || situacao.modo === "aviso" ? (
+            <Alert
+              variant={situacao.modo === "somente_leitura" ? "destructive" : "default"}
+              className="mb-6"
+            >
+              <AlertTriangle aria-hidden />
+              <AlertTitle>{situacao.titulo}</AlertTitle>
+              <AlertDescription className="flex flex-col items-start gap-2">
+                {situacao.mensagem}
+                {vinculo.papel === "dono" ? (
+                  <Link
+                    href="/app/assinatura"
+                    className="font-medium underline underline-offset-4"
+                  >
+                    Ver planos e regularizar
+                  </Link>
+                ) : null}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+          {children}
+        </main>
       </div>
 
       <Toaster position="top-center" />

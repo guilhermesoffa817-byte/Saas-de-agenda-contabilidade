@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { empresaAtual } from "@/lib/supabase/sessao";
+import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import { normalizarTelefone } from "@/lib/telefone";
 import { esquemaCliente, type ClienteInput } from "@/lib/validacao/agenda";
 
@@ -18,7 +18,8 @@ export async function salvarCliente(
   }
 
   const { vinculo } = await empresaAtual();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const dados = validado.data;
   const telefone = dados.telefone ? normalizarTelefone(dados.telefone) : null;
@@ -68,7 +69,8 @@ export async function salvarCliente(
 /** Exclusão reversível: o histórico de atendimentos continua valendo para o financeiro. */
 export async function arquivarCliente(clienteId: string): Promise<Resposta> {
   const { vinculo } = await empresaAtual();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const { error } = await supabase

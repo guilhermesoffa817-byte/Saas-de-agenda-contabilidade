@@ -4,7 +4,7 @@ import { addMonths, format } from "date-fns";
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { empresaAtual } from "@/lib/supabase/sessao";
+import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import {
   esquemaBaixa,
   esquemaCategoria,
@@ -46,7 +46,8 @@ export async function salvarLancamento(entrada: LancamentoInput): Promise<Respos
   }
 
   const vinculo = await contexto();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
   if (vinculo.papel !== "dono" && !(vinculo.papel === "recepcao" && validado.data.tipo === "receita")) {
     return { erro: "Seu acesso não permite lançar isso." };
   }
@@ -111,7 +112,8 @@ export async function salvarLancamento(entrada: LancamentoInput): Promise<Respos
 
 export async function excluirLancamento(lancamentoId: string): Promise<Resposta> {
   const vinculo = await contexto();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
   if (vinculo.papel !== "dono") return { erro: "Só o dono exclui lançamentos." };
 
   const supabase = await createClient();
@@ -134,7 +136,8 @@ export async function darBaixa(entrada: BaixaInput): Promise<Resposta> {
   }
 
   const vinculo = await contexto();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -166,7 +169,8 @@ export async function concluirComPagamento(
   }
 
   const vinculo = await contexto();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("concluir_atendimento", {
@@ -190,7 +194,8 @@ export async function salvarCategoria(entrada: CategoriaInput): Promise<Resposta
   }
 
   const vinculo = await contexto();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
   if (vinculo.papel !== "dono") return { erro: "Só o dono altera categorias." };
 
   const supabase = await createClient();
@@ -228,7 +233,8 @@ export async function salvarConta(entrada: ContaInput): Promise<Resposta> {
   }
 
   const vinculo = await contexto();
-  if (!vinculo) return { erro: "Empresa não encontrada." };
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
   if (vinculo.papel !== "dono") return { erro: "Só o dono altera contas." };
 
   const supabase = await createClient();
@@ -257,6 +263,7 @@ export async function salvarConta(entrada: ContaInput): Promise<Resposta> {
 
 /** Link temporário do comprovante (o bucket é privado). */
 export async function linkDoComprovante(caminho: string): Promise<Resposta<{ url: string }>> {
+  // Leitura: liberada mesmo em modo somente leitura.
   const vinculo = await contexto();
   if (!vinculo) return { erro: "Empresa não encontrada." };
   if (!caminho.startsWith(`${vinculo.empresa.id}/`)) {
