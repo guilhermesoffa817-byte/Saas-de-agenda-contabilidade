@@ -83,6 +83,12 @@ export default async function PaginaFinanceiro({
           <Button asChild variant="outline" size="sm">
             <Link href={`/app/financeiro/categorias`}>Categorias e contas</Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/app/financeiro/fechamento?mes=${mes}`}>
+              <Lock aria-hidden />
+              Fechar o mês
+            </Link>
+          </Button>
           <Button asChild size="sm">
             <Link href={`/app/financeiro/lancamentos?mes=${mes}`}>
               Ver lançamentos
@@ -210,7 +216,7 @@ export default async function PaginaFinanceiro({
                 Conferido o mês, o fechamento gera os relatórios do contador (FASE 4).
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-3">
               <p className="text-sm text-muted-foreground">
                 Período de{" "}
                 {formatarData(`${mes}-01T12:00:00Z`, empresa.timezone)} a{" "}
@@ -220,6 +226,9 @@ export default async function PaginaFinanceiro({
                 )}
                 .
               </p>
+              <Button asChild size="sm" variant="secondary" className="w-fit">
+                <Link href={`/app/financeiro/fechamento?mes=${mes}`}>Conferir e fechar</Link>
+              </Button>
             </CardContent>
           </Card>
         )}

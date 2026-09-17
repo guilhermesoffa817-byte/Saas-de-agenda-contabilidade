@@ -331,6 +331,85 @@ export type Database = {
           },
         ];
       };
+      document_requests: {
+        Row: {
+          id: string;
+          organization_id: string;
+          transaction_id: string | null;
+          requested_by: string | null;
+          message: string;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          transaction_id?: string | null;
+          requested_by?: string | null;
+          message: string;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          transaction_id?: string | null;
+          requested_by?: string | null;
+          message?: string;
+          resolved_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_requests_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      export_templates: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          columns: string[];
+          separator: string;
+          date_format: string;
+          decimal_comma: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          name?: string;
+          columns?: string[];
+          separator?: string;
+          date_format?: string;
+          decimal_comma?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          name?: string;
+          columns?: string[];
+          separator?: string;
+          date_format?: string;
+          decimal_comma?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "export_templates_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       monthly_closings: {
         Row: {
           id: string;
@@ -718,7 +797,26 @@ export type Database = {
         ];
       };
     };
-    Views: { [_ in never]: never };
+    Views: {
+      clientes_para_contabilidade: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          document: string | null;
+          payer_type: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "clients_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+    };
     Functions: {
       accept_invite: {
         Args: { p_token: string };
@@ -732,6 +830,18 @@ export type Database = {
           p_conta: string | null;
         };
         Returns: string;
+      };
+      definir_codigo_contabil: {
+        Args: { p_categoria: string; p_codigo: string };
+        Returns: undefined;
+      };
+      fechar_mes: {
+        Args: { p_org: string; p_mes: string };
+        Returns: Database["public"]["Tables"]["monthly_closings"]["Row"];
+      };
+      reabrir_mes: {
+        Args: { p_org: string; p_mes: string };
+        Returns: undefined;
       };
       limpar_tentativas_antigas: {
         Args: Record<string, never>;
