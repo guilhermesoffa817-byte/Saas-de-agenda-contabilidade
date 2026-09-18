@@ -50,6 +50,19 @@ O arquivo `.env.example` lista todas as chaves. Nenhuma é obrigatória para a a
 elas, cada parte mostra o aviso do que falta em vez de quebrar. `SUPABASE_SECRET_KEY` nunca pode
 receber o prefixo `NEXT_PUBLIC`.
 
+## Criar o banco no Supabase
+
+Dois caminhos, escolha um:
+
+**Pelo painel (sem terminal).** Abra o **SQL Editor** do seu projeto, clique em
+**New query**, cole o conteúdo de [`supabase/banco-completo.sql`](supabase/banco-completo.sql)
+e clique em **Run**. É a junção de todas as migrações na ordem certa.
+
+**Pelo terminal.** `npx supabase link` e depois `npm run db:push`.
+
+O arquivo juntado é gerado a partir de `supabase/migrations/`, que continua
+sendo a fonte. Mudou uma migração? Gere o arquivo de novo com `npm run db:sql`.
+
 ## Integrações (o que configurar antes de ligar)
 
 ### Lembrete automático no WhatsApp
