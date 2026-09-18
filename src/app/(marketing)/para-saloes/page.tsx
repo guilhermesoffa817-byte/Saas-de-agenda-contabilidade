@@ -2,6 +2,8 @@ import { Scissors } from "lucide-react";
 import type { Metadata } from "next";
 
 import { PaginaDeSegmento } from "@/components/marketing/pagina-de-segmento";
+import { ALERTAS_LIMITE_MEI, LIMITE_MEI_ANUAL_CENTS } from "@/lib/fiscal/constantes";
+import { formatarBRL } from "@/lib/money";
 
 export const metadata: Metadata = {
   title: "Alicerce para salões e barbearias — agenda e caixa no mesmo lugar",
@@ -44,7 +46,7 @@ export default function PaginaParaSaloes() {
         fiscal: {
           titulo: "MEI de olho no limite",
           texto:
-            "Salão que fatura bem chega perto do teto do MEI sem perceber. O termômetro avisa em 70% e 90% do limite de R$ 81.000 por ano, e o relatório mensal de receitas sai pronto para o contador decidir a hora de mudar de regime.",
+            `Salão que fatura bem chega perto do teto do MEI sem perceber. O termômetro avisa em ${ALERTAS_LIMITE_MEI.map((f) => `${f * 100}%`).join(" e ")} do limite de ${formatarBRL(LIMITE_MEI_ANUAL_CENTS)} por ano, e o relatório mensal de receitas sai pronto para o contador decidir a hora de mudar de regime.`,
         },
       }}
     />

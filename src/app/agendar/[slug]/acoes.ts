@@ -1,5 +1,9 @@
 "use server";
 
+// Arquivo de Server Action nunca vai para o navegador, mas a garantia fica
+// explícita: a chave secreta é usada aqui como sal do embaralhamento de IP.
+import "server-only";
+
 import { createHash } from "node:crypto";
 
 import { addDays, addMinutes } from "date-fns";

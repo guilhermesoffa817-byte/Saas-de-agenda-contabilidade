@@ -15,6 +15,8 @@ import {
 
 import { Reveal } from "@/components/marketing/reveal";
 import { cn } from "@/lib/utils";
+import { ALERTAS_LIMITE_MEI, LIMITE_MEI_ANUAL_CENTS } from "@/lib/fiscal/constantes";
+import { formatarBRL } from "@/lib/money";
 
 type Item = {
   icone: typeof Wallet;
@@ -65,7 +67,7 @@ const GRUPOS: { nome: string; itens: Item[] }[] = [
       {
         icone: Gauge,
         titulo: "Termômetro do MEI",
-        texto: "Aviso em 70% e 90% do limite de R$ 81.000 por ano.",
+        texto: `Aviso em ${ALERTAS_LIMITE_MEI.map((f) => `${f * 100}%`).join(" e ")} do limite de ${formatarBRL(LIMITE_MEI_ANUAL_CENTS)} por ano.`,
       },
       {
         icone: QrCode,
