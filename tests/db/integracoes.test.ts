@@ -32,7 +32,7 @@ async function membro(dono: string, empresaId: string, email: string, papel: str
   return usuario;
 }
 
-describe.skipIf(!disponivel)("0007_integracoes — WhatsApp, nota e agenda no celular", () => {
+describe.skipIf(!disponivel)("0010_integracoes — WhatsApp, nota e agenda no celular", () => {
   it("o registro de envios é lido por dono e recepção, e ninguém logado escreve nele", async () => {
     const s = sufixo();
     const dono = await criarUsuario(`dono.int.${s}@exemplo.com.br`);

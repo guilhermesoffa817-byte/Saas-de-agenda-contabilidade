@@ -7,7 +7,8 @@ Especificação completa: `docs/prompt-saas-alicerce.md`. Antes de cada fase, le
 ## Comandos
 - Rodar: `npm run dev` · Lint: `npm run lint` · Tipos: `npx tsc --noEmit`
 - Testes: `npx vitest run` · Ponta a ponta: `npx playwright test`
-- Banco: `npx supabase migration new <nome>` · `npx supabase db push`
+- Banco: `npx supabase migration new <nome>` · `npx supabase db push` · SQL num arquivo só: `npm run db:sql`
+- Migração precisa de nome com **só dígitos** antes do `_` (`0013_x.sql`). O CLI do Supabase pula em silêncio o que fugir disso e mesmo assim diz "Finished".
 - Tipos do banco: `npx supabase gen types typescript --linked > src/lib/supabase/database.types.ts`
 
 ## Regras invioláveis

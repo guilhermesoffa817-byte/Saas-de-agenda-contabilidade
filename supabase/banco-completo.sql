@@ -310,7 +310,7 @@ end $$;
 
 
 -- --------------------------------------------------------------------------
--- 0002b_agenda_extras.sql
+-- 0003_agenda_extras.sql
 -- --------------------------------------------------------------------------
 
 -- Extras da agenda que a aplicação precisa fazer numa só transação.
@@ -367,7 +367,7 @@ create index if not exists clients_organization_name_idx
 
 
 -- --------------------------------------------------------------------------
--- 0002c_agendamento_publico.sql
+-- 0004_agendamento_publico.sql
 -- --------------------------------------------------------------------------
 
 -- Registro das tentativas de agendamento pelo link público.
@@ -407,7 +407,7 @@ revoke execute on function public.limpar_tentativas_antigas() from public, anon,
 
 
 -- --------------------------------------------------------------------------
--- 0003_financeiro.sql
+-- 0005_financeiro.sql
 -- --------------------------------------------------------------------------
 
 create type public.tx_kind as enum ('receita', 'despesa');
@@ -644,10 +644,10 @@ create policy "comprovantes: envio" on storage.objects for insert to authenticat
 
 
 -- --------------------------------------------------------------------------
--- 0004_fechamento.sql
+-- 0006_fechamento.sql
 -- --------------------------------------------------------------------------
 
--- supabase/migrations/0004_fechamento.sql
+-- supabase/migrations/0006_fechamento.sql
 create or replace function public.fechar_mes(p_org uuid, p_mes date)
 returns public.monthly_closings
 language plpgsql security definer set search_path = ''
@@ -797,10 +797,10 @@ create policy "fechamentos: envio" on storage.objects for insert to authenticate
 
 
 -- --------------------------------------------------------------------------
--- 0005_assinatura.sql
+-- 0007_assinatura.sql
 -- --------------------------------------------------------------------------
 
--- supabase/migrations/0005_assinatura.sql
+-- supabase/migrations/0007_assinatura.sql
 alter table public.organizations
   add column asaas_customer_id text,
   add column asaas_subscription_id text,
@@ -863,7 +863,7 @@ create index if not exists organizations_asaas_subscription_idx
 
 
 -- --------------------------------------------------------------------------
--- 0005b_assinatura_extras.sql
+-- 0008_assinatura_extras.sql
 -- --------------------------------------------------------------------------
 
 -- A regra de acesso fala em "atrasado há mais de 5 dias", então a data em que o
@@ -922,7 +922,7 @@ revoke execute on function private.aplicar_status_de_cobranca(text, text) from p
 
 
 -- --------------------------------------------------------------------------
--- 0005c_webhook_cobranca.sql
+-- 0009_webhook_cobranca.sql
 -- --------------------------------------------------------------------------
 
 -- O webhook usa a chave secreta (papel service_role) e chama pela API, que só
@@ -941,7 +941,7 @@ grant execute on function public.aplicar_status_de_cobranca(text, text) to servi
 
 
 -- --------------------------------------------------------------------------
--- 0007_integracoes.sql
+-- 0010_integracoes.sql
 -- --------------------------------------------------------------------------
 
 -- FASE 7 — Integrações: WhatsApp oficial, NFS-e e agenda no celular.
@@ -1155,7 +1155,7 @@ insert into storage.buckets (id, name, public)
 
 
 -- --------------------------------------------------------------------------
--- 0008_seguranca.sql
+-- 0011_seguranca.sql
 -- --------------------------------------------------------------------------
 
 -- FASE 8 — Segurança e LGPD.
@@ -1326,7 +1326,7 @@ grant execute on function public.registrar_leitura_de_anotacao(uuid) to authenti
 
 
 -- --------------------------------------------------------------------------
--- 0009_documentos_do_mes_fechado.sql
+-- 0012_documentos_do_mes_fechado.sql
 -- --------------------------------------------------------------------------
 
 -- Marcar documento emitido não é mexer no dinheiro do mês.

@@ -16,7 +16,7 @@ afterAll(async () => {
   await fecharBanco();
 });
 
-describe.skipIf(!disponivel)("0005_assinatura — cobrança só pelo servidor", () => {
+describe.skipIf(!disponivel)("0007_assinatura — cobrança só pelo servidor", () => {
   it("o dono edita o cadastro, mas não muda plano, status nem ids do Asaas", async () => {
     const s = sufixo();
     const dono = await criarUsuario(`dono.ass.${s}@exemplo.com.br`);

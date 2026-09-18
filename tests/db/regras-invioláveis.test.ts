@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs";
+
 import { afterAll, describe, expect, it } from "vitest";
 
 import { bancoDisponivel, comoAdmin, fecharBanco } from "./ajuda";
@@ -120,5 +122,28 @@ describe.skipIf(!disponivel)("regras invioláveis — banco", () => {
     // Função "security definer" sem search_path fixo é caminho conhecido de
     // escalada de privilégio.
     expect(soltas).toEqual([]);
+  });
+});
+
+describe("regras invioláveis — nome das migrações", () => {
+  it("todo arquivo de migração tem só dígitos antes do sublinhado", () => {
+    // O CLI do Supabase PULA EM SILÊNCIO qualquer migração fora deste padrão —
+    // e termina dizendo "Finished". Foi assim que quatro migrações quase foram
+    // para produção sem serem aplicadas, incluindo a função que o webhook de
+    // cobrança chama. Este teste existe para isso não acontecer de novo.
+    const fora = readdirSync("supabase/migrations")
+      .filter((nome) => nome.endsWith(".sql"))
+      .filter((nome) => !/^\d+_[a-z0-9_]+\.sql$/.test(nome));
+
+    expect(fora).toEqual([]);
+  });
+
+  it("os números das migrações não se repetem e estão em ordem", () => {
+    const numeros = readdirSync("supabase/migrations")
+      .filter((nome) => nome.endsWith(".sql"))
+      .map((nome) => Number(nome.split("_")[0]));
+
+    expect(new Set(numeros).size).toBe(numeros.length);
+    expect([...numeros].sort((a, b) => a - b)).toEqual(numeros);
   });
 });

@@ -19,7 +19,7 @@ afterAll(async () => {
   await fecharBanco();
 });
 
-describe.skipIf(!disponivel)("0008_seguranca — limite de tentativas", () => {
+describe.skipIf(!disponivel)("0011_seguranca — limite de tentativas", () => {
   it("deixa tentar até o limite e barra depois, por e-mail", async () => {
     const s = sufixo();
     const respostas = await comoAdmin(async (cliente) => {
@@ -93,7 +93,7 @@ describe.skipIf(!disponivel)("0008_seguranca — limite de tentativas", () => {
   });
 });
 
-describe.skipIf(!disponivel)("0008_seguranca — LGPD", () => {
+describe.skipIf(!disponivel)("0011_seguranca — LGPD", () => {
   it("anonimizar apaga o dado pessoal e mantém o histórico financeiro", async () => {
     const s = sufixo();
     const dono = await criarUsuario(`dono.lgpd.${s}@exemplo.com.br`);

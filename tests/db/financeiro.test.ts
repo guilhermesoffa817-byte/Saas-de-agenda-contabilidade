@@ -57,7 +57,7 @@ async function idDaConta(userId: string, empresaId: string, nome = "Caixa") {
   });
 }
 
-describe.skipIf(!disponivel)("0003_financeiro — contas e categorias padrão", () => {
+describe.skipIf(!disponivel)("0005_financeiro — contas e categorias padrão", () => {
   it("empresa nova já nasce com caixa, conta bancária e as categorias do dia a dia", async () => {
     const c = await cenario();
 

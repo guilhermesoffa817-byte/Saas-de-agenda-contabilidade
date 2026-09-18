@@ -1,4 +1,4 @@
--- supabase/migrations/0005_assinatura.sql
+-- supabase/migrations/0007_assinatura.sql
 alter table public.organizations
   add column asaas_customer_id text,
   add column asaas_subscription_id text,

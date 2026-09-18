@@ -45,7 +45,7 @@ async function cenario() {
   return { s, dono, contador, empresaId };
 }
 
-describe.skipIf(!disponivel)("0004_fechamento — fechar e reabrir o mês", () => {
+describe.skipIf(!disponivel)("0006_fechamento — fechar e reabrir o mês", () => {
   it("o dono fecha o mês e os totais somam só o que foi pago", async () => {
     const c = await cenario();
 

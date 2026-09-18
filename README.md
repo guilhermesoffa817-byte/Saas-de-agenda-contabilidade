@@ -58,7 +58,22 @@ Dois caminhos, escolha um:
 **New query**, cole o conteúdo de [`supabase/banco-completo.sql`](supabase/banco-completo.sql)
 e clique em **Run**. É a junção de todas as migrações na ordem certa.
 
-**Pelo terminal.** `npx supabase link` e depois `npm run db:push`.
+**Pelo terminal.**
+
+```
+npx supabase login          # abre o navegador para autenticar
+npx supabase link           # escolha o projeto na lista
+npm run db:push             # aplica as 12 migrações
+```
+
+O `link` pede a senha do banco — a que você definiu ao criar o projeto. Esqueceu?
+Redefina em Project Settings → Database.
+
+> **Os nomes das migrações precisam ser só dígitos antes do `_`.** O CLI do
+> Supabase **pula em silêncio** qualquer arquivo fora desse padrão e ainda assim
+> termina dizendo "Finished" — um `0002b_...` seria ignorado sem aviso nenhum.
+> Ao criar uma migração nova, use `npx supabase migration new <nome>`, que já
+> nomeia certo.
 
 O arquivo juntado é gerado a partir de `supabase/migrations/`, que continua
 sendo a fonte. Mudou uma migração? Gere o arquivo de novo com `npm run db:sql`.

@@ -1,4 +1,4 @@
--- supabase/migrations/0004_fechamento.sql
+-- supabase/migrations/0006_fechamento.sql
 create or replace function public.fechar_mes(p_org uuid, p_mes date)
 returns public.monthly_closings
 language plpgsql security definer set search_path = ''
