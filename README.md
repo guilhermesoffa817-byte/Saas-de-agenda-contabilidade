@@ -50,6 +50,21 @@ O arquivo `.env.example` lista todas as chaves. Nenhuma é obrigatória para a a
 elas, cada parte mostra o aviso do que falta em vez de quebrar. `SUPABASE_SECRET_KEY` nunca pode
 receber o prefixo `NEXT_PUBLIC`.
 
+## O site num arquivo só
+
+Para mandar no WhatsApp, mostrar no celular sem sinal ou guardar como registro:
+
+```
+npm run build && npm start     # em outro terminal
+npm run site:arquivo
+```
+
+Gera `alicerce-site-completo.html` com as 11 páginas públicas, fontes embutidas
+e nenhum pedido externo — abre com duplo clique, sem internet. O JavaScript sai
+fora, então formulário não envia e acordeão não abre; em compensação nada fica
+escondido, porque o conteúdo já está todo no HTML. O arquivo é gerado, não
+versionado.
+
 ## Criar o banco no Supabase
 
 Dois caminhos, escolha um:

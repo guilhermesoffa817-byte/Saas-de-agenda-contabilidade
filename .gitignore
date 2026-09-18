@@ -48,3 +48,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Site num arquivo só, gerado por `npm run site:arquivo` (veja o README)
+/alicerce-site-completo.html
