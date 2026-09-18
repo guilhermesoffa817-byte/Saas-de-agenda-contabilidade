@@ -111,3 +111,56 @@ export async function marcarPedidoResolvido(pedidoId: string, empresaId: string)
   revalidatePath("/app/financeiro");
   return { aviso: "Pedido marcado como resolvido." };
 }
+
+const CodigosDoServico = z.object({
+  empresaId: z.uuid(),
+  servicoId: z.uuid(),
+  lc116: z.string().trim().max(10),
+  codigoMunicipal: z.string().trim().max(20),
+  cnae: z.string().trim().max(10),
+  descricao: z.string().trim().max(400),
+});
+
+/**
+ * Códigos de tributação por serviço, para a NFS-e. Quem preenche é o contador,
+ * que é quem entende — o Alicerce só repassa ao provedor o que está aqui, sem
+ * calcular imposto nenhum.
+ */
+export async function salvarCodigosDeTributacao(
+  entrada: z.input<typeof CodigosDoServico>,
+): Promise<Resposta> {
+  const validado = CodigosDoServico.safeParse(entrada);
+  if (!validado.success) {
+    return { erro: validado.error.issues[0]?.message ?? "Confira os códigos." };
+  }
+
+  const { vinculos } = await empresaAtual();
+  const podeConfigurar = vinculos.some(
+    (item) =>
+      item.empresa.id === validado.data.empresaId &&
+      (item.papel === "contador" || item.papel === "dono"),
+  );
+  if (!podeConfigurar) return { erro: "Você não tem acesso a essa empresa." };
+
+  const vazioVira = (valor: string) => (valor.length > 0 ? valor : null);
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("service_tax_codes").upsert(
+    {
+      service_id: validado.data.servicoId,
+      organization_id: validado.data.empresaId,
+      lc116_code: vazioVira(validado.data.lc116),
+      city_service_code: vazioVira(validado.data.codigoMunicipal),
+      cnae: vazioVira(validado.data.cnae),
+      description: vazioVira(validado.data.descricao),
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "service_id" },
+  );
+
+  if (error) return { erro: error.message };
+
+  revalidatePath(`/contador/${validado.data.empresaId}`);
+  revalidatePath("/app/servicos");
+  return { aviso: "Códigos de tributação salvos." };
+}

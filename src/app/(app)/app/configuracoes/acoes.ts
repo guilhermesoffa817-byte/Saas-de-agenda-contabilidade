@@ -175,3 +175,23 @@ export async function removerMembro(empresaId: string, userId: string): Promise<
   revalidatePath("/app/configuracoes");
   return { aviso: "Pessoa removida." };
 }
+
+/**
+ * Troca o link secreto da agenda de um profissional. Quem tinha o link antigo
+ * perde o acesso na hora — é para isso que serve.
+ */
+export async function gerarNovoLinkDaAgenda(
+  empresaId: string,
+  profissionalId: string,
+): Promise<Resposta<{ token: string }>> {
+  if (!(await exigirDono(empresaId))) return { erro: "Só o dono troca o link da agenda." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("gerar_token_ical", {
+    p_profissional: profissionalId,
+  });
+
+  if (error) return { erro: error.message };
+  revalidatePath("/app/configuracoes");
+  return { aviso: "Link novo gerado. O anterior parou de funcionar.", dados: { token: data } };
+}

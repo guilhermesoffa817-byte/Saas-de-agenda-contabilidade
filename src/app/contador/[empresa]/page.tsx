@@ -6,6 +6,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CodigosContabeis } from "@/components/app/contador/codigos-contabeis";
+import {
+  CodigosDeTributacao,
+  type ServicoParaTributar,
+} from "@/components/app/contador/codigos-de-tributacao";
 import { PedirComprovante } from "@/components/app/contador/pedir-comprovante";
 import { BarraDeRelatorios } from "@/components/app/relatorios/barra-relatorios";
 import { TabelaDeRelatorio } from "@/components/app/relatorios/tabela-relatorio";
@@ -16,7 +20,9 @@ import {
 } from "@/app/(app)/app/financeiro/dados";
 import { carregarFechamentos, carregarLancamentosParaRelatorio } from "@/app/(app)/app/relatorios/dados";
 import { filtroDeData, montarRelatorio, relatoriosDoRegime, type TipoDeRelatorio } from "@/lib/reports";
+import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
+import { permiteNotaFiscal } from "@/lib/planos";
 
 export const metadata: Metadata = { title: "Cliente — Portal do contador" };
 
@@ -75,6 +81,11 @@ export default async function PaginaDoCliente({
     inicio.slice(0, 7) === fim.slice(0, 7)
       ? format(new Date(`${inicio}T12:00:00Z`), "MMMM 'de' yyyy", { locale: ptBR })
       : `${inicio.split("-").reverse().join("/")} a ${fim.split("-").reverse().join("/")}`;
+
+  // Códigos de tributação só fazem sentido onde a nota pode ser emitida.
+  const servicosParaTributar = permiteNotaFiscal(empresa.plan)
+    ? await carregarServicosParaTributar(empresa.id)
+    : [];
 
   const tabela = montarRelatorio(tipo, {
     lancamentos,
@@ -149,6 +160,13 @@ export default async function PaginaDoCliente({
         <div className="flex flex-col gap-6">
           <PedirComprovante empresaId={empresa.id} />
 
+          {servicosParaTributar.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-sm font-medium">Códigos de tributação (NFS-e)</h2>
+              <CodigosDeTributacao empresaId={empresa.id} servicos={servicosParaTributar} />
+            </div>
+          ) : null}
+
           <div className="flex flex-col gap-3">
             <h2 className="text-sm font-medium">Meses fechados</h2>
             {fechamentos.length ? (
@@ -196,4 +214,35 @@ export default async function PaginaDoCliente({
       </p>
     </div>
   );
+}
+
+/** Serviços do cliente com os códigos de tributação já preenchidos, quando houver. */
+async function carregarServicosParaTributar(empresaId: string): Promise<ServicoParaTributar[]> {
+  const supabase = await createClient();
+  const [{ data: servicos }, { data: codigos }] = await Promise.all([
+    supabase
+      .from("services")
+      .select("id, name")
+      .eq("organization_id", empresaId)
+      .eq("active", true)
+      .order("name"),
+    supabase
+      .from("service_tax_codes")
+      .select("service_id, lc116_code, city_service_code, cnae, description")
+      .eq("organization_id", empresaId),
+  ]);
+
+  const porServico = new Map((codigos ?? []).map((item) => [item.service_id, item]));
+
+  return (servicos ?? []).map((servico) => {
+    const codigo = porServico.get(servico.id);
+    return {
+      id: servico.id,
+      nome: servico.name,
+      lc116: codigo?.lc116_code ?? null,
+      codigoMunicipal: codigo?.city_service_code ?? null,
+      cnae: codigo?.cnae ?? null,
+      descricao: codigo?.description ?? null,
+    };
+  });
 }

@@ -225,6 +225,7 @@ export type LancamentoDaLista = {
   contaId: string | null;
   comprovante: string | null;
   doAtendimento: boolean;
+  notaFiscalEmitida: boolean;
 };
 
 export async function carregarLancamentos(params: {
@@ -243,6 +244,7 @@ export async function carregarLancamentos(params: {
     .select(
       `id, kind, status, description, amount_cents, competence_date, due_date, paid_at,
        payment_method, attachment_path, appointment_id, category_id, account_id,
+       nota_fiscal_emitida,
        categories ( name ), accounts ( name )`,
     )
     .eq("organization_id", params.empresaId)
@@ -273,6 +275,7 @@ export async function carregarLancamentos(params: {
     contaId: item.account_id,
     comprovante: item.attachment_path,
     doAtendimento: Boolean(item.appointment_id),
+    notaFiscalEmitida: item.nota_fiscal_emitida,
   }));
 }
 

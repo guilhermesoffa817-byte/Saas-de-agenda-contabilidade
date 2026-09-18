@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { AgendaNoCelular, type AgendaDeProfissional } from "./agenda-no-celular";
 import { Equipe, type ConvitePendente, type MembroDaEquipe } from "./equipe";
 import { FormularioNegocio } from "./formulario-negocio";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { empresaAtual, exigirUsuario } from "@/lib/supabase/sessao";
+import { enderecoDoSite } from "@/lib/url";
 
 export const metadata: Metadata = { title: "Configurações — Alicerce" };
 
@@ -34,7 +36,7 @@ export default async function PaginaConfiguracoes() {
   const empresa = vinculo.empresa;
   const supabase = await createClient();
 
-  const [{ data: membros }, { data: convites }] = await Promise.all([
+  const [{ data: membros }, { data: convites }, { data: profissionais }, site] = await Promise.all([
     supabase
       .from("organization_members")
       .select("user_id, role, display_name, created_at")
@@ -46,7 +48,20 @@ export default async function PaginaConfiguracoes() {
       .eq("organization_id", empresa.id)
       .is("accepted_at", null)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("professionals")
+      .select("id, name, ical_token")
+      .eq("organization_id", empresa.id)
+      .eq("active", true)
+      .order("name"),
+    enderecoDoSite(),
   ]);
+
+  const agendas: AgendaDeProfissional[] = (profissionais ?? []).map((item) => ({
+    id: item.id,
+    nome: item.name,
+    token: item.ical_token,
+  }));
 
   const identidades = await dadosDosMembros((membros ?? []).map((membro) => membro.user_id));
 
@@ -81,6 +96,7 @@ export default async function PaginaConfiguracoes() {
         <TabsList>
           <TabsTrigger value="negocio">Negócio</TabsTrigger>
           <TabsTrigger value="equipe">Equipe e contador</TabsTrigger>
+          <TabsTrigger value="celular">Agenda no celular</TabsTrigger>
         </TabsList>
 
         <TabsContent value="negocio" className="pt-6">
@@ -109,6 +125,10 @@ export default async function PaginaConfiguracoes() {
             convites={pendentes}
             souEuId={usuario.id}
           />
+        </TabsContent>
+
+        <TabsContent value="celular" className="pt-6">
+          <AgendaNoCelular empresaId={empresa.id} site={site} profissionais={agendas} />
         </TabsContent>
       </Tabs>
     </div>

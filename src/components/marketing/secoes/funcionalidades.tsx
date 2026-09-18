@@ -48,7 +48,7 @@ const GRUPOS: { nome: string; itens: Item[] }[] = [
       {
         icone: CalendarClock,
         titulo: "Lembrete no WhatsApp",
-        texto: "A mensagem sai escrita, com data, hora e serviço. Um toque e ela vai pelo seu WhatsApp.",
+        texto: "Sai sozinho um dia antes, pela API oficial da Meta. O cliente confirma no botão e a agenda já mostra confirmado.",
       },
     ],
   },

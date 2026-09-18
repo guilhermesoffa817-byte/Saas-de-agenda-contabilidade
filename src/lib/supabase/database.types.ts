@@ -208,6 +208,7 @@ export type Database = {
           name: string;
           color: string;
           active: boolean;
+          ical_token: string;
           created_at: string;
         };
         Insert: {
@@ -217,6 +218,7 @@ export type Database = {
           name: string;
           color?: string;
           active?: boolean;
+          ical_token?: string;
           created_at?: string;
         };
         Update: {
@@ -226,6 +228,7 @@ export type Database = {
           name?: string;
           color?: string;
           active?: boolean;
+          ical_token?: string;
           created_at?: string;
         };
         Relationships: [
@@ -838,6 +841,123 @@ export type Database = {
           },
         ];
       };
+      message_logs: {
+        Row: {
+          id: number;
+          organization_id: string;
+          appointment_id: string | null;
+          channel: string;
+          template: string;
+          provider_message_id: string | null;
+          status: string;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          organization_id: string;
+          appointment_id?: string | null;
+          channel?: string;
+          template: string;
+          provider_message_id?: string | null;
+          status?: string;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          organization_id?: string;
+          appointment_id?: string | null;
+          channel?: string;
+          template?: string;
+          provider_message_id?: string | null;
+          status?: string;
+          error?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      service_tax_codes: {
+        Row: {
+          service_id: string;
+          organization_id: string;
+          lc116_code: string | null;
+          city_service_code: string | null;
+          cnae: string | null;
+          description: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          service_id: string;
+          organization_id: string;
+          lc116_code?: string | null;
+          city_service_code?: string | null;
+          cnae?: string | null;
+          description?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          service_id?: string;
+          organization_id?: string;
+          lc116_code?: string | null;
+          city_service_code?: string | null;
+          cnae?: string | null;
+          description?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      invoices: {
+        Row: {
+          id: string;
+          organization_id: string;
+          transaction_id: string;
+          provider: string;
+          provider_invoice_id: string | null;
+          status: string;
+          numero: string | null;
+          codigo_verificacao: string | null;
+          xml_path: string | null;
+          pdf_path: string | null;
+          error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          transaction_id: string;
+          provider: string;
+          provider_invoice_id?: string | null;
+          status?: string;
+          numero?: string | null;
+          codigo_verificacao?: string | null;
+          xml_path?: string | null;
+          pdf_path?: string | null;
+          error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          transaction_id?: string;
+          provider?: string;
+          provider_invoice_id?: string | null;
+          status?: string;
+          numero?: string | null;
+          codigo_verificacao?: string | null;
+          xml_path?: string | null;
+          pdf_path?: string | null;
+          error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       clientes_para_contabilidade: {
@@ -863,6 +983,23 @@ export type Database = {
       accept_invite: {
         Args: { p_token: string };
         Returns: string;
+      };
+      gerar_token_ical: {
+        Args: { p_profissional: string };
+        Returns: string;
+      };
+      aplicar_resultado_da_nota: {
+        Args: {
+          p_provedor: string;
+          p_id_no_provedor: string;
+          p_status: string;
+          p_numero?: string | null;
+          p_codigo?: string | null;
+          p_xml?: string | null;
+          p_pdf?: string | null;
+          p_erro?: string | null;
+        };
+        Returns: string | null;
       };
       concluir_atendimento: {
         Args: {

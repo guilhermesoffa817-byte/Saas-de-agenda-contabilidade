@@ -46,9 +46,74 @@ não lê nem altera dados de outra.
 
 ## Variáveis de ambiente
 
-O arquivo `.env.example` lista todas as chaves. Nesta fase nenhuma delas é obrigatória para rodar a
-aplicação; elas entram a partir da FASE 1 (Supabase), FASE 5 (Asaas, Resend, Turnstile) e FASE 7
-(WhatsApp). `SUPABASE_SECRET_KEY` nunca pode receber o prefixo `NEXT_PUBLIC`.
+O arquivo `.env.example` lista todas as chaves. Nenhuma é obrigatória para a aplicação subir: sem
+elas, cada parte mostra o aviso do que falta em vez de quebrar. `SUPABASE_SECRET_KEY` nunca pode
+receber o prefixo `NEXT_PUBLIC`.
+
+## Integrações (o que configurar antes de ligar)
+
+### Lembrete automático no WhatsApp
+
+Use a **WhatsApp Business Platform (Cloud API)**, direto com a Meta ou por parceiro oficial. API não
+oficial viola os termos e derruba o número do cliente.
+
+1. No painel da Meta, crie o app, ligue o número e pegue `WHATSAPP_TOKEN` e
+   `WHATSAPP_PHONE_NUMBER_ID`.
+2. Cadastre o modelo de **utilidade** `lembrete_agendamento` em `pt_BR`, com quatro variáveis na
+   ordem — nome do cliente, serviço, data, hora — e dois botões de resposta rápida: "Confirmar" e
+   "Remarcar". Dentro da janela de 24h o modelo de utilidade é gratuito; fora dela a Meta cobra por
+   mensagem, e a tabela só muda no primeiro dia de cada trimestre.
+3. Aponte o webhook para `https://seu-dominio.com.br/api/webhooks/whatsapp`, com
+   `WHATSAPP_VERIFY_TOKEN` (um segredo que você inventa) e `WHATSAPP_APP_SECRET` (o app secret da
+   Meta, que assina cada evento).
+
+Depois, no SQL Editor do Supabase, ligue as extensões `pg_cron` e `pg_net` (Database → Extensions) e
+rode — **com os valores reais, nunca em arquivo de migração**:
+
+```sql
+select vault.create_secret('https://seu-dominio.com.br', 'app_url');
+select vault.create_secret('um-segredo-longo-igual-ao-CRON_SECRET', 'cron_secret');
+
+select cron.schedule(
+  'lembretes-whatsapp',
+  '*/5 * * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'app_url') || '/api/cron/lembretes',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+```
+
+A rota reserva os lembretes com um `update ... returning` antes de enviar, então duas execuções ao
+mesmo tempo nunca mandam o mesmo lembrete. Se o envio falhar, a reserva volta e a execução seguinte
+tenta de novo.
+
+### NFS-e (plano Negócio)
+
+A emissão vai por provedor especializado (Focus NFe, PlugNotas/Tecnospeed, Nuvem Fiscal, Notaas —
+compare preço, cobertura de municípios, webhooks e suporte ao padrão nacional). Configure
+`NFSE_PROVIDER`, `NFSE_ENV` (comece em `homologacao`), `NFSE_API_KEY` e `NFSE_WEBHOOK_TOKEN`, e
+aponte o webhook do provedor para `https://seu-dominio.com.br/api/webhooks/nfse`, com o token no
+cabeçalho `x-nfse-token`. Quase sempre é preciso o certificado digital da empresa — confirme com o
+provedor escolhido.
+
+Os códigos de tributação de cada serviço são preenchidos **pelo contador**, no portal dele. O
+Alicerce não calcula imposto: repassa ao provedor exatamente o que estiver configurado.
+
+Cronograma a comunicar ao cliente: o MEI já é obrigado ao padrão nacional, e ME/EPP do Simples a
+partir de 01/11/2026.
+
+### Agenda no celular
+
+Cada profissional tem um endereço `/api/ical/<token>` para assinar no Google Agenda ou no calendário
+do iPhone. O link é o segredo: quem tem o endereço lê a agenda. O dono troca o link em
+Configurações → Agenda no celular, e o anterior para de funcionar na hora.
 
 ## Stack
 

@@ -95,16 +95,16 @@ export function Precos({
                     {plano.lembretesAutomaticosMes === 0 ? (
                       "Lembrete pelo seu WhatsApp, sem custo"
                     ) : (
-                      <>
-                        {plano.lembretesAutomaticosMes} lembretes automáticos por mês{" "}
-                        <span className="whitespace-nowrap text-muted-foreground">(em breve)</span>
-                      </>
+                      <>{plano.lembretesAutomaticosMes} lembretes automáticos por mês</>
                     )}
                   </li>
                   {plano.nfse ? (
                     <li className="flex items-start gap-2">
                       <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                      Emissão de NFS-e <span className="whitespace-nowrap text-muted-foreground">(em breve)</span>
+                      Emissão de NFS-e{" "}
+                      <span className="whitespace-nowrap text-muted-foreground">
+                        (requer provedor)
+                      </span>
                     </li>
                   ) : null}
                 </ul>

@@ -33,7 +33,7 @@ const PERGUNTAS = [
   {
     pergunta: "O Alicerce emite nota fiscal?",
     resposta:
-      "Ainda não. A emissão de NFS-e é do plano Negócio, feita por provedor especializado, e depende de contratação junto à sua prefeitura. Enquanto não estiver no ar, o sistema não promete emissão: ele marca quais atendimentos precisam de nota para você não perder o controle.",
+      "Emite, no plano Negócio, por meio de provedor especializado. Depende de contratar o provedor e, na maioria das prefeituras, de certificado digital da empresa — a gente explica o passo a passo na hora de ligar. Os códigos de tributação de cada serviço quem preenche é o seu contador, pelo portal dele: o Alicerce não calcula imposto, só repassa o que foi configurado.",
   },
   {
     pergunta: "Emite o recibo do Receita Saúde?",

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck, Lock, Paperclip, Pencil, Plus, Trash2 } from "lucide-react";
+import { CalendarCheck, FileText, Lock, Paperclip, Pencil, Plus, Trash2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import {
   type LancamentoParaEditar,
 } from "./dialogo-lancamento";
 import { darBaixa, excluirLancamento, linkDoComprovante } from "@/app/(app)/app/financeiro/acoes";
+import { emitirNotaFiscal } from "@/app/(app)/app/financeiro/acoes-nota";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,7 @@ export type LinhaDeLancamento = {
   contaId: string | null;
   comprovante: string | null;
   doAtendimento: boolean;
+  notaFiscalEmitida: boolean;
 };
 
 const TODOS = "todos";
@@ -62,6 +64,7 @@ export function ListaDeLancamentos({
   contas,
   filtros,
   mesFechado,
+  podeEmitirNota = false,
 }: {
   empresaId: string;
   fuso: string;
@@ -70,6 +73,8 @@ export function ListaDeLancamentos({
   contas: ContaSimples[];
   filtros: { tipo?: string; categoria?: string; situacao?: string };
   mesFechado: boolean;
+  /** Só o plano Negócio, com o provedor contratado, mostra o botão de nota. */
+  podeEmitirNota?: boolean;
 }) {
   const router = useRouter();
   const caminho = usePathname();
@@ -241,6 +246,34 @@ export function ListaDeLancamentos({
                           >
                             <Paperclip aria-hidden />
                           </Button>
+                        ) : null}
+
+                        {podeEmitirNota &&
+                        lancamento.tipo === "receita" &&
+                        lancamento.situacao === "pago" ? (
+                          lancamento.notaFiscalEmitida ? (
+                            <Badge variant="outline" className="border-gold text-gold-ink">
+                              <FileText className="size-3" aria-hidden />
+                              Nota emitida
+                            </Badge>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="xs"
+                              disabled={processando}
+                              onClick={() =>
+                                iniciar(async () => {
+                                  const resposta = await emitirNotaFiscal(lancamento.id);
+                                  if (resposta.erro) toast.error(resposta.erro);
+                                  else toast.success(resposta.aviso ?? "Nota enviada.");
+                                  router.refresh();
+                                })
+                              }
+                            >
+                              <FileText aria-hidden />
+                              Emitir NFS-e
+                            </Button>
+                          )
                         ) : null}
 
                         {!mesFechado && lancamento.situacao === "pendente" ? (

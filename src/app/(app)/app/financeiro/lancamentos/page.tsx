@@ -10,6 +10,8 @@ import { ListaDeLancamentos } from "@/components/app/financeiro/lista-lancamento
 import { SeletorDeMes } from "@/components/app/financeiro/seletor-mes";
 import { Button } from "@/components/ui/button";
 import { empresaAtual } from "@/lib/supabase/sessao";
+import { permiteNotaFiscal } from "@/lib/planos";
+import { nfseConfigurada } from "@/lib/nfse";
 
 export const metadata: Metadata = { title: "Lançamentos — Alicerce" };
 
@@ -85,6 +87,9 @@ export default async function PaginaLancamentos({
           situacao: parametros.situacao,
         }}
         mesFechado={fechados.includes(mes)}
+        podeEmitirNota={
+          vinculo.papel === "dono" && permiteNotaFiscal(empresa.plan) && nfseConfigurada()
+        }
       />
     </div>
   );
