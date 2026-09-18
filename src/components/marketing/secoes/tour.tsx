@@ -1,6 +1,15 @@
 "use client";
 
-import { TourProduto } from "@/components/marketing/tour-produto";
+import dynamic from "next/dynamic";
+
+import { SoQuandoAparecer } from "@/components/marketing/so-quando-aparecer";
+
+// O tour vive no meio da página e traz o GSAP junto. Carregar depois tira um
+// naco do pacote inicial sem mudar nada do que a pessoa vê quando chega lá.
+const TourProduto = dynamic(
+  () => import("@/components/marketing/tour-produto").then((m) => m.TourProduto),
+  { ssr: false, loading: () => <div className="min-h-[60vh]" aria-hidden /> },
+);
 import { TelaAgenda } from "@/components/marketing/telas/tela-agenda";
 import { TelaAgendamento } from "@/components/marketing/telas/tela-agendamento";
 import { TelaFechamento } from "@/components/marketing/telas/tela-fechamento";
@@ -46,7 +55,9 @@ export function Tour() {
           </p>
         </div>
 
-        <TourProduto passos={PASSOS} />
+        <SoQuandoAparecer alturaMinima="60vh">
+          <TourProduto passos={PASSOS} />
+        </SoQuandoAparecer>
       </div>
     </div>
   );

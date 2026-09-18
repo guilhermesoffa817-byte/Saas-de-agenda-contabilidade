@@ -129,6 +129,11 @@ Os componentes de `src/components/ui/` são cópias do registro oficial do shadc
 em ambientes sem acesso a `ui.shadcn.com` dá para copiar o arquivo do registro público e trocar os
 imports do mesmo jeito.
 
+## Lançamento
+
+O checklist do que configurar antes de abrir, e o que já está conferido no
+código, está em [`docs/lancamento.md`](docs/lancamento.md).
+
 ## Avisos do produto
 
 O Alicerce não substitui o contador, não calcula impostos por conta própria e não é prontuário

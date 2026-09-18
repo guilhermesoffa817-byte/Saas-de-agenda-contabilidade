@@ -83,3 +83,36 @@ export async function arquivarCliente(clienteId: string): Promise<Resposta> {
   revalidatePath("/app/clientes");
   return { aviso: "Cliente arquivado." };
 }
+
+/**
+ * Apaga os dados pessoais do cliente a pedido dele (LGPD), mantendo o histórico
+ * financeiro que o negócio é obrigado a guardar. Não dá para desfazer.
+ */
+export async function apagarDadosDoCliente(clienteId: string): Promise<Resposta> {
+  const { vinculo } = await empresaAtual();
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
+  if (vinculo.papel !== "dono") return { erro: "Só o dono apaga os dados de um cliente." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("anonimizar_cliente", { p_cliente: clienteId });
+  if (error) return { erro: error.message };
+
+  revalidatePath("/app/clientes");
+  revalidatePath("/app/agenda");
+  return {
+    aviso:
+      "Dados pessoais apagados. Os atendimentos e os lançamentos continuam, sem identificar a pessoa.",
+  };
+}
+
+/**
+ * Registra quem abriu as anotações de um cliente. Anotação é o campo mais
+ * sensível do sistema, e quem olhou fica no log.
+ */
+export async function registrarLeituraDeAnotacao(clienteId: string): Promise<Resposta> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("registrar_leitura_de_anotacao", { p_cliente: clienteId });
+  if (error) return { erro: error.message };
+  return {};
+}

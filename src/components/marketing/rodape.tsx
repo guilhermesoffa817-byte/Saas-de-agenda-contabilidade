@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ENCARREGADO_DE_DADOS } from "@/lib/contato";
 
 const COLUNAS = [
   {
@@ -78,7 +79,7 @@ export function RodapeMarketing() {
             MT · contato@alicerce.com.br
           </p>
           <p>
-            Encarregado de dados (DPO): <strong>[EXEMPLO]</strong> privacidade@alicerce.com.br
+            Encarregado de dados (DPO): <strong>[EXEMPLO]</strong> {ENCARREGADO_DE_DADOS}
           </p>
         </div>
       </div>

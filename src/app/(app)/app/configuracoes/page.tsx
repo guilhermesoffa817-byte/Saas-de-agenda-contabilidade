@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { listarFatores } from "./acoes-2fa";
 import { AgendaNoCelular, type AgendaDeProfissional } from "./agenda-no-celular";
+import { DuasEtapas } from "./duas-etapas";
+import { SeusDados } from "./seus-dados";
 import { Equipe, type ConvitePendente, type MembroDaEquipe } from "./equipe";
 import { FormularioNegocio } from "./formulario-negocio";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { ENCARREGADO_DE_DADOS } from "@/lib/contato";
 import { empresaAtual, exigirUsuario } from "@/lib/supabase/sessao";
 import { enderecoDoSite } from "@/lib/url";
 
@@ -57,6 +61,8 @@ export default async function PaginaConfiguracoes() {
     enderecoDoSite(),
   ]);
 
+  const fatores = await listarFatores();
+
   const agendas: AgendaDeProfissional[] = (profissionais ?? []).map((item) => ({
     id: item.id,
     nome: item.name,
@@ -97,6 +103,8 @@ export default async function PaginaConfiguracoes() {
           <TabsTrigger value="negocio">Negócio</TabsTrigger>
           <TabsTrigger value="equipe">Equipe e contador</TabsTrigger>
           <TabsTrigger value="celular">Agenda no celular</TabsTrigger>
+          <TabsTrigger value="seguranca">Segurança</TabsTrigger>
+          <TabsTrigger value="dados">Seus dados</TabsTrigger>
         </TabsList>
 
         <TabsContent value="negocio" className="pt-6">
@@ -129,6 +137,14 @@ export default async function PaginaConfiguracoes() {
 
         <TabsContent value="celular" className="pt-6">
           <AgendaNoCelular empresaId={empresa.id} site={site} profissionais={agendas} />
+        </TabsContent>
+
+        <TabsContent value="seguranca" className="pt-6">
+          <DuasEtapas fuso={empresa.timezone} fatores={fatores.dados ?? []} />
+        </TabsContent>
+
+        <TabsContent value="dados" className="pt-6">
+          <SeusDados encarregado={ENCARREGADO_DE_DADOS} />
         </TabsContent>
       </Tabs>
     </div>

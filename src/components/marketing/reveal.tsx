@@ -1,21 +1,57 @@
-// src/components/marketing/reveal.tsx
 "use client";
-import { Children, type ReactNode } from "react";
-import { motion, type Variants } from "motion/react";
 
-const container: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
-const item: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-};
+import { Children, useEffect, useRef, type ReactNode } from "react";
 
+/**
+ * Entrada em cascata quando a seção aparece na tela.
+ *
+ * Feito com IntersectionObserver e transição de CSS, e não com biblioteca de
+ * animação: a página de vendas é a primeira coisa que a pessoa carrega, muitas
+ * vezes no 4G, e um motor de animação inteiro sai caro no celular.
+ *
+ * A classe entra direto no elemento, sem passar por estado do React: não há
+ * nada para re-renderizar, só uma transição do navegador. Quem pede menos
+ * movimento não recebe nenhum — `globals.css` zera as transições e o conteúdo
+ * aparece imediatamente.
+ */
 export function Reveal({ children, className }: { children: ReactNode; className?: string }) {
+  const referencia = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const alvo = referencia.current;
+    if (!alvo) return;
+
+    const filhos = Array.from(alvo.children) as HTMLElement[];
+    const mostrar = () => filhos.forEach((filho) => filho.classList.add("revelado"));
+
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      mostrar();
+      return;
+    }
+
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        if (!entradas.some((entrada) => entrada.isIntersecting)) return;
+        mostrar();
+        observador.disconnect();
+      },
+      { rootMargin: "-80px" },
+    );
+
+    observador.observe(alvo);
+    return () => observador.disconnect();
+  }, []);
+
   return (
-    <motion.div className={className} variants={container} initial="hidden" whileInView="show"
-      viewport={{ once: true, margin: "-80px" }}>
-      {Children.toArray(children).map((child, i) => (
-        <motion.div key={i} variants={item}>{child}</motion.div>
+    <div ref={referencia} className={className}>
+      {Children.toArray(children).map((filho, indice) => (
+        <div key={indice} className="a-revelar" style={{ "--atraso": `${indice * 120}ms` } as React.CSSProperties}>
+          {filho}
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 }

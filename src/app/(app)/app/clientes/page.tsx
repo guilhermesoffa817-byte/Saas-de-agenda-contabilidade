@@ -61,7 +61,8 @@ export default async function PaginaClientes({
         </p>
       </div>
 
-      <TabelaDeClientes clientes={clientes} fuso={vinculo.empresa.timezone} busca={busca} />
+      <TabelaDeClientes
+        souDono={vinculo.papel === "dono"} clientes={clientes} fuso={vinculo.empresa.timezone} busca={busca} />
     </div>
   );
 }

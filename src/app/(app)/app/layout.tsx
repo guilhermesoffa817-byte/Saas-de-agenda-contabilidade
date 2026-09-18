@@ -7,6 +7,7 @@ import { MenuUsuario } from "@/components/app/menu-usuario";
 import { NavegacaoCelular, NavegacaoLateral, itensPorPapel } from "@/components/app/navegacao";
 import { SeletorEmpresa } from "@/components/app/seletor-empresa";
 import { Badge } from "@/components/ui/badge";
+import { Tema } from "@/components/tema";
 import { Toaster } from "@/components/ui/sonner";
 import { supabaseConfigurado } from "@/lib/supabase/config";
 import {
@@ -44,69 +45,71 @@ export default async function LayoutSistema({ children }: { children: ReactNode 
   const nome = (usuario.user_metadata?.nome as string | undefined) ?? usuario.email ?? "Você";
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <NavegacaoCelular itens={itens} />
-        <Link href="/app" className="font-display text-lg font-semibold tracking-tight">
-          Alicerce
-        </Link>
+    <Tema>
+      <div className="flex min-h-dvh flex-col">
+        <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
+          <NavegacaoCelular itens={itens} />
+          <Link href="/app" className="font-display text-lg font-semibold tracking-tight">
+            Alicerce
+          </Link>
 
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          {vinculos.length > 1 ? (
-            <SeletorEmpresa
-              atual={vinculo.empresa.id}
-              empresas={vinculos.map((item) => ({ id: item.empresa.id, nome: item.empresa.name }))}
-            />
-          ) : (
-            <span className="truncate text-sm text-muted-foreground">{vinculo.empresa.name}</span>
-          )}
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            {vinculos.length > 1 ? (
+              <SeletorEmpresa
+                atual={vinculo.empresa.id}
+                empresas={vinculos.map((item) => ({ id: item.empresa.id, nome: item.empresa.name }))}
+              />
+            ) : (
+              <span className="truncate text-sm text-muted-foreground">{vinculo.empresa.name}</span>
+            )}
+          </div>
+
+          {dias !== null ? (
+            dias > 0 ? (
+              <Badge variant="outline" className="border-gold text-gold-ink">
+                Teste grátis: {dias} {dias === 1 ? "dia" : "dias"}
+              </Badge>
+            ) : (
+              <Badge variant="destructive">Teste encerrado</Badge>
+            )
+          ) : null}
+
+          <MenuUsuario
+            nome={nome}
+            email={usuario.email ?? ""}
+            papel={NOME_DO_PAPEL[vinculo.papel] ?? vinculo.papel}
+          />
+        </header>
+
+        <div className="flex flex-1">
+          <NavegacaoLateral itens={itens} />
+          <main className="min-w-0 flex-1 px-4 py-6 md:px-8">
+            {situacao.modo === "somente_leitura" || situacao.modo === "aviso" ? (
+              <Alert
+                variant={situacao.modo === "somente_leitura" ? "destructive" : "default"}
+                className="mb-6"
+              >
+                <AlertTriangle aria-hidden />
+                <AlertTitle>{situacao.titulo}</AlertTitle>
+                <AlertDescription className="flex flex-col items-start gap-2">
+                  {situacao.mensagem}
+                  {vinculo.papel === "dono" ? (
+                    <Link
+                      href="/app/assinatura"
+                      className="font-medium underline underline-offset-4"
+                    >
+                      Ver planos e regularizar
+                    </Link>
+                  ) : null}
+                </AlertDescription>
+              </Alert>
+            ) : null}
+            {children}
+          </main>
         </div>
 
-        {dias !== null ? (
-          dias > 0 ? (
-            <Badge variant="outline" className="border-gold text-gold-ink">
-              Teste grátis: {dias} {dias === 1 ? "dia" : "dias"}
-            </Badge>
-          ) : (
-            <Badge variant="destructive">Teste encerrado</Badge>
-          )
-        ) : null}
-
-        <MenuUsuario
-          nome={nome}
-          email={usuario.email ?? ""}
-          papel={NOME_DO_PAPEL[vinculo.papel] ?? vinculo.papel}
-        />
-      </header>
-
-      <div className="flex flex-1">
-        <NavegacaoLateral itens={itens} />
-        <main className="min-w-0 flex-1 px-4 py-6 md:px-8">
-          {situacao.modo === "somente_leitura" || situacao.modo === "aviso" ? (
-            <Alert
-              variant={situacao.modo === "somente_leitura" ? "destructive" : "default"}
-              className="mb-6"
-            >
-              <AlertTriangle aria-hidden />
-              <AlertTitle>{situacao.titulo}</AlertTitle>
-              <AlertDescription className="flex flex-col items-start gap-2">
-                {situacao.mensagem}
-                {vinculo.papel === "dono" ? (
-                  <Link
-                    href="/app/assinatura"
-                    className="font-medium underline underline-offset-4"
-                  >
-                    Ver planos e regularizar
-                  </Link>
-                ) : null}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          {children}
-        </main>
+        <Toaster position="top-center" />
       </div>
-
-      <Toaster position="top-center" />
-    </div>
+    </Tema>
   );
 }

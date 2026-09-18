@@ -13,6 +13,8 @@ import { nomeDoSegmento } from "@/lib/segmentos";
 import { createClient } from "@/lib/supabase/server";
 import { exigirUsuario, vinculosDoUsuario } from "@/lib/supabase/sessao";
 import { enderecoDoSite } from "@/lib/url";
+import { listarFatores } from "@/app/(app)/app/configuracoes/acoes-2fa";
+import { DuasEtapas } from "@/app/(app)/app/configuracoes/duas-etapas";
 
 export const metadata: Metadata = { title: "Portal do contador — Alicerce" };
 
@@ -149,6 +151,13 @@ export default async function PaginaContador() {
       </div>
 
       <LinkDeIndicacao link={`${await enderecoDoSite()}/cadastro?indicacao=${usuario.id}`} />
+
+      <div className="rounded-xl border border-border p-6">
+        <DuasEtapas
+          fuso="America/Sao_Paulo"
+          fatores={(await listarFatores()).dados ?? []}
+        />
+      </div>
     </div>
   );
 }

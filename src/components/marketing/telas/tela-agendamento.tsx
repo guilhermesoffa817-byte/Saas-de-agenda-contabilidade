@@ -1,5 +1,3 @@
-"use client";
-
 import { Clock, MapPin } from "lucide-react";
 
 import { Progress } from "@/components/ui/progress";

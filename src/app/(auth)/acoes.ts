@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { MUITAS_TENTATIVAS, podeTentar } from "@/lib/limite-de-tentativas";
 import { mensagemDeErro } from "@/lib/supabase/erros";
 import { COOKIE_EMPRESA } from "@/lib/supabase/sessao";
 import { createClient } from "@/lib/supabase/server";
@@ -32,6 +33,8 @@ export async function entrarComSenha(dados: EntrarInput, voltar?: string): Promi
   const validado = esquemaEntrar.safeParse(dados);
   if (!validado.success) return DADOS_INVALIDOS;
 
+  if (!(await podeTentar("entrar", validado.data.email))) return { erro: MUITAS_TENTATIVAS };
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: validado.data.email,
@@ -45,6 +48,8 @@ export async function entrarComSenha(dados: EntrarInput, voltar?: string): Promi
 export async function entrarComLink(dados: SoEmailInput, voltar?: string): Promise<Resposta> {
   const validado = esquemaSoEmail.safeParse(dados);
   if (!validado.success) return DADOS_INVALIDOS;
+
+  if (!(await podeTentar("entrar", validado.data.email))) return { erro: MUITAS_TENTATIVAS };
 
   const supabase = await createClient();
   const destino = new URL("/auth/confirmar", await enderecoDoSite());
@@ -62,6 +67,8 @@ export async function entrarComLink(dados: SoEmailInput, voltar?: string): Promi
 export async function cadastrar(dados: CadastroInput): Promise<Resposta> {
   const validado = esquemaCadastro.safeParse(dados);
   if (!validado.success) return DADOS_INVALIDOS;
+
+  if (!(await podeTentar("cadastro", validado.data.email))) return { erro: MUITAS_TENTATIVAS };
 
   const supabase = await createClient();
   const destino = new URL("/auth/confirmar", await enderecoDoSite());
@@ -90,6 +97,15 @@ export async function cadastrar(dados: CadastroInput): Promise<Resposta> {
 export async function pedirRecuperacaoDeSenha(dados: SoEmailInput): Promise<Resposta> {
   const validado = esquemaSoEmail.safeParse(dados);
   if (!validado.success) return DADOS_INVALIDOS;
+
+  // Passou do limite? A resposta é a mesma de sempre: quem está tentando
+  // descobrir quais e-mails têm conta não aprende nada aqui.
+  if (!(await podeTentar("recuperar", validado.data.email))) {
+    return {
+      aviso:
+        "Se existir uma conta com esse e-mail, o link para criar uma nova senha chega em instantes.",
+    };
+  }
 
   const supabase = await createClient();
   const destino = new URL("/auth/confirmar", await enderecoDoSite());

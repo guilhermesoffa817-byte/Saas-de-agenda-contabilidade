@@ -1,7 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { CartoesDeResumo } from "@/components/app/financeiro/cartoes-resumo";
-import { GraficoSeisMeses } from "@/components/app/financeiro/grafico-seis-meses";
+import { SoQuandoAparecer } from "@/components/marketing/so-quando-aparecer";
+
+/**
+ * O gráfico traz o Recharts junto, que é a maior biblioteca desta página. Ele
+ * fica abaixo da dobra, então entra depois: a promessa do topo pinta primeiro.
+ */
+const GraficoSeisMeses = dynamic(
+  () => import("@/components/app/financeiro/grafico-seis-meses").then((m) => m.GraficoSeisMeses),
+  { ssr: false, loading: () => <div className="h-60 w-full" aria-hidden /> },
+);
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FINANCEIRO_DEMO } from "@/lib/demo-data";
 import { formatarBRL } from "@/lib/money";
@@ -26,7 +37,9 @@ export function TelaFinanceiro() {
             <CardDescription>O que entrou contra o que saiu.</CardDescription>
           </CardHeader>
           <CardContent>
-            <GraficoSeisMeses meses={FINANCEIRO_DEMO.seisMeses} />
+            <SoQuandoAparecer alturaMinima="15rem">
+              <GraficoSeisMeses meses={FINANCEIRO_DEMO.seisMeses} />
+            </SoQuandoAparecer>
           </CardContent>
         </Card>
 

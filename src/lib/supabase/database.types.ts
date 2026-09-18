@@ -841,6 +841,30 @@ export type Database = {
           },
         ];
       };
+      auth_attempts: {
+        Row: {
+          id: number;
+          kind: string;
+          email_hash: string | null;
+          ip_hash: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          kind: string;
+          email_hash?: string | null;
+          ip_hash?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          kind?: string;
+          email_hash?: string | null;
+          ip_hash?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       message_logs: {
         Row: {
           id: number;
@@ -987,6 +1011,22 @@ export type Database = {
       gerar_token_ical: {
         Args: { p_profissional: string };
         Returns: string;
+      };
+      registrar_tentativa: {
+        Args: { p_kind: string; p_email_hash: string; p_ip_hash: string };
+        Returns: boolean;
+      };
+      limpar_tentativas_de_conta: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      anonimizar_cliente: {
+        Args: { p_cliente: string };
+        Returns: string;
+      };
+      registrar_leitura_de_anotacao: {
+        Args: { p_cliente: string };
+        Returns: undefined;
       };
       aplicar_resultado_da_nota: {
         Args: {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ENCARREGADO_DE_DADOS } from "@/lib/contato";
 
 export const metadata: Metadata = {
   title: "Política de privacidade — Alicerce",
@@ -102,6 +103,37 @@ export default function PaginaPrivacidade() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold tracking-tight">Seus direitos e como exercer</h2>
+        <p className="text-sm leading-relaxed">
+          O titular pode pedir confirmação do tratamento, acesso, correção, portabilidade,
+          eliminação e informação sobre com quem os dados foram compartilhados. O pedido vai ao
+          negócio que atende essa pessoa, que é o controlador; o Alicerce dá as ferramentas para ele
+          responder:
+        </p>
+        <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed">
+          <li>
+            <strong>Levar tudo embora:</strong> em Configurações → Seus dados, o dono baixa a empresa
+            inteira num arquivo JSON — agenda, clientes, serviços, lançamentos, fechamentos, notas e
+            registros de envio.
+          </li>
+          <li>
+            <strong>Apagar os dados de um cliente:</strong> na tela de Clientes, o dono apaga nome,
+            telefone, e-mail, CPF e anotações, e retira a autorização de lembrete. Os atendimentos e
+            os lançamentos continuam sem identificar a pessoa, porque o registro financeiro precisa
+            ser guardado pelo prazo que a lei e o contador indicarem.
+          </li>
+          <li>
+            <strong>Retirar a autorização do WhatsApp:</strong> a qualquer momento, pedindo ao
+            negócio ou respondendo à mensagem.
+          </li>
+        </ul>
+        <p className="text-sm leading-relaxed">
+          Cada abertura de anotação de cliente fica registrada com quem abriu e quando, junto das
+          exportações e das reaberturas de mês.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">Agenda no celular</h2>
         <p className="text-sm leading-relaxed">
           O profissional pode assinar a própria agenda no calendário do celular por um endereço
@@ -149,7 +181,7 @@ export default function PaginaPrivacidade() {
           negócio, que é o controlador. O Alicerce ajuda o negócio a responder.
         </p>
         <p className="text-sm leading-relaxed">
-          Encarregado de dados (DPO): <strong>[EXEMPLO: privacidade@alicerce.com.br]</strong>.
+          Encarregado de dados (DPO): <strong>[EXEMPLO]</strong> {ENCARREGADO_DE_DADOS}.
         </p>
       </section>
 

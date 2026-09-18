@@ -1,13 +1,28 @@
 "use client";
 
-import { AlertTriangle, Archive, Loader2, Pencil, Plus, Search } from "lucide-react";
+import { AlertTriangle, Archive, Loader2, Pencil, Plus, Search, ShieldX } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { arquivarCliente, salvarCliente } from "./acoes";
+import {
+  apagarDadosDoCliente,
+  arquivarCliente,
+  registrarLeituraDeAnotacao,
+  salvarCliente,
+} from "./acoes";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -204,11 +219,15 @@ export function TabelaDeClientes({
   clientes,
   fuso,
   busca,
+  souDono = false,
 }: {
   clientes: ClienteDaTabela[];
   fuso: string;
   busca: string;
+  /** Apagar dados pessoais é direito do titular, mas o botão é só do dono. */
+  souDono?: boolean;
 }) {
+  const [apagando, setApagando] = useState<ClienteDaTabela | null>(null);
   const router = useRouter();
   const caminho = usePathname();
   const parametros = useSearchParams();
@@ -304,7 +323,12 @@ export function TabelaDeClientes({
                         variant="ghost"
                         size="icon-sm"
                         aria-label={`Editar ${cliente.nome}`}
-                        onClick={() => setEmEdicao(cliente)}
+                        onClick={() => {
+                          setEmEdicao(cliente);
+                          // Quem abriu a anotação fica registrado: é o campo mais
+                          // sensível do sistema, mesmo não sendo prontuário.
+                          if (cliente.anotacoes) void registrarLeituraDeAnotacao(cliente.id);
+                        }}
                       >
                         <Pencil aria-hidden />
                       </Button>
@@ -323,6 +347,17 @@ export function TabelaDeClientes({
                       >
                         <Archive aria-hidden />
                       </Button>
+                      {souDono ? (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Apagar dados de ${cliente.nome}`}
+                          disabled={arquivando}
+                          onClick={() => setApagando(cliente)}
+                        >
+                          <ShieldX aria-hidden />
+                        </Button>
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -362,6 +397,36 @@ export function TabelaDeClientes({
             <FormularioCliente cliente={emEdicao} aoFechar={() => setEmEdicao(null)} />
           </DialogContent>
         </Dialog>
+      ) : null}
+
+      {apagando ? (
+        <AlertDialog open onOpenChange={(aberto) => !aberto && setApagando(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Apagar os dados de {apagando.nome}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Nome, telefone, e-mail, CPF e anotações somem para sempre, e a autorização de
+                lembrete é retirada. Os atendimentos e os lançamentos continuam, sem identificar a
+                pessoa — é o que o seu contador precisa guardar. Não dá para desfazer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() =>
+                  iniciar(async () => {
+                    const resposta = await apagarDadosDoCliente(apagando.id);
+                    setApagando(null);
+                    if (resposta.erro) toast.error(resposta.erro);
+                    else toast.success(resposta.aviso ?? "Dados apagados.");
+                  })
+                }
+              >
+                Apagar os dados
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       ) : null}
     </div>
   );

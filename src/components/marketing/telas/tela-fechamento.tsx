@@ -1,5 +1,3 @@
-"use client";
-
 import { CheckCircle2, FileSpreadsheet, FileText, Lock, Table2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";

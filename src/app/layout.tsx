@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
@@ -58,11 +57,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable}`}
     >
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          {children}
-        </ThemeProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

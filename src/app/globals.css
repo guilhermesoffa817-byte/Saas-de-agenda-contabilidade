@@ -150,3 +150,68 @@
   h1, h2, h3 { @apply font-display tracking-tight; }
   .tabular { font-variant-numeric: tabular-nums; }
 }
+
+/*
+ * Entrada em cascata das seções da página de vendas (veja `Reveal`).
+ * O elemento nasce deslocado e transparente; a classe `revelado` entra quando
+ * ele aparece na tela. Quem pede menos movimento já vê tudo no lugar.
+ */
+@layer components {
+  .a-revelar {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    transition:
+      opacity 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--atraso, 0ms),
+      transform 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--atraso, 0ms);
+  }
+
+  .a-revelar.revelado {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .a-revelar {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+}
+
+/*
+ * A tela do produto no topo: entra suave e acompanha a rolagem de leve
+ * (veja `HeroMockup`). Sem movimento quando a pessoa pede menos movimento.
+ */
+@layer components {
+  /*
+   * A entrada é animação de CSS, não transição disparada por JavaScript: este é
+   * o maior elemento do topo e não pode ficar invisível esperando a hidratação
+   * — seria o próprio site atrasando a própria métrica de carregamento.
+   * O JavaScript só escreve `--paralaxe` durante a rolagem.
+   */
+  .hero-mockup {
+    animation: entrada-do-mockup 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform: translateY(var(--paralaxe, 0px));
+    will-change: transform;
+  }
+
+  @keyframes entrada-do-mockup {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(var(--paralaxe, 0px));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-mockup {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
