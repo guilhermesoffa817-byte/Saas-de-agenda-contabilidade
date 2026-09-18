@@ -278,3 +278,33 @@ export async function linkDoComprovante(caminho: string): Promise<Resposta<{ url
   if (error || !data) return { erro: "Não conseguimos abrir o comprovante." };
   return { dados: { url: data.signedUrl } };
 }
+
+/**
+ * Marca (ou desmarca) o recibo do Receita Saúde de um recebimento.
+ *
+ * Quem emite o recibo é o profissional, no aplicativo da Receita Federal — o
+ * Alicerce só guarda o controle de quais já saíram, para nenhum ficar para trás
+ * na declaração. Funciona mesmo com o mês fechado: emitir recibo acontece
+ * depois, e não muda nenhum número do fechamento.
+ */
+export async function marcarReciboSaude(
+  lancamentoId: string,
+  emitido: boolean,
+): Promise<Resposta> {
+  const vinculo = await contexto();
+  const bloqueio = garantirEscrita(vinculo);
+  if (bloqueio || !vinculo) return { erro: bloqueio ?? "Empresa não encontrada." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("transactions")
+    .update({ receita_saude_emitido: emitido })
+    .eq("id", lancamentoId)
+    .eq("organization_id", vinculo.empresa.id);
+
+  if (error) return { erro: traduzirErro(error.message) };
+
+  limpar();
+  revalidatePath("/app/relatorios");
+  return { aviso: emitido ? "Recibo marcado como emitido." : "Marcação desfeita." };
+}

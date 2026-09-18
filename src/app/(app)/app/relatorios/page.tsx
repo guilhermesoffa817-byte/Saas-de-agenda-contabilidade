@@ -6,6 +6,10 @@ import { redirect } from "next/navigation";
 
 import { carregarLancamentosParaRelatorio } from "./dados";
 import { BarraDeRelatorios } from "@/components/app/relatorios/barra-relatorios";
+import {
+  RecibosDoReceitaSaude,
+  type ReciboDoMes,
+} from "@/components/app/relatorios/recibos-receita-saude";
 import { TabelaDeRelatorio } from "@/components/app/relatorios/tabela-relatorio";
 import { Button } from "@/components/ui/button";
 import { filtroDeData, montarRelatorio, relatoriosDoRegime, type TipoDeRelatorio } from "@/lib/reports";
@@ -68,6 +72,25 @@ export default async function PaginaRelatorios({
 
   const escolhido = disponiveis.find((item) => item.tipo === tipo);
 
+  // No relatório do Receita Saúde a lista vira controle: dá para marcar o que
+  // já foi emitido, sem sair da tela.
+  const recibos: ReciboDoMes[] =
+    tipo === "receita-saude"
+      ? lancamentos
+          .filter(
+            (item) =>
+              item.tipo === "receita" && item.situacao === "pago" && item.pagador !== "pj",
+          )
+          .map((item) => ({
+            id: item.id,
+            paciente: item.cliente ?? item.descricao,
+            documento: item.documentoDoCliente,
+            valorCents: item.valorCents,
+            pagoEm: item.pagoEm,
+            emitido: item.reciboSaudeEmitido,
+          }))
+      : [];
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -103,7 +126,11 @@ export default async function PaginaRelatorios({
 
       <BarraDeRelatorios de={de} ate={ate} tipo={tipo} />
 
-      <TabelaDeRelatorio tabela={tabela} />
+      {tipo === "receita-saude" ? (
+        <RecibosDoReceitaSaude fuso={empresa.timezone} recibos={recibos} />
+      ) : (
+        <TabelaDeRelatorio tabela={tabela} />
+      )}
     </div>
   );
 }

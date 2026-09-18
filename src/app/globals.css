@@ -146,6 +146,23 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
+
+  /*
+   * Foco visível em tudo que recebe teclado, e não só nos componentes que já
+   * trazem o anel. Sem isso, quem navega por Tab some da tela — foi o que
+   * acontecia nos cartões de "Para quem é" da página de vendas.
+   * Só `:focus-visible`: quem clica com o mouse não vê anel nenhum.
+   */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
   body { @apply bg-background text-foreground font-sans antialiased; }
   h1, h2, h3 { @apply font-display tracking-tight; }
   .tabular { font-variant-numeric: tabular-nums; }

@@ -299,3 +299,72 @@ describe.skipIf(!disponivel)("o que o contador pode e o que não pode", () => {
     expect(pelaContabilidade).toBe(0);
   });
 });
+
+describe.skipIf(!disponivel)("mês fechado — documento emitido depois", () => {
+  it("marcar nota e recibo emitidos passa no mês fechado; mexer no valor não", async () => {
+    const c = await cenario();
+
+    const lancamento = await comoUsuario(c.dono, async (cliente) => {
+      const { rows } = await cliente.query<{ id: string }>(
+        `insert into public.transactions
+           (organization_id, kind, description, amount_cents, competence_date, status, paid_at, payer_type)
+         values ($1, 'receita', 'Consulta — Marina Alves', 25000, '2026-05-10', 'pago', '2026-05-10', 'pf')
+         returning id`,
+        [c.empresaId],
+      );
+      return rows[0].id;
+    });
+
+    await comoAdmin(async (cliente) => {
+      await cliente.query(
+        `insert into public.monthly_closings (organization_id, month, closed_by, closed_at)
+         values ($1, '2026-05-01', $2, now())`,
+        [c.empresaId, c.dono],
+      );
+    });
+
+    // O que não é do fechamento passa.
+    const marcados = await comoUsuario(c.dono, async (cliente) => {
+      const recibo = await cliente.query(
+        "update public.transactions set receita_saude_emitido = true where id = $1",
+        [lancamento],
+      );
+      const nota = await cliente.query(
+        "update public.transactions set nota_fiscal_emitida = true where id = $1",
+        [lancamento],
+      );
+      return (recibo.rowCount ?? 0) + (nota.rowCount ?? 0);
+    });
+    expect(marcados).toBe(2);
+
+    // O dinheiro continua travado.
+    await expect(
+      comoUsuario(c.dono, async (cliente) => {
+        await cliente.query("update public.transactions set amount_cents = 1 where id = $1", [
+          lancamento,
+        ]);
+      }),
+    ).rejects.toThrow(/Mês fechado/);
+
+    // E marcar o recibo junto com uma mudança de valor não passa disfarçado.
+    await expect(
+      comoUsuario(c.dono, async (cliente) => {
+        await cliente.query(
+          "update public.transactions set receita_saude_emitido = false, amount_cents = 1 where id = $1",
+          [lancamento],
+        );
+      }),
+    ).rejects.toThrow(/Mês fechado/);
+
+    const final = await comoAdmin(async (cliente) => {
+      const { rows } = await cliente.query(
+        "select amount_cents, nota_fiscal_emitida, receita_saude_emitido from public.transactions where id = $1",
+        [lancamento],
+      );
+      return rows[0];
+    });
+    expect(final.amount_cents).toBe("25000");
+    expect(final.nota_fiscal_emitida).toBe(true);
+    expect(final.receita_saude_emitido).toBe(true);
+  });
+});

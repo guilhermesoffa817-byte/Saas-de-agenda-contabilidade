@@ -25,15 +25,18 @@ export default async function PaginaConvite({ params }: { params: Promise<{ toke
   const { token } = await params;
 
   if (!supabaseConfigurado) {
+    // Também é uma página inteira: precisa do próprio título.
     return (
-      <Alert>
-        <MailWarning aria-hidden />
-        <AlertTitle>Configuração pendente</AlertTitle>
-        <AlertDescription>
-          As chaves do Supabase ainda não estão no arquivo .env.local, então não é possível abrir
-          convites.
-        </AlertDescription>
-      </Alert>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-3xl font-semibold tracking-tight">Configuração pendente</h1>
+        <Alert>
+          <MailWarning aria-hidden />
+          <AlertTitle>Faltam as chaves do Supabase</AlertTitle>
+          <AlertDescription>
+            Elas ainda não estão no arquivo .env.local, então não é possível abrir convites.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 

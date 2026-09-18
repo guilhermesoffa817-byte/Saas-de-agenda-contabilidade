@@ -1,6 +1,6 @@
 import { KeyRound } from "lucide-react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 /**
  * Tela mostrada quando as chaves do Supabase ainda não estão no .env.local.
@@ -9,13 +9,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 export function AvisoConfiguracao() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col justify-center gap-6 px-6 py-16">
-      <Alert>
-        <KeyRound aria-hidden />
-        <AlertTitle>Falta ligar o banco de dados</AlertTitle>
-        <AlertDescription>
+      {/* É uma página inteira, então o título é de verdade — e um só, para o
+          leitor de tela não ouvir a mesma frase duas vezes. */}
+      <div className="flex flex-col gap-2">
+        <span className="flex size-10 items-center justify-center rounded-lg bg-secondary">
+          <KeyRound className="size-5 text-primary" aria-hidden />
+        </span>
+        <h1 className="text-2xl font-semibold tracking-tight">Falta ligar o banco de dados</h1>
+        <p className="text-sm text-muted-foreground">
           O sistema já está pronto, mas ainda não sabe onde guardar os dados.
-        </AlertDescription>
-      </Alert>
+        </p>
+      </div>
 
       <ol className="flex flex-col gap-4 text-sm">
         <li className="flex gap-3">
