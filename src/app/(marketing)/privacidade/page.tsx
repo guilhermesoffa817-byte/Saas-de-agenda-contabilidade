@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ENCARREGADO_DE_DADOS } from "@/lib/contato";
+import { ENCARREGADO_DE_DADOS, IDENTIDADE, rotuloDoDocumento } from "@/lib/contato";
 
 export const metadata: Metadata = {
   title: "Política de privacidade — Alicerce",
@@ -181,13 +181,15 @@ export default function PaginaPrivacidade() {
           negócio, que é o controlador. O Alicerce ajuda o negócio a responder.
         </p>
         <p className="text-sm leading-relaxed">
-          Encarregado de dados (DPO): <strong>[EXEMPLO]</strong> {ENCARREGADO_DE_DADOS}.
+          O Alicerce é operado por <strong>{IDENTIDADE.nome}</strong>, {rotuloDoDocumento()}{" "}
+          <strong>{IDENTIDADE.documento}</strong>. Encarregado de dados (DPO):{" "}
+          <strong>{ENCARREGADO_DE_DADOS}</strong>.
         </p>
       </section>
 
       <p className="text-xs text-muted-foreground">
         Este texto precisa de revisão por advogado antes do lançamento e os trechos marcados como
-        [EXEMPLO] precisam ser preenchidos com os dados reais da empresa.
+        [EXEMPLO] precisam ser preenchidos com os seus dados reais (em `src/lib/contato.ts`).
       </p>
     </main>
   );

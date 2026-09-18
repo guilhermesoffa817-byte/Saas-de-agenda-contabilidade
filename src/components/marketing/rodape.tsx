@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ENCARREGADO_DE_DADOS } from "@/lib/contato";
+import { ENCARREGADO_DE_DADOS, linhaDeIdentificacao } from "@/lib/contato";
 
 const COLUNAS = [
   {
@@ -74,10 +74,7 @@ export function RodapeMarketing() {
             O Alicerce não substitui o contador, não calcula impostos por conta própria e não é
             prontuário eletrônico.
           </p>
-          <p>
-            <strong>[EXEMPLO]</strong> Alicerce Tecnologia LTDA · CNPJ 00.000.000/0000-00 · Cuiabá,
-            MT · contato@alicerce.com.br
-          </p>
+          <p>{linhaDeIdentificacao()}</p>
           <p>
             Encarregado de dados (DPO): <strong>[EXEMPLO]</strong> {ENCARREGADO_DE_DADOS}
           </p>

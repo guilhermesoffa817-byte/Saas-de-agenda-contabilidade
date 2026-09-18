@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CONTATO, IDENTIDADE, rotuloDoDocumento } from "@/lib/contato";
 
 export const metadata: Metadata = {
   title: "Termos de uso — Alicerce",
@@ -55,8 +56,12 @@ export default function PaginaTermos() {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">Contato</h2>
         <p className="text-sm leading-relaxed">
-          <strong>[EXEMPLO: Alicerce Tecnologia LTDA, CNPJ 00.000.000/0000-00,
-          contato@alicerce.com.br]</strong>
+          O Alicerce é oferecido por <strong>{IDENTIDADE.nome}</strong>,{" "}
+          {rotuloDoDocumento()} <strong>{IDENTIDADE.documento}</strong>, com contato em{" "}
+          <a className="underline underline-offset-4" href={`mailto:${CONTATO}`}>
+            {CONTATO}
+          </a>
+          .
         </p>
       </section>
 

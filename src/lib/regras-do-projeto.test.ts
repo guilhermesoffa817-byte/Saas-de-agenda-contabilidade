@@ -51,9 +51,10 @@ describe("a chave secreta nunca vaza para o navegador", () => {
 
 describe("Supabase só pelo caminho oficial", () => {
   it("ninguém usa o pacote antigo de auth-helpers", () => {
-    const usando = arquivos("src/**/*.ts", "src/**/*.tsx", "package.json").filter((caminho) =>
-      ler(caminho).includes("@supabase/auth-helpers"),
-    );
+    // Este próprio arquivo cita o nome do pacote proibido: fica de fora da busca.
+    const usando = arquivos("src/**/*.ts", "src/**/*.tsx", "package.json")
+      .filter((caminho) => caminho !== "src/lib/regras-do-projeto.test.ts")
+      .filter((caminho) => ler(caminho).includes("@supabase/auth-helpers"));
 
     expect(usando).toEqual([]);
   });
