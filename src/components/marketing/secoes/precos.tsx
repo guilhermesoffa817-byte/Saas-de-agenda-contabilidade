@@ -33,7 +33,11 @@ export function Precos({
   const ciclo = anual ? ("anual" as const) : ("mensal" as const);
 
   return (
-    <section id="precos" className="mx-auto w-full max-w-6xl px-6 py-20">
+    <section
+      id="precos"
+      data-secao-precos=""
+      className="mx-auto w-full max-w-6xl px-6 py-20"
+    >
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-5">
           <h2 className="max-w-2xl font-display text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
@@ -47,7 +51,12 @@ export function Precos({
           {ORDEM_DOS_PLANOS.map((chave) => {
             const plano = PLANOS[chave];
             const destacado = chave === PLANO_DESTACADO;
-            const porMes = anual ? Math.round(precoDoCiclo(chave, "anual") / 12) : plano.mensalCents;
+            const porMesAnual = Math.round(precoDoCiclo(chave, "anual") / 12);
+            const porMes = anual ? porMesAnual : plano.mensalCents;
+            // Os dois ciclos já formatados: é o que o arquivo único, sem React,
+            // troca no clique. Na tela quem manda continua sendo o estado.
+            const notaMensal = "por mês";
+            const notaAnual = `por mês, no plano anual de ${formatarBRL(precoDoCiclo(chave, "anual"))}`;
 
             return (
               <div
@@ -61,8 +70,12 @@ export function Precos({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex flex-col gap-1">
-                    <span className="font-display text-xl font-semibold">{plano.nome}</span>
-                    <span className="text-sm text-muted-foreground">{plano.resumo}</span>
+                    <span className="font-display text-xl font-semibold">
+                      {plano.nome}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {plano.resumo}
+                    </span>
                   </div>
                   {destacado ? (
                     <Badge className="bg-gold text-gold-foreground hover:bg-gold">
@@ -72,35 +85,58 @@ export function Precos({
                 </div>
 
                 <div className="flex flex-col">
-                  <span className="font-display text-4xl font-semibold tracking-tight tabular">
+                  <span
+                    data-preco=""
+                    data-mensal={formatarBRL(plano.mensalCents)}
+                    data-anual={formatarBRL(porMesAnual)}
+                    className="font-display text-4xl font-semibold tracking-tight tabular"
+                  >
                     {formatarBRL(porMes)}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    por mês
-                    {anual ? `, no plano anual de ${formatarBRL(precoDoCiclo(chave, "anual"))}` : ""}
+                  <span
+                    data-nota-preco=""
+                    data-mensal={notaMensal}
+                    data-anual={notaAnual}
+                    className="text-xs text-muted-foreground"
+                  >
+                    {anual ? notaAnual : notaMensal}
                   </span>
                 </div>
 
                 <ul className="flex flex-col gap-2 text-sm">
                   <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                    <Check
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                      aria-hidden
+                    />
                     {plano.maxProfissionais === Infinity
                       ? "Profissionais sem limite"
                       : `${plano.maxProfissionais} ${
-                          plano.maxProfissionais === 1 ? "profissional" : "profissionais"
+                          plano.maxProfissionais === 1
+                            ? "profissional"
+                            : "profissionais"
                         }`}
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                    <Check
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                      aria-hidden
+                    />
                     {plano.lembretesAutomaticosMes === 0 ? (
                       "Lembrete pelo seu WhatsApp, sem custo"
                     ) : (
-                      <>{plano.lembretesAutomaticosMes} lembretes automáticos por mês</>
+                      <>
+                        {plano.lembretesAutomaticosMes} lembretes automáticos
+                        por mês
+                      </>
                     )}
                   </li>
                   {plano.nfse ? (
                     <li className="flex items-start gap-2">
-                      <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                      <Check
+                        className="mt-0.5 size-4 shrink-0 text-primary"
+                        aria-hidden
+                      />
                       Emissão de NFS-e{" "}
                       <span className="whitespace-nowrap text-muted-foreground">
                         (requer provedor)
@@ -110,8 +146,19 @@ export function Precos({
                 </ul>
 
                 <div className="mt-auto flex flex-col gap-2">
-                  <Button asChild variant={destacado ? "default" : "outline"} className="w-full">
-                    <Link href={`/cadastro?plano=${chave}&ciclo=${ciclo}`}>Começar o teste</Link>
+                  <Button
+                    asChild
+                    variant={destacado ? "default" : "outline"}
+                    className="w-full"
+                  >
+                    <Link
+                      data-cta-plano=""
+                      data-mensal={`/cadastro?plano=${chave}&ciclo=mensal`}
+                      data-anual={`/cadastro?plano=${chave}&ciclo=anual`}
+                      href={`/cadastro?plano=${chave}&ciclo=${ciclo}`}
+                    >
+                      Começar o teste
+                    </Link>
                   </Button>
                   <span className="text-center text-xs text-muted-foreground">
                     7 dias grátis, sem cartão · Cancele quando quiser
@@ -127,7 +174,10 @@ export function Precos({
           <ul className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
             {INCLUSO_EM_TODOS.map((item) => (
               <li key={item} className="flex items-start gap-2">
-                <Check className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+                <Check
+                  className="mt-0.5 size-4 shrink-0 text-primary"
+                  aria-hidden
+                />
                 {item}
               </li>
             ))}

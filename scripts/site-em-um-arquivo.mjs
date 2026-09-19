@@ -8,8 +8,10 @@ import { join } from "node:path";
  *
  * Serve para mandar no WhatsApp, mostrar para alguém no celular sem sinal ou
  * guardar como registro de como o site está hoje. Não é o sistema rodando: o
- * JavaScript sai fora, então formulário não envia e acordeão não abre — mas
- * nada fica escondido, porque o conteúdo todo já está no HTML.
+ * JavaScript do React sai fora, então formulário não envia e acordeão não abre
+ * — mas nada fica escondido, porque o conteúdo todo já está no HTML. A troca
+ * mensal/anual dos preços é a exceção: ela volta a funcionar aqui, com um
+ * punhado de linhas próprias no fim do arquivo.
  *
  * Precisa do servidor no ar:
  *   npm run build && npm start     (em outro terminal)
@@ -76,7 +78,8 @@ for (const [rota, nome, titulo] of PAGINAS) {
     .replace(/<script[\s\S]*?<\/script>/g, "")
     .replace(/<template[\s\S]*?<\/template>/g, "")
     .replace(/href="\/#([a-z-]+)"/g, 'href="#$1"')
-    .replace(/href="\/([a-z-]+)"/g, (_, destino) => `href="#${idDaPagina(destino)}"`)
+    // Com ou sem `?plano=...`: o botão de cada plano aponta para a mesma página.
+    .replace(/href="\/([a-z-]+)(\?[^"]*)?"/g, (_, destino) => `href="#${idDaPagina(destino)}"`)
     .replace(/href="\/"/g, `href="#${idDaPagina("index")}"`);
 
   corpos.push({ nome, titulo, corpo });
@@ -133,6 +136,36 @@ body:not(:has(.pagina:target)) #${idDaPagina("index")} { display: block }
 .a-revelar, .hero-mockup { opacity: 1 !important; transform: none !important; animation: none !important }
 `;
 
+/**
+ * O React não veio junto, então o botão mensal/anual ganha aqui o pouco que
+ * precisa: mexer no pino, nos dois rótulos e nos preços da mesma seção. Os
+ * valores dos dois ciclos já saíram prontos do servidor, nos `data-*`.
+ */
+const scriptDoArquivo = `
+function aplicarCiclo(botao, anual) {
+  botao.setAttribute("aria-checked", String(anual));
+  var pino = botao.querySelector("[data-pino]");
+  if (pino) pino.style.transform = anual ? "translateX(100%)" : "translateX(0%)";
+  var mensal = botao.querySelector('[data-rotulo="mensal"]');
+  var anualRotulo = botao.querySelector('[data-rotulo="anual"]');
+  if (mensal) mensal.classList.toggle("text-primary-foreground", !anual);
+  if (anualRotulo) anualRotulo.classList.toggle("text-primary-foreground", anual);
+
+  var secao = botao.closest("[data-secao-precos]") || document;
+  var ciclo = anual ? "anual" : "mensal";
+  secao.querySelectorAll("[data-preco], [data-nota-preco]").forEach(function (alvo) {
+    var texto = alvo.getAttribute("data-" + ciclo);
+    if (texto) alvo.textContent = texto;
+  });
+}
+
+document.querySelectorAll("[data-alternador-preco]").forEach(function (botao) {
+  botao.addEventListener("click", function () {
+    aplicarCiclo(botao, botao.getAttribute("aria-checked") !== "true");
+  });
+});
+`;
+
 const indice = corpos
   .map(({ nome, titulo }) => `<a href="#${idDaPagina(nome)}">${titulo}</a>`)
   .join("");
@@ -158,6 +191,7 @@ writeFileSync(
 <body class="tema-papel">
 <nav id="indice-do-arquivo"><strong>ALICERCE</strong>${indice}</nav>
 ${secoes}
+<script>${scriptDoArquivo}</script>
 </body>
 </html>
 `,

@@ -3,6 +3,10 @@
 /**
  * Mensal ou anual. O botão inteiro é um `switch`, e o pino desliza com
  * transição de CSS — não vale carregar um motor de animação por causa dele.
+ *
+ * Os `data-*` não fazem nada aqui: são a alça de que o arquivo único
+ * (`npm run site:arquivo`), que sai sem JavaScript do React, precisa para
+ * mexer no mesmo botão com um punhado de linhas próprias.
  */
 export function AlternadorPreco({
   anual,
@@ -18,18 +22,26 @@ export function AlternadorPreco({
         role="switch"
         aria-checked={anual}
         aria-label="Cobrança anual"
+        data-alternador-preco=""
         onClick={() => onChange(!anual)}
         className="relative grid h-10 w-48 grid-cols-2 rounded-full bg-muted p-1 text-sm font-medium"
       >
         <span
           aria-hidden
+          data-pino=""
           className="absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-primary motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out"
           style={{ transform: anual ? "translateX(100%)" : "translateX(0%)" }}
         />
-        <span className={`relative z-10 self-center ${anual ? "" : "text-primary-foreground"}`}>
+        <span
+          data-rotulo="mensal"
+          className={`relative z-10 self-center ${anual ? "" : "text-primary-foreground"}`}
+        >
           Mensal
         </span>
-        <span className={`relative z-10 self-center ${anual ? "text-primary-foreground" : ""}`}>
+        <span
+          data-rotulo="anual"
+          className={`relative z-10 self-center ${anual ? "text-primary-foreground" : ""}`}
+        >
           Anual
         </span>
       </button>
