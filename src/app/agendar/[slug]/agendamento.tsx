@@ -372,7 +372,7 @@ export function AgendamentoPublico({
           <p className="text-xs text-muted-foreground">
             Seus dados são usados por {empresa.nome} só para este atendimento. Veja a{" "}
             <Link href="/privacidade" className="underline underline-offset-4">
-              política de privacidade do Alicerce
+              política de privacidade do Bossa
             </Link>
             .
           </p>

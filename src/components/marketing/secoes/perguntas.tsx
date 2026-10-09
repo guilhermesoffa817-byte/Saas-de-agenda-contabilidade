@@ -21,9 +21,9 @@ const PERGUNTAS = [
       "Não. O painel fala em entrou, saiu e sobrou. Você registra o que aconteceu no dia; a parte técnica fica com o seu contador, que recebe tudo organizado.",
   },
   {
-    pergunta: "O Alicerce substitui meu contador?",
+    pergunta: "O Bossa substitui meu contador?",
     resposta:
-      "Não, e não é essa a ideia. O Alicerce organiza seus lançamentos e entrega o mês fechado para o escritório. Apuração, guias e escrituração continuam com o seu contador.",
+      "Não, e não é essa a ideia. O Bossa organiza seus lançamentos e entrega o mês fechado para o escritório. Apuração, guias e escrituração continuam com o seu contador.",
   },
   {
     pergunta: "Meu contador consegue usar os relatórios?",
@@ -31,14 +31,14 @@ const PERGUNTAS = [
       "Sim. O acesso dele é gratuito em todos os planos, e ele configura o leiaute da exportação com o plano de contas do escritório, escolhendo a ordem das colunas, o separador e o formato de data.",
   },
   {
-    pergunta: "O Alicerce emite nota fiscal?",
+    pergunta: "O Bossa emite nota fiscal?",
     resposta:
-      "Emite, no plano Negócio, por meio de provedor especializado. Depende de contratar o provedor e, na maioria das prefeituras, de certificado digital da empresa — a gente explica o passo a passo na hora de ligar. Os códigos de tributação de cada serviço quem preenche é o seu contador, pelo portal dele: o Alicerce não calcula imposto, só repassa o que foi configurado.",
+      "Emite, no plano Negócio, por meio de provedor especializado. Depende de contratar o provedor e, na maioria das prefeituras, de certificado digital da empresa — a gente explica o passo a passo na hora de ligar. Os códigos de tributação de cada serviço quem preenche é o seu contador, pelo portal dele: o Bossa não calcula imposto, só repassa o que foi configurado.",
   },
   {
     pergunta: "Emite o recibo do Receita Saúde?",
     resposta:
-      "Não. Desde 2025, médicos, psicólogos, dentistas, fisioterapeutas, fonoaudiólogos e terapeutas ocupacionais que atendem como pessoa física emitem o recibo no app Receita Saúde, no Carnê-Leão Web ou no e-CAC, e a Receita Federal não oferece integração. O Alicerce lista quais recebimentos ainda estão sem recibo e deixa você marcar os que já emitiu.",
+      "Não. Desde 2025, médicos, psicólogos, dentistas, fisioterapeutas, fonoaudiólogos e terapeutas ocupacionais que atendem como pessoa física emitem o recibo no app Receita Saúde, no Carnê-Leão Web ou no e-CAC, e a Receita Federal não oferece integração. O Bossa lista quais recebimentos ainda estão sem recibo e deixa você marcar os que já emitiu.",
   },
   {
     pergunta: "Preciso de cartão de crédito para testar?",
@@ -53,7 +53,7 @@ const PERGUNTAS = [
   {
     pergunta: "Consigo trazer meus clientes de outro sistema?",
     resposta:
-      "Sim, por planilha: você exporta do sistema atual e importa no Alicerce. Se precisar, a gente ajuda a ajustar o arquivo.",
+      "Sim, por planilha: você exporta do sistema atual e importa no Bossa. Se precisar, a gente ajuda a ajustar o arquivo.",
   },
   {
     pergunta: "Funciona com mais de um profissional?",

@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
 import { enderecoDoSite } from "@/lib/url";
 
-export const metadata: Metadata = { title: "Painel — Alicerce" };
+export const metadata: Metadata = { title: "Painel — Bossa" };
 
 export default async function PaginaPainel() {
   const { vinculo } = await empresaAtual();
@@ -110,7 +110,7 @@ export default async function PaginaPainel() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Para deixar tudo pronto</CardTitle>
-            <CardDescription>Quatro coisas e seu negócio está rodando no Alicerce.</CardDescription>
+            <CardDescription>Quatro coisas e seu negócio está rodando no Bossa.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {passos.map((passo) => (

@@ -99,7 +99,7 @@ export function montarReceitasMEI(params: {
       total: totalDe("total"),
     },
     avisos: [
-      "Guarde este relatório com as notas fiscais do mês. O Alicerce não calcula o DAS nem substitui a declaração anual.",
+      "Guarde este relatório com as notas fiscais do mês. O Bossa não calcula o DAS nem substitui a declaração anual.",
     ],
   };
 }
@@ -137,7 +137,7 @@ export function montarReceitaSaudePendentes(params: {
       valor: pendentes.reduce((soma, item) => soma + item.valorCents, 0),
     },
     avisos: [
-      "O recibo é emitido por você no app Receita Saúde, no Carnê-Leão Web ou no e-CAC. A Receita Federal não oferece integração: o Alicerce apenas lista o que falta.",
+      "O recibo é emitido por você no app Receita Saúde, no Carnê-Leão Web ou no e-CAC. A Receita Federal não oferece integração: o Bossa apenas lista o que falta.",
     ],
   };
 }

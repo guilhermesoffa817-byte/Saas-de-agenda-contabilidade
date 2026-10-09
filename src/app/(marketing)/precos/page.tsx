@@ -6,7 +6,7 @@ import { Perguntas } from "@/components/marketing/secoes/perguntas";
 import { Precos } from "@/components/marketing/secoes/precos";
 
 export const metadata: Metadata = {
-  title: "Preços do Alicerce — três planos, contador sempre de graça",
+  title: "Preços do Bossa — três planos, contador sempre de graça",
   description:
     "Planos mensais e anuais com dois meses grátis. Agenda, financeiro, fechamento do mês e acesso gratuito do contador em todos eles.",
   alternates: { canonical: "/precos" },

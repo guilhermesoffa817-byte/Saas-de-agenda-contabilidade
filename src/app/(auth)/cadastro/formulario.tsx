@@ -115,7 +115,7 @@ export function FormularioCadastro() {
 
         <p className="text-xs text-muted-foreground">
           7 dias grátis, sem cartão de crédito. Ao criar a conta você aceita os termos de uso e a
-          política de privacidade do Alicerce.
+          política de privacidade do Bossa.
         </p>
       </form>
     </Form>

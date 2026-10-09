@@ -7,7 +7,7 @@ import { TelaRelatorio } from "@/components/marketing/telas/tela-relatorio";
 import { Button } from "@/components/ui/button";
 
 const VANTAGENS = [
-  "Todos os seus clientes do Alicerce numa lista, com o mês fechado ou em aberto",
+  "Todos os seus clientes do Bossa numa lista, com o mês fechado ou em aberto",
   "Fechamento travado: o cliente não altera o mês depois de entregar",
   "Exportação no leiaute que você configura, com o seu plano de contas",
   "Pedido de comprovante por e-mail, sem caçar recibo no WhatsApp",
@@ -53,7 +53,7 @@ export function ParaContadores() {
         </Reveal>
 
         <Reveal className="min-w-0">
-          <BrowserFrame url="app.alicerce.com.br/contador">
+          <BrowserFrame url="app.bossa.com.br/contador">
             <TelaRelatorio />
           </BrowserFrame>
         </Reveal>

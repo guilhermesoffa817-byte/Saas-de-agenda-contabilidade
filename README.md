@@ -1,9 +1,9 @@
-# Alicerce
+# Bossa
 
 Agenda + financeiro/contábil para autônomos e pequenos negócios (salões, barbearias, clínicas,
 consultórios, personal trainers e terapeutas), com página de vendas própria.
 
-A especificação completa do produto está em [`docs/prompt-saas-alicerce.md`](docs/prompt-saas-alicerce.md)
+A especificação completa do produto está em [`docs/prompt-saas-bossa.md`](docs/prompt-saas-bossa.md)
 e é construída **uma fase por vez** (FASE 0 a FASE 8). As regras permanentes do projeto estão em
 [`CLAUDE.md`](CLAUDE.md).
 
@@ -59,7 +59,7 @@ npm run build && npm start     # em outro terminal
 npm run site:arquivo
 ```
 
-Gera `alicerce-site-completo.html` com as 11 páginas públicas, fontes embutidas
+Gera `bossa-site-completo.html` com as 11 páginas públicas, fontes embutidas
 e nenhum pedido externo — abre com duplo clique, sem internet. O JavaScript sai
 fora, então formulário não envia e acordeão não abre; em compensação nada fica
 escondido, porque o conteúdo já está todo no HTML. O arquivo é gerado, não
@@ -147,7 +147,7 @@ cabeçalho `x-nfse-token`. Quase sempre é preciso o certificado digital da empr
 provedor escolhido.
 
 Os códigos de tributação de cada serviço são preenchidos **pelo contador**, no portal dele. O
-Alicerce não calcula imposto: repassa ao provedor exatamente o que estiver configurado.
+Bossa não calcula imposto: repassa ao provedor exatamente o que estiver configurado.
 
 Cronograma a comunicar ao cliente: o MEI já é obrigado ao padrão nacional, e ME/EPP do Simples a
 partir de 01/11/2026.
@@ -179,6 +179,6 @@ código, está em [`docs/lancamento.md`](docs/lancamento.md).
 
 ## Avisos do produto
 
-O Alicerce não substitui o contador, não calcula impostos por conta própria e não é prontuário
+O Bossa não substitui o contador, não calcula impostos por conta própria e não é prontuário
 eletrônico. As regras fiscais embutidas foram pesquisadas em setembro de 2026, ficam centralizadas em
 `src/lib/fiscal/constantes.ts` e precisam de revisão anual.

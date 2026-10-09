@@ -17,7 +17,7 @@ export default function LayoutAutenticacao({ children }: { children: ReactNode }
       <div className="flex min-h-dvh flex-col bg-secondary/40">
         <header className="flex items-center justify-between gap-4 px-6 py-6">
           <Link href="/" className="font-display text-xl font-semibold tracking-tight">
-            Alicerce
+            Bossa
           </Link>
           <AlternarTema />
         </header>
@@ -28,8 +28,8 @@ export default function LayoutAutenticacao({ children }: { children: ReactNode }
           Agenda e financeiro para autônomos e pequenos negócios.
           <br />
           Precisa de ajuda? Escreva para{" "}
-          <a className="underline underline-offset-4" href="mailto:suporte@alicerce.com.br">
-            suporte@alicerce.com.br
+          <a className="underline underline-offset-4" href="mailto:suporte@bossa.com.br">
+            suporte@bossa.com.br
           </a>
         </footer>
         <Toaster position="top-center" />

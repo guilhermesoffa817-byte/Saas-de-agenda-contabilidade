@@ -149,7 +149,7 @@ export function DialogoPagamento({
               </Button>
               <p className="text-xs text-muted-foreground">
                 O código é gerado com a chave Pix da empresa. A confirmação do pagamento continua
-                sendo sua: o Alicerce não fala com o banco.
+                sendo sua: o Bossa não fala com o banco.
               </p>
             </div>
           ) : null}

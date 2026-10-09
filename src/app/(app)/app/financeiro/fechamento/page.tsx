@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Fechar o mês — Alicerce" };
+export const metadata: Metadata = { title: "Fechar o mês — Bossa" };
 
 const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
 

@@ -53,7 +53,7 @@ export function TourProduto({ passos }: { passos: Passo[] }) {
   return (
     <section
       ref={secao}
-      aria-label="Por dentro do Alicerce"
+      aria-label="Por dentro do Bossa"
       className={empilhado ? "relative" : "relative md:h-[400vh]"}
     >
       {/* Celular (e movimento reduzido): passos empilhados, cada um com a sua tela */}

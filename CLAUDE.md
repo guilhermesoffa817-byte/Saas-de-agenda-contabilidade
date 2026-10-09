@@ -1,8 +1,8 @@
 @AGENTS.md
 
-# Alicerce — regras do projeto
+# Bossa — regras do projeto
 
-Especificação completa: `docs/prompt-saas-alicerce.md`. Antes de cada fase, leia a seção dela.
+Especificação completa: `docs/prompt-saas-bossa.md`. Antes de cada fase, leia a seção dela.
 
 ## Comandos
 - Rodar: `npm run dev` · Lint: `npm run lint` · Tipos: `npx tsc --noEmit`

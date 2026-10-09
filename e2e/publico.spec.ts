@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
 
 test("a tela de entrar mostra os dois jeitos de acessar", async ({ page }) => {
   await page.goto("/entrar");
-  await expect(page.getByRole("heading", { name: "Entrar no Alicerce" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Entrar no Bossa" })).toBeVisible();
   await expect(page.getByLabel("E-mail")).toBeVisible();
   await expect(page.getByLabel("Senha", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Entrar", exact: true })).toBeVisible();

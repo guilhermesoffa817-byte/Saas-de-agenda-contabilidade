@@ -52,7 +52,7 @@ describe("dobra de linha", () => {
 describe("arquivo .ics", () => {
   const ics = montarICal({
     nomeDaAgenda: "Ana Ribeiro · Studio Ana Ribeiro",
-    dominio: "alicerce.com.br",
+    dominio: "bossa.com.br",
     agora: new Date("2026-09-18T12:00:00Z"),
     eventos: [
       {
@@ -86,8 +86,8 @@ describe("arquivo .ics", () => {
   it("traz um VEVENT por atendimento, com id estável", () => {
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(2);
     expect(ics.match(/END:VEVENT/g)).toHaveLength(2);
-    expect(ics).toContain("UID:abc-123@alicerce.com.br");
-    expect(ics).toContain("UID:def-456@alicerce.com.br");
+    expect(ics).toContain("UID:abc-123@bossa.com.br");
+    expect(ics).toContain("UID:def-456@bossa.com.br");
   });
 
   it("grava os horários em UTC e marca o cancelado", () => {
@@ -107,7 +107,7 @@ describe("arquivo .ics", () => {
   });
 
   it("agenda sem atendimento ainda é um calendário válido", () => {
-    const vazio = montarICal({ nomeDaAgenda: "Ana", dominio: "alicerce.com.br", eventos: [] });
+    const vazio = montarICal({ nomeDaAgenda: "Ana", dominio: "bossa.com.br", eventos: [] });
     expect(vazio).toContain("BEGIN:VCALENDAR");
     expect(vazio).toContain("END:VCALENDAR");
     expect(vazio).not.toContain("BEGIN:VEVENT");

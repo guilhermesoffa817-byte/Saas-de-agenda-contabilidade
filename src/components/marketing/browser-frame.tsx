@@ -1,7 +1,7 @@
 // src/components/marketing/browser-frame.tsx
 import type { ReactNode } from "react";
 
-export function BrowserFrame({ children, url = "app.alicerce.com.br" }: { children: ReactNode; url?: string }) {
+export function BrowserFrame({ children, url = "app.bossa.com.br" }: { children: ReactNode; url?: string }) {
   return (
     <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-black/10">
       <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">

@@ -14,7 +14,7 @@ export const CABECALHOS_FIXOS = [
   { chave: "X-Content-Type-Options", valor: "nosniff" },
   { chave: "X-Frame-Options", valor: "DENY" },
   { chave: "Referrer-Policy", valor: "strict-origin-when-cross-origin" },
-  // Nada de câmera, microfone, localização ou pagamento: o Alicerce não usa.
+  // Nada de câmera, microfone, localização ou pagamento: o Bossa não usa.
   {
     chave: "Permissions-Policy",
     valor: "camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()",

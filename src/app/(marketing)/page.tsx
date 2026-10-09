@@ -15,7 +15,7 @@ import { Tour } from "@/components/marketing/secoes/tour";
 import { PLANOS } from "@/lib/planos";
 
 export const metadata: Metadata = {
-  title: "Alicerce — agenda e financeiro do seu negócio em um só lugar",
+  title: "Bossa — agenda e financeiro do seu negócio em um só lugar",
   description:
     "Agenda online com link próprio, controle financeiro simples e relatórios prontos para o contador. Teste grátis por 7 dias, sem cartão.",
   alternates: { canonical: "/" },
@@ -27,7 +27,7 @@ export default function PaginaInicial() {
     "@graph": [
       {
         "@type": "SoftwareApplication",
-        name: "Alicerce",
+        name: "Bossa",
         applicationCategory: "BusinessApplication",
         operatingSystem: "Web",
         inLanguage: "pt-BR",

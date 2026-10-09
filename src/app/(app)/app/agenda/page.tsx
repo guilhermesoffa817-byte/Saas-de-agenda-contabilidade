@@ -14,7 +14,7 @@ import { formatarDiaLongo, formatarMesAno, hojeNaEmpresa, instanteNaEmpresa } fr
 import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Agenda — Alicerce" };
+export const metadata: Metadata = { title: "Agenda — Bossa" };
 
 const VISOES: Visao[] = ["dia", "semana", "lista"];
 

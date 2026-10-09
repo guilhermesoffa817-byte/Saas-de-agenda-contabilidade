@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { FormularioRecuperarSenha } from "./formulario";
 
-export const metadata: Metadata = { title: "Recuperar senha — Alicerce" };
+export const metadata: Metadata = { title: "Recuperar senha — Bossa" };
 
 export default function PaginaRecuperarSenha() {
   return (

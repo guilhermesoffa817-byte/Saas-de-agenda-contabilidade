@@ -15,12 +15,12 @@ const enderecoDoSite = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:300
 export const metadata: Metadata = {
   metadataBase: new URL(enderecoDoSite),
   title: {
-    default: "Alicerce — agenda e financeiro do seu negócio em um só lugar",
-    template: "%s · Alicerce",
+    default: "Bossa — agenda e financeiro do seu negócio em um só lugar",
+    template: "%s · Bossa",
   },
   description:
     "Agenda online, controle financeiro simples e relatórios prontos para o contador. Teste grátis por 7 dias, sem cartão.",
-  applicationName: "Alicerce",
+  applicationName: "Bossa",
   keywords: [
     "agenda online",
     "sistema para salão",
@@ -30,19 +30,19 @@ export const metadata: Metadata = {
     "relatório para contador",
     "MEI",
   ],
-  authors: [{ name: "Alicerce" }],
+  authors: [{ name: "Bossa" }],
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    siteName: "Alicerce",
+    siteName: "Bossa",
     url: enderecoDoSite,
-    title: "Alicerce — agenda e financeiro do seu negócio em um só lugar",
+    title: "Bossa — agenda e financeiro do seu negócio em um só lugar",
     description:
       "Agenda online, financeiro sem planilha e relatório pronto para o seu contador. Teste grátis por 7 dias, sem cartão.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Alicerce — agenda e financeiro do seu negócio",
+    title: "Bossa — agenda e financeiro do seu negócio",
     description:
       "Agenda online, financeiro sem planilha e relatório pronto para o seu contador.",
   },

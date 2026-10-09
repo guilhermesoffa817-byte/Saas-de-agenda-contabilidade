@@ -78,7 +78,7 @@ describe("conteúdo do PDF", () => {
 
     const texto = await textoDoPdf(arquivo);
 
-    expect(texto).toContain("Alicerce");
+    expect(texto).toContain("Bossa");
     expect(texto).toContain("Consultório Helena Barbosa");
     expect(texto).toContain("Livro-Caixa");
     expect(texto).toContain("setembro de 2026");

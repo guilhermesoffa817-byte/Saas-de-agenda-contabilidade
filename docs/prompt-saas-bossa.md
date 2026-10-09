@@ -1,4 +1,4 @@
-# ALICERCE — Prompt completo para criar o SaaS no Claude Code
+# BOSSA — Prompt completo para criar o SaaS no Claude Code
 
 **Sistema de agenda + financeiro/contábil para autônomos e pequenos negócios, com página de vendas de alta conversão.**
 Versão 2 · pesquisa atualizada em setembro de 2026
@@ -9,11 +9,11 @@ Versão 2 · pesquisa atualizada em setembro de 2026
 
 Este arquivo descreve o sistema inteiro: banco de dados, telas, regras fiscais, cobrança e página de vendas. Ele é grande de propósito. Pedir "faça tudo" de uma vez costuma dar errado; o que funciona é o Claude Code ler o arquivo e construir **uma fase por vez**, com você testando entre uma e outra.
 
-1. Crie uma pasta vazia chamada `alicerce`. Dentro dela, crie uma pasta `docs` e coloque este arquivo lá, sem mudar o nome: `alicerce/docs/prompt-saas-alicerce.md`.
-2. Abra o Claude Code dentro da pasta `alicerce` e envie:
-   `Leia o arquivo docs/prompt-saas-alicerce.md inteiro. Depois faça somente a FASE 0 e pare.`
+1. Crie uma pasta vazia chamada `bossa`. Dentro dela, crie uma pasta `docs` e coloque este arquivo lá, sem mudar o nome: `bossa/docs/prompt-saas-bossa.md`.
+2. Abra o Claude Code dentro da pasta `bossa` e envie:
+   `Leia o arquivo docs/prompt-saas-bossa.md inteiro. Depois faça somente a FASE 0 e pare.`
 3. Quando a FASE 0 terminar e você conferir o resultado, envie:
-   `Faça a FASE 1 do docs/prompt-saas-alicerce.md. Antes de escrever código, me mostre o plano.`
+   `Faça a FASE 1 do docs/prompt-saas-bossa.md. Antes de escrever código, me mostre o plano.`
    Repita essa mesma mensagem trocando o número da fase, até a FASE 8.
 4. No fim de cada fase o Claude Code vai dizer o que testar e quais chaves colocar no arquivo `.env.local`. Para ver o sistema funcionando, ele vai pedir para você rodar `npm run dev` e abrir `http://localhost:3000` no navegador.
 5. Contas que você vai precisar criar (todas têm plano gratuito ou ambiente de teste): GitHub, Supabase (escolha a região **São Paulo**), Vercel, Asaas (sandbox), Resend e Cloudflare (Turnstile). Na FASE 7: Meta (WhatsApp Business Platform) e um emissor de NFS-e.
@@ -28,7 +28,7 @@ Este arquivo descreve o sistema inteiro: banco de dados, telas, regras fiscais, 
 
 ## 1. Papel e forma de trabalho
 
-Você é engenheiro(a) full-stack sênior e designer de produto e vai construir o **Alicerce** do zero, seguindo este documento.
+Você é engenheiro(a) full-stack sênior e designer de produto e vai construir o **Bossa** do zero, seguindo este documento.
 
 - Trabalhe **uma fase por vez**, somente quando o usuário pedir. Antes de codar, mostre um plano curto da fase.
 - O usuário não é programador experiente. Sempre que ele precisar fazer algo fora do código (criar conta, copiar chave, configurar um painel), explique passo a passo, em português simples.
@@ -39,24 +39,24 @@ Você é engenheiro(a) full-stack sênior e designer de produto e vai construir 
 
 ## 2. Contexto do produto
 
-**Alicerce** é um SaaS de agenda + financeiro/contábil para autônomos e pequenos negócios locais: salões, barbearias, clínicas, consultórios, personal trainers e terapeutas.
+**Bossa** é um SaaS de agenda + financeiro/contábil para autônomos e pequenos negócios locais: salões, barbearias, clínicas, consultórios, personal trainers e terapeutas.
 
 - **Agenda inteligente:** agendamento online por link, confirmação, lembrete no WhatsApp, bloqueio de horários, vários profissionais.
 - **Financeiro simples para o dono:** quanto entrou, quanto saiu, quanto sobrou — sem planilha. Ao concluir um atendimento, o recebimento vira lançamento automaticamente.
-- **Ponte com o contador (principal diferencial):** fechamento do mês com um clique, relatórios exportáveis (PDF, Excel, CSV) e um portal onde o contador acompanha todos os clientes dele que usam o Alicerce.
+- **Ponte com o contador (principal diferencial):** fechamento do mês com um clique, relatórios exportáveis (PDF, Excel, CSV) e um portal onde o contador acompanha todos os clientes dele que usam o Bossa.
 
 **Público:** dono de negócio que hoje usa caderno, planilha e WhatsApp espalhados, não tem formação financeira, perde dinheiro com faltas e tem medo da bagunça no fim do mês.
 
 **Tom de marca:** corporativo e institucional — sólido, confiável, sério. Nada de tom de startup descolada.
 
-**Concorrência (referência, não copiar):** Trinks (agenda para salões), Vedius (agenda + financeiro para fisioterapia; cerca de R$ 79,90/mês no plano individual, 7 dias grátis sem cartão), Conta Azul/Nibo/Omie (financeiro completo, porém complexo e caro para autônomo). Ângulo do Alicerce: **o único que junta agenda, financeiro do dono e relatório pronto para o contador, sem complicação.**
+**Concorrência (referência, não copiar):** Trinks (agenda para salões), Vedius (agenda + financeiro para fisioterapia; cerca de R$ 79,90/mês no plano individual, 7 dias grátis sem cartão), Conta Azul/Nibo/Omie (financeiro completo, porém complexo e caro para autônomo). Ângulo do Bossa: **o único que junta agenda, financeiro do dono e relatório pronto para o contador, sem complicação.**
 
 **Regime do negócio (perguntado no cadastro; muda os relatórios):**
 - Autônomo pessoa física → Livro-Caixa para o Carnê-Leão e controle de recibos do Receita Saúde.
 - MEI → termômetro do limite anual e relatório mensal de receitas brutas.
 - ME/EPP no Simples Nacional → resumo gerencial (DRE simplificada) e exportação contábil.
 
-**O que o Alicerce não é:** não substitui o contador, não calcula impostos por conta própria e não é prontuário eletrônico. Nenhum texto do produto ou da página de vendas pode prometer o contrário.
+**O que o Bossa não é:** não substitui o contador, não calcula impostos por conta própria e não é prontuário eletrônico. Nenhum texto do produto ou da página de vendas pode prometer o contrário.
 
 ## 3. Regras fiscais que o sistema precisa respeitar (pesquisa de setembro de 2026)
 
@@ -67,7 +67,7 @@ Você é engenheiro(a) full-stack sênior e designer de produto e vai construir 
 | Receita Saúde | Desde 01/01/2025, médicos, psicólogos, dentistas, fisioterapeutas, fonoaudiólogos e terapeutas ocupacionais que atendem como pessoa física emitem recibo pelo app Receita Saúde, pelo Carnê-Leão Web ou pelo e-CAC. Não há integração pública para emissão. | O sistema **não** emite esse recibo. Ele lista os recebimentos de pacientes pessoa física ainda sem recibo (com CPF e valor) e permite marcar como emitido. |
 | NFS-e | MEI: padrão nacional obrigatório desde 01/09/2023 (serviços para empresas). ME/EPP do Simples Nacional: obrigatório a partir de 01/11/2026 (Resolução CGSN nº 191/2026). Municípios aderiram ao padrão nacional em 01/01/2026 (LC 214/2025). Novo DANFSe padronizado pela NT 008/2026. | Emissão somente via provedor especializado (FASE 7). |
 | Reforma tributária (IBS/CBS) | 2026 é ano de teste (CBS 0,9% e IBS 0,1%, informativos). Para Simples Nacional e MEI, os campos passam a ser exigidos a partir de 04/01/2027. | Não calcular IBS/CBS internamente. Guardar os valores devolvidos pelo provedor de nota. |
-| LGPD | Dado de saúde é dado sensível: exige controle de acesso, senhas individuais, logs de acesso, rastreabilidade e política de retenção. O Alicerce é **operador**; o negócio é **controlador** dos dados dos clientes dele. | RLS por empresa e por papel, tabela de auditoria, prontuário fora do escopo, exportação e exclusão de dados. |
+| LGPD | Dado de saúde é dado sensível: exige controle de acesso, senhas individuais, logs de acesso, rastreabilidade e política de retenção. O Bossa é **operador**; o negócio é **controlador** dos dados dos clientes dele. | RLS por empresa e por papel, tabela de auditoria, prontuário fora do escopo, exportação e exclusão de dados. |
 
 ```ts
 // src/lib/fiscal/constantes.ts
@@ -80,7 +80,7 @@ export const ALERTAS_LIMITE_MEI = [0.7, 0.9] as const;
 
 ## 4. Escopo desta versão
 
-**Dentro:** cadastro e permissões por empresa; agenda com vários profissionais; página pública de agendamento; clientes e serviços; financeiro (entradas, saídas, contas a pagar e receber, comprovantes); fechamento do mês; relatórios e exportações para o contador; portal do contador; assinatura paga do Alicerce; lembretes por WhatsApp; Pix copia e cola; página de vendas; integrações opcionais da FASE 7.
+**Dentro:** cadastro e permissões por empresa; agenda com vários profissionais; página pública de agendamento; clientes e serviços; financeiro (entradas, saídas, contas a pagar e receber, comprovantes); fechamento do mês; relatórios e exportações para o contador; portal do contador; assinatura paga do Bossa; lembretes por WhatsApp; Pix copia e cola; página de vendas; integrações opcionais da FASE 7.
 
 **Fora (não construir):** prontuário eletrônico clínico; emissão do recibo Receita Saúde; cálculo próprio de impostos; folha de pagamento; estoque; contabilidade completa (partidas dobradas, SPED) — isso é trabalho do contador, no sistema dele.
 
@@ -92,7 +92,7 @@ export const ALERTAS_LIMITE_MEI = [0.7, 0.9] as const;
 - **Zod 4** + **react-hook-form** para formulários; **date-fns 4** + **@date-fns/tz** para datas e fusos.
 - **Recharts** (via componente `chart` do shadcn), **exceljs** (Excel), **@react-pdf/renderer** (PDF).
 - **Resend** para e-mails; **Cloudflare Turnstile** contra spam no agendamento público.
-- **Asaas** para cobrar a assinatura do Alicerce (Pix, boleto, cartão, Pix Automático).
+- **Asaas** para cobrar a assinatura do Bossa (Pix, boleto, cartão, Pix Automático).
 - **Motion** (Framer Motion), **GSAP + ScrollTrigger** e **Lenis** — apenas na página de vendas.
 - **@dnd-kit/core** para arrastar agendamentos. Não use FullCalendar: a visão por profissional dele é paga.
 - **Vitest** (unidade) e **Playwright** (ponta a ponta). Deploy na **Vercel**.
@@ -122,7 +122,7 @@ src/
     reports/                -> csv.ts, xlsx.ts, pdf/, livro-caixa.ts, receitas-mei.ts, dre.ts
   proxy.ts
 supabase/migrations/
-docs/prompt-saas-alicerce.md   -> este arquivo
+docs/prompt-saas-bossa.md   -> este arquivo
 CLAUDE.md
 ```
 
@@ -169,9 +169,9 @@ WHATSAPP_PHONE_NUMBER_ID=         # FASE 7
 Crie na raiz com o conteúdo abaixo. Mantenha nomes que começam com `@` sempre entre crases: fora delas o Claude Code entende `@caminho` como importação de arquivo. Não importe este documento no `CLAUDE.md`, porque ele é grande; apenas aponte para ele.
 
 ```markdown
-# Alicerce — regras do projeto
+# Bossa — regras do projeto
 
-Especificação completa: `docs/prompt-saas-alicerce.md`. Antes de cada fase, leia a seção dela.
+Especificação completa: `docs/prompt-saas-bossa.md`. Antes de cada fase, leia a seção dela.
 
 ## Comandos
 - Rodar: `npm run dev` · Lint: `npm run lint` · Tipos: `npx tsc --noEmit`
@@ -218,7 +218,7 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono"
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", axes: ["opsz", "SOFT"] });
 
 export const metadata: Metadata = {
-  title: "Alicerce — agenda e financeiro do seu negócio em um só lugar",
+  title: "Bossa — agenda e financeiro do seu negócio em um só lugar",
   description: "Agenda online, controle financeiro simples e relatórios prontos para o contador. Teste grátis por 7 dias, sem cartão.",
 };
 
@@ -235,7 +235,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 }
 ```
 
-**Paleta "verde institucional, dourado e papel".** Parte do conceito da marca (alicerce = base sólida) e do setor (verde = dinheiro e crescimento; dourado = selo de confiança). Contraste conferido: todos os pares de texto passam no nível AA da WCAG. O dourado `--gold` (3,05:1 sobre o papel) serve só para fundo de selo com texto `--gold-foreground` (5,18:1 no claro, 9,36:1 no escuro), bordas e ícones grandes; para texto dourado use `--gold-ink` (6,04:1).
+**Paleta "verde institucional, dourado e papel".** Parte do setor (verde = dinheiro e crescimento; dourado = selo de confiança). Contraste conferido: todos os pares de texto passam no nível AA da WCAG. O dourado `--gold` (3,05:1 sobre o papel) serve só para fundo de selo com texto `--gold-foreground` (5,18:1 no claro, 9,36:1 no escuro), bordas e ícones grandes; para texto dourado use `--gold-ink` (6,04:1).
 
 Atenção: no shadcn, `--accent` é a cor neutra de hover de menus. **Não** coloque o dourado nela; o dourado tem token próprio (`--gold`).
 
@@ -880,7 +880,7 @@ export const mensagemLembrete = (p: { cliente: string; servico: string; data: st
 ### 2.5 Página pública `/agendar/[slug]`
 Fluxo em 5 passos, rápido no celular: serviço → profissional (ou "qualquer um") → dia → horário → nome e WhatsApp.
 - Checkbox **desmarcado** "Aceito receber lembretes pelo WhatsApp" (grava `whatsapp_opt_in` e a data).
-- Link para a política de privacidade da empresa e do Alicerce.
+- Link para a política de privacidade da empresa e do Bossa.
 - Proteção: Turnstile + limite de tentativas por IP e por telefone.
 - A escrita usa o cliente admin **somente no servidor** e revalida o horário antes de gravar.
 
@@ -1358,7 +1358,7 @@ O dono fecha o mês e o contador recebe o e-mail; todos os relatórios exportam 
 
 ---
 
-## FASE 5 — Assinatura do Alicerce e limites dos planos
+## FASE 5 — Assinatura do Bossa e limites dos planos
 
 ### 5.1 Planos **[EXEMPLO de valores — mantenha a lógica]**
 
@@ -1412,7 +1412,7 @@ export async function asaas<T>(caminho: string, init: RequestInit = {}): Promise
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "User-Agent": "alicerce-app",
+      "User-Agent": "bossa-app",
       access_token: process.env.ASAAS_API_KEY!,
       ...init.headers,
     },
@@ -1500,7 +1500,7 @@ Construa em `src/app/(marketing)`. As telas mostradas **são os componentes reai
 - Seção de problema usa **PAS** (problema → agitação → solução); contraste antes/depois usa **BAB**.
 
 Títulos para testar **[EXEMPLO]**:
-1. "O alicerce da organização do seu negócio."
+1. "A organização do seu negócio no ritmo certo."
 2. "Sua agenda cheia. Seu financeiro em ordem."
 3. "Menos faltas na agenda, mais controle do dinheiro."
 
@@ -1510,9 +1510,9 @@ Subtítulo **[EXEMPLO]**: "Agenda online, financeiro sem planilha e relatório p
 
 1. **Cabeçalho fixo:** transparente no topo, ganha desfoque e borda ao rolar. Logo, no máximo 4 links, um único botão ("Testar 7 dias grátis").
 2. **Hero:** título + subtítulo + CTA + linha de confiança ("Sem cartão de crédito · 7 dias grátis · Cancele quando quiser"). À direita, a tela real da agenda do dia dentro do `BrowserFrame`, com entrada suave e parallax leve.
-3. **Problema (PAS):** "O cliente marca no WhatsApp, você anota no caderno, e no fim do mês ninguém sabe quanto entrou." Agite o custo: cadeira vazia por falta não confirmada, recibo perdido, contador pedindo comprovante toda semana. Layout dividido: "hoje" (ilustração de linha de caderno e mensagens soltas, nunca foto) × "com o Alicerce" (tela real). Itens entram em sequência ao rolar.
+3. **Problema (PAS):** "O cliente marca no WhatsApp, você anota no caderno, e no fim do mês ninguém sabe quanto entrou." Agite o custo: cadeira vazia por falta não confirmada, recibo perdido, contador pedindo comprovante toda semana. Layout dividido: "hoje" (ilustração de linha de caderno e mensagens soltas, nunca foto) × "com o Bossa" (tela real). Itens entram em sequência ao rolar.
 4. **Três pilares (BAB):** Agenda inteligente · Financeiro sem planilha · Pronto para o contador. Ícone Lucide, título curto, uma frase. Card sobe levemente no hover.
-5. **"Por dentro do Alicerce" (tour com rolagem fixa):** no desktop, texto dos passos à esquerda e tela fixa à direita, que troca conforme a rolagem. No celular, passos empilhados, cada um com sua tela, sem fixar. Passos:
+5. **"Por dentro do Bossa" (tour com rolagem fixa):** no desktop, texto dos passos à esquerda e tela fixa à direita, que troca conforme a rolagem. No celular, passos empilhados, cada um com sua tela, sem fixar. Passos:
    1. O cliente agenda sozinho pelo link → agenda do dia enchendo.
    2. O lembrete sai no WhatsApp → atendimento confirmado.
    3. Você conclui o atendimento → o recebimento entra no financeiro sozinho.
@@ -1520,16 +1520,16 @@ Subtítulo **[EXEMPLO]**: "Agenda online, financeiro sem planilha e relatório p
 6. **Funcionalidades (grade bento assimétrica):** três grupos — Agenda, Financeiro, Contador. Inclua os diferenciais pesquisados: termômetro do limite do MEI, Livro-Caixa pronto para o Carnê-Leão, controle de recibos do Receita Saúde, Pix copia e cola, fechamento do mês travado, portal do contador.
 7. **Para quem é:** cards por segmento (salão, barbearia, clínica, consultório, personal, terapeuta), cada um levando à página do segmento (`/para-saloes` etc.) com texto e CTA próprios.
 8. **Prova social:** números animados + depoimentos com nome, profissão e cidade. Até existirem depoimentos reais, deixe o bloco oculto em produção e marcado no código com `{/* SUBSTITUIR POR DEPOIMENTO REAL */}`. Nunca publique nome, foto, número ou logo inventados.
-9. **Comparativo:** Alicerce × caderno/planilha × sistema genérico de agenda. Linhas: agendamento online, lembrete no WhatsApp, controle de caixa, recebimento automático ao concluir, fechamento do mês, relatório para o contador, portal do contador, suporte em português. Coluna do Alicerce com fundo `muted` e check verde; as outras com traço terracota.
+9. **Comparativo:** Bossa × caderno/planilha × sistema genérico de agenda. Linhas: agendamento online, lembrete no WhatsApp, controle de caixa, recebimento automático ao concluir, fechamento do mês, relatório para o contador, portal do contador, suporte em português. Coluna do Bossa com fundo `muted` e check verde; as outras com traço terracota.
 10. **Para contadores:** "Seus clientes organizados, sem pedir comprovante toda semana." Portal com todos os clientes, fechamento pronto, exportação configurável, acesso gratuito. CTA secundário: "Sou contador".
 11. **Preços:** três planos (três opções convertem melhor que duas; quatro ou mais atrapalham). Selo dourado "Mais escolhido" **só** no plano do meio. Alternador mensal/anual com o selo "2 meses grátis" (fala de perda evitada, não só de porcentagem). Ao lado do botão de assinar: "7 dias grátis, sem cartão · Cancele quando quiser".
 12. **Perguntas frequentes (acordeão):**
     - "Meus dados estão seguros?" (LGPD, servidores no Brasil, acesso por papel, backups)
     - "Preciso entender de contabilidade?" (não; a linguagem é "entrou, saiu, sobrou")
-    - "O Alicerce substitui meu contador?" (**não**; ele entrega tudo organizado para o seu contador)
+    - "O Bossa substitui meu contador?" (**não**; ele entrega tudo organizado para o seu contador)
     - "Meu contador consegue usar os relatórios?" (sim; acesso gratuito e exportação configurável)
     - "Emite nota fiscal?" (responda conforme a FASE 7 estiver pronta; nunca prometa antes)
-    - "Emite o recibo do Receita Saúde?" (não, a Receita não oferece integração; o Alicerce mostra quais recibos faltam emitir)
+    - "Emite o recibo do Receita Saúde?" (não, a Receita não oferece integração; o Bossa mostra quais recibos faltam emitir)
     - "Preciso de cartão para testar?" · "Posso cancelar quando quiser?" · "Consigo trazer meus clientes de outro sistema?" (importação por planilha) · "Funciona com mais de um profissional?"
 13. **CTA final:** faixa em `bg-primary`, título curto reforçando o resultado (diferente do hero), um botão grande.
 14. **Rodapé institucional:** logo, colunas de links, termos, privacidade, contato do encarregado de dados, CNPJ da empresa **[EXEMPLO]**.
@@ -1540,7 +1540,7 @@ Subtítulo **[EXEMPLO]**: "Agenda online, financeiro sem planilha e relatório p
 // src/components/marketing/browser-frame.tsx
 import type { ReactNode } from "react";
 
-export function BrowserFrame({ children, url = "app.alicerce.com.br" }: { children: ReactNode; url?: string }) {
+export function BrowserFrame({ children, url = "app.bossa.com.br" }: { children: ReactNode; url?: string }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl shadow-black/10">
       <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-3">
@@ -1614,7 +1614,7 @@ export function HeroMockup({ children }: { children: ReactNode }) {
 }
 ```
 
-Tour "Por dentro do Alicerce" (fixação por `sticky` do CSS; o GSAP só lê o progresso da rolagem):
+Tour "Por dentro do Bossa" (fixação por `sticky` do CSS; o GSAP só lê o progresso da rolagem):
 
 ```tsx
 // src/components/marketing/tour-produto.tsx
@@ -1648,7 +1648,7 @@ export function TourProduto({ passos }: { passos: Passo[] }) {
   const Tela = passos[ativo].Tela;
 
   return (
-    <section ref={secao} aria-label="Por dentro do Alicerce" className="relative md:h-[400vh]">
+    <section ref={secao} aria-label="Por dentro do Bossa" className="relative md:h-[400vh]">
       {/* Celular: passos empilhados, cada um com a sua tela */}
       <div className="space-y-12 md:hidden">
         {passos.map(({ titulo, texto, Tela: T }) => (
@@ -1866,7 +1866,7 @@ export async function POST(req: Request) {
 ### 7.2 NFS-e (plano Negócio)
 - Integre por **provedor especializado** (compare Focus NFe, PlugNotas/Tecnospeed, Nuvem Fiscal, Notaas em preço, cobertura, webhooks e suporte ao padrão nacional). O provedor cuida do leiaute nacional, do novo DANFSe (NT 008/2026) e dos campos de IBS/CBS.
 - Normalmente é preciso o certificado digital da empresa: confirme com o provedor escolhido e explique ao usuário como enviar.
-- O contador configura, por serviço, os códigos de tributação. O Alicerce não calcula imposto.
+- O contador configura, por serviço, os códigos de tributação. O Bossa não calcula imposto.
 - Fluxo: recebimento registrado → "Emitir NFS-e" → envio ao provedor → webhook com o resultado → guardar XML e PDF no Storage → marcar `nota_fiscal_emitida`.
 - Cronograma a comunicar: MEI já é obrigado ao padrão nacional; ME/EPP do Simples, a partir de 01/11/2026.
 
@@ -1890,7 +1890,7 @@ Lembrete automático chega no WhatsApp de teste e a resposta confirma o agendame
 - Chave secreta só em arquivos `server-only`; webhooks sempre validados; dependências atualizadas (Next.js teve release de segurança em agosto de 2026).
 
 **LGPD**
-- Termos de uso, política de privacidade e contrato de tratamento de dados (o Alicerce é operador; o negócio é controlador).
+- Termos de uso, política de privacidade e contrato de tratamento de dados (o Bossa é operador; o negócio é controlador).
 - Encarregado de dados com contato visível.
 - Exportação dos dados da empresa e exclusão/anonimização de clientes (`deleted_at` + limpeza dos dados pessoais), preservando registros financeiros pelo prazo que o contador indicar.
 - Aviso no campo de anotações: "Não registre informações clínicas aqui." Anotações visíveis só para dono e profissional, com registro de acesso em `audit_logs`.

@@ -6,7 +6,7 @@ test("a página de vendas abre em português e mostra a promessa", async ({
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-BR");
   await expect(
-    page.getByRole("link", { name: "Alicerce", exact: true }).first(),
+    page.getByRole("link", { name: "Bossa", exact: true }).first(),
   ).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Sua agenda cheia",

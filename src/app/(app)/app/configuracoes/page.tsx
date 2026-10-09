@@ -14,7 +14,7 @@ import { ENCARREGADO_DE_DADOS } from "@/lib/contato";
 import { empresaAtual, exigirUsuario } from "@/lib/supabase/sessao";
 import { enderecoDoSite } from "@/lib/url";
 
-export const metadata: Metadata = { title: "Configurações — Alicerce" };
+export const metadata: Metadata = { title: "Configurações — Bossa" };
 
 /** Busca nome e e-mail de cada pessoa da equipe (só o servidor pode ler isso). */
 async function dadosDosMembros(ids: string[]) {

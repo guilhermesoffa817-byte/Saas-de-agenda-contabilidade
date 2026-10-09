@@ -10,7 +10,7 @@ export async function asaas<T>(caminho: string, init: RequestInit = {}): Promise
     ...init,
     headers: {
       "Content-Type": "application/json",
-      "User-Agent": "alicerce-app",
+      "User-Agent": "bossa-app",
       access_token: process.env.ASAAS_API_KEY!,
       ...init.headers,
     },
@@ -79,7 +79,7 @@ export async function criarAssinaturaAsaas(dados: {
     body: JSON.stringify({
       customer: dados.cliente,
       // UNDEFINED deixa o cliente escolher Pix, boleto ou cartão na página do Asaas,
-      // então o Alicerce nunca chega perto de dado de cartão.
+      // então o Bossa nunca chega perto de dado de cartão.
       billingType: "UNDEFINED",
       value: centavosParaReais(dados.valorCents),
       nextDueDate: dados.primeiroVencimento,

@@ -43,7 +43,7 @@ export function RodapeMarketing() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="flex flex-col gap-3 lg:col-span-1">
-            <span className="font-display text-xl font-semibold tracking-tight">Alicerce</span>
+            <span className="font-display text-xl font-semibold tracking-tight">Bossa</span>
             <p className="text-sm text-muted-foreground">
               Agenda e financeiro para autônomos e pequenos negócios, com relatório pronto para o
               contador.
@@ -71,7 +71,7 @@ export function RodapeMarketing() {
 
         <div className="flex flex-col gap-3 border-t border-border pt-8 text-xs text-muted-foreground">
           <p>
-            O Alicerce não substitui o contador, não calcula impostos por conta própria e não é
+            O Bossa não substitui o contador, não calcula impostos por conta própria e não é
             prontuário eletrônico.
           </p>
           <p>{linhaDeIdentificacao()}</p>

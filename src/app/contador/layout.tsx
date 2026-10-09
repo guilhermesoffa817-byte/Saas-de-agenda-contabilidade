@@ -29,7 +29,7 @@ export default async function LayoutContador({ children }: { children: ReactNode
       <div className="flex min-h-dvh flex-col">
         <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur md:px-8">
           <Link href="/contador" className="font-display text-lg font-semibold tracking-tight">
-            Alicerce
+            Bossa
           </Link>
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Briefcase className="size-4" aria-hidden />
@@ -42,7 +42,7 @@ export default async function LayoutContador({ children }: { children: ReactNode
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8">{children}</main>
 
         <footer className="border-t border-border px-4 py-6 text-center text-xs text-muted-foreground md:px-8">
-          O acesso do contador é gratuito em todos os planos do Alicerce.
+          O acesso do contador é gratuito em todos os planos do Bossa.
         </footer>
 
         <Toaster position="top-center" />

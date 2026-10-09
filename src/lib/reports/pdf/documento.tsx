@@ -103,9 +103,9 @@ export function DocumentoDeRelatorio({
   const soma = larguras.reduce((total, peso) => total + peso, 0);
 
   return (
-    <Document title={`${tabela.titulo} — ${empresa.nome}`} author="Alicerce">
+    <Document title={`${tabela.titulo} — ${empresa.nome}`} author="Bossa">
       <Page size="A4" orientation={tabela.colunas.length > 6 ? "landscape" : "portrait"} style={estilos.pagina}>
-        <Text style={estilos.marca}>Alicerce</Text>
+        <Text style={estilos.marca}>Bossa</Text>
         <Text style={estilos.empresa}>
           {empresa.nome}
           {empresa.documento ? ` · ${empresa.documento}` : ""}
@@ -196,7 +196,7 @@ export function DocumentoDeRelatorio({
 
         <View style={estilos.rodape} fixed>
           <Text>
-            Gerado pelo Alicerce em {geradoEm}. Não substitui a contabilidade nem calcula impostos.
+            Gerado pelo Bossa em {geradoEm}. Não substitui a contabilidade nem calcula impostos.
           </Text>
           <Text render={({ pageNumber, totalPages }) => `${pageNumber}/${totalPages}`} />
         </View>

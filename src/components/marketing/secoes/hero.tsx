@@ -60,7 +60,7 @@ export function Hero() {
 
         <div className="min-w-0">
           <HeroMockup>
-            <BrowserFrame url="app.alicerce.com.br/app/agenda">
+            <BrowserFrame url="app.bossa.com.br/app/agenda">
               <TelaAgenda />
             </BrowserFrame>
           </HeroMockup>

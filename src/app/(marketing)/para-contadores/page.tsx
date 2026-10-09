@@ -9,7 +9,7 @@ import { TelaRelatorio } from "@/components/marketing/telas/tela-relatorio";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Alicerce para contadores — acesso gratuito ao mês fechado do cliente",
+  title: "Bossa para contadores — acesso gratuito ao mês fechado do cliente",
   description:
     "Portal com todos os seus clientes, mês fechado e travado, exportação no leiaute do seu sistema e pedido de comprovante por e-mail. Acesso gratuito.",
   alternates: { canonical: "/para-contadores" },
@@ -82,7 +82,7 @@ export default function PaginaParaContadores() {
         </div>
 
         <div className="min-w-0">
-          <BrowserFrame url="app.alicerce.com.br/contador">
+          <BrowserFrame url="app.bossa.com.br/contador">
             <TelaRelatorio />
           </BrowserFrame>
         </div>

@@ -155,7 +155,7 @@ export function PassoRegime({
         );
       })}
       <p className="text-xs text-muted-foreground">
-        Isso muda só os relatórios que o Alicerce prepara para o seu contador. Dá para trocar depois
+        Isso muda só os relatórios que o Bossa prepara para o seu contador. Dá para trocar depois
         nas configurações.
       </p>
     </div>

@@ -70,7 +70,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string 
 
   const arquivo = montarICal({
     nomeDaAgenda: [profissional.name, empresa?.name].filter(Boolean).join(" · "),
-    dominio: "alicerce.com.br",
+    dominio: "bossa.com.br",
     eventos,
   });
 
@@ -78,7 +78,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ token: string 
     status: 200,
     headers: {
       "content-type": "text/calendar; charset=utf-8",
-      "content-disposition": 'inline; filename="agenda-alicerce.ics"',
+      "content-disposition": 'inline; filename="agenda-bossa.ics"',
       // Link secreto: nenhum intermediário deve guardar nem indexar.
       "cache-control": "no-store, private",
       "x-robots-tag": "noindex, nofollow",

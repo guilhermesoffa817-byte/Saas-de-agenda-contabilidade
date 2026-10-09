@@ -6,7 +6,7 @@ export * from "./tipos";
 
 /**
  * Escolha do provedor pelo ambiente. Enquanto nenhum estiver contratado, o
- * Alicerce não promete emissão: a tela avisa e o botão fica desligado.
+ * Bossa não promete emissão: a tela avisa e o botão fica desligado.
  */
 export function nfseConfigurada() {
   return Boolean(process.env.NFSE_PROVIDER && process.env.NFSE_API_KEY);
@@ -64,7 +64,7 @@ class FocusNFe implements ProvedorDeNota {
         razao_social: pedido.tomador.nome,
       },
       servico: {
-        // Repassado como o contador configurou. O Alicerce não calcula imposto.
+        // Repassado como o contador configurou. O Bossa não calcula imposto.
         item_lista_servico: pedido.codigos.lc116,
         codigo_tributario_municipio: pedido.codigos.codigoMunicipal,
         codigo_cnae: pedido.codigos.cnae,

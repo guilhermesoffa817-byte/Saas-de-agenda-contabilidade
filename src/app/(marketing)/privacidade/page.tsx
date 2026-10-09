@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { ENCARREGADO_DE_DADOS, IDENTIDADE, rotuloDoDocumento } from "@/lib/contato";
 
 export const metadata: Metadata = {
-  title: "Política de privacidade — Alicerce",
+  title: "Política de privacidade — Bossa",
   description:
-    "Como o Alicerce trata dados pessoais: papéis de controlador e operador, base legal, retenção e direitos do titular.",
+    "Como o Bossa trata dados pessoais: papéis de controlador e operador, base legal, retenção e direitos do titular.",
 };
 
 /**
@@ -24,9 +24,9 @@ export default function PaginaPrivacidade() {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">Quem é responsável pelos dados</h2>
         <p className="text-sm leading-relaxed">
-          O negócio que usa o Alicerce (o salão, a clínica, o consultório) é o{" "}
+          O negócio que usa o Bossa (o salão, a clínica, o consultório) é o{" "}
           <strong>controlador</strong> dos dados dos clientes dele: é quem decide coletar nome,
-          telefone e histórico de atendimentos. O Alicerce é <strong>operador</strong>: trata esses
+          telefone e histórico de atendimentos. O Bossa é <strong>operador</strong>: trata esses
           dados seguindo as instruções do negócio, para fazer a agenda e o controle financeiro
           funcionarem.
         </p>
@@ -53,7 +53,7 @@ export default function PaginaPrivacidade() {
           </li>
         </ul>
         <p className="text-sm leading-relaxed">
-          O Alicerce <strong>não é prontuário eletrônico</strong> e não deve receber dados de saúde.
+          O Bossa <strong>não é prontuário eletrônico</strong> e não deve receber dados de saúde.
           Anotações clínicas ficam no sistema próprio do profissional.
         </p>
       </section>
@@ -67,7 +67,7 @@ export default function PaginaPrivacidade() {
         <p className="text-sm leading-relaxed">
           O envio é feito pela plataforma oficial da Meta (WhatsApp Business Platform). Para isso,
           nome do cliente, telefone, serviço, data e hora do atendimento são transmitidos à Meta. O
-          Alicerce guarda o registro de cada envio — para quem, qual modelo, quando e se foi entregue
+          Bossa guarda o registro de cada envio — para quem, qual modelo, quando e se foi entregue
           — por 12 meses, para auditoria e para a contagem da franquia do plano.
         </p>
       </section>
@@ -75,7 +75,7 @@ export default function PaginaPrivacidade() {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">Quem mais trata esses dados</h2>
         <p className="text-sm leading-relaxed">
-          O Alicerce se apoia em fornecedores, todos como suboperadores, e só manda a cada um o que
+          O Bossa se apoia em fornecedores, todos como suboperadores, e só manda a cada um o que
           ele precisa para funcionar:
         </p>
         <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed">
@@ -91,7 +91,7 @@ export default function PaginaPrivacidade() {
             para o contador).
           </li>
           <li>
-            <strong>Asaas:</strong> cobrança da assinatura do próprio Alicerce. Os clientes do negócio
+            <strong>Asaas:</strong> cobrança da assinatura do próprio Bossa. Os clientes do negócio
             não passam por lá.
           </li>
           <li>
@@ -107,7 +107,7 @@ export default function PaginaPrivacidade() {
         <p className="text-sm leading-relaxed">
           O titular pode pedir confirmação do tratamento, acesso, correção, portabilidade,
           eliminação e informação sobre com quem os dados foram compartilhados. O pedido vai ao
-          negócio que atende essa pessoa, que é o controlador; o Alicerce dá as ferramentas para ele
+          negócio que atende essa pessoa, que é o controlador; o Bossa dá as ferramentas para ele
           responder:
         </p>
         <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed">
@@ -177,11 +177,11 @@ export default function PaginaPrivacidade() {
         <h2 className="text-xl font-semibold tracking-tight">Seus direitos</h2>
         <p className="text-sm leading-relaxed">
           Você pode pedir confirmação de tratamento, acesso, correção, portabilidade e exclusão dos
-          seus dados. Se você é cliente de um negócio que usa o Alicerce, o pedido deve ir primeiro ao
-          negócio, que é o controlador. O Alicerce ajuda o negócio a responder.
+          seus dados. Se você é cliente de um negócio que usa o Bossa, o pedido deve ir primeiro ao
+          negócio, que é o controlador. O Bossa ajuda o negócio a responder.
         </p>
         <p className="text-sm leading-relaxed">
-          O Alicerce é operado por <strong>{IDENTIDADE.nome}</strong>, {rotuloDoDocumento()}{" "}
+          O Bossa é operado por <strong>{IDENTIDADE.nome}</strong>, {rotuloDoDocumento()}{" "}
           <strong>{IDENTIDADE.documento}</strong>. Encarregado de dados (DPO):{" "}
           <strong>{ENCARREGADO_DE_DADOS}</strong>.
         </p>

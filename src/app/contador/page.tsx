@@ -16,7 +16,7 @@ import { enderecoDoSite } from "@/lib/url";
 import { listarFatores } from "@/app/(app)/app/configuracoes/acoes-2fa";
 import { DuasEtapas } from "@/app/(app)/app/configuracoes/duas-etapas";
 
-export const metadata: Metadata = { title: "Portal do contador — Alicerce" };
+export const metadata: Metadata = { title: "Portal do contador — Bossa" };
 
 const REGIMES: Record<string, string> = {
   pf_autonomo: "Autônomo (pessoa física)",
@@ -69,7 +69,7 @@ export default async function PaginaContador() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Seus clientes no Alicerce</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Seus clientes no Bossa</h1>
         <p className="text-sm text-muted-foreground">
           {empresas.length === 1
             ? "Uma empresa te deu acesso."

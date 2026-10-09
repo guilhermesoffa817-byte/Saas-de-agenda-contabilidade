@@ -6,7 +6,7 @@ import { mensagemLembrete } from "@/lib/whatsapp";
 
 /**
  * Prévia da mensagem de lembrete. Não é captura de tela do WhatsApp: é o texto
- * que o Alicerce monta, desenhado com os tokens da marca.
+ * que o Bossa monta, desenhado com os tokens da marca.
  */
 export function TelaLembrete() {
   const mensagem = mensagemLembrete({

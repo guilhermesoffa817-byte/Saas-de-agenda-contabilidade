@@ -24,7 +24,7 @@ import { formatarData } from "@/lib/dates";
 import { formatarBRL } from "@/lib/money";
 import { empresaAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Financeiro — Alicerce" };
+export const metadata: Metadata = { title: "Financeiro — Bossa" };
 
 const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
 
@@ -235,7 +235,7 @@ export default async function PaginaFinanceiro({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        O Alicerce organiza os números, mas não calcula seus impostos nem substitui o contador.
+        O Bossa organiza os números, mas não calcula seus impostos nem substitui o contador.
       </p>
     </div>
   );

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { FormularioCadastro } from "./formulario";
 
-export const metadata: Metadata = { title: "Criar conta — Alicerce" };
+export const metadata: Metadata = { title: "Criar conta — Bossa" };
 
 export default function PaginaCadastro() {
   return (

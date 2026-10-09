@@ -36,7 +36,7 @@ export function CabecalhoMarketing() {
     >
       <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-6 py-4">
         <Link href="/" className="font-display text-xl font-semibold tracking-tight">
-          Alicerce
+          Bossa
         </Link>
 
         <nav aria-label="Seções do site" className="hidden flex-1 items-center gap-6 md:flex">

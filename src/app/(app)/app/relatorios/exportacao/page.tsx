@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { MODELO_PADRAO, type ChaveDeColuna } from "@/lib/reports/exportacao-contabil";
 import { empresaAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Configurar exportação — Alicerce" };
+export const metadata: Metadata = { title: "Configurar exportação — Bossa" };
 
 export default async function PaginaExportacao() {
   const { vinculo } = await empresaAtual();

@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Alicerce">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Bossa">
   <rect width="32" height="32" rx="7" fill="#0F3D2E"/>
-  <path d="M8 23 16 8l8 15" fill="none" stroke="#FBF9F4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M11.5 18.5h9" fill="none" stroke="#B8872B" stroke-width="3" stroke-linecap="round"/>
+  <path d="M11 8v16h6a4 4 0 0 0 0-8h-6m0 0h5a4 4 0 0 0 0-8h-5" fill="none" stroke="#FBF9F4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M13 16h4" fill="none" stroke="#B8872B" stroke-width="3" stroke-linecap="round"/>
 </svg>

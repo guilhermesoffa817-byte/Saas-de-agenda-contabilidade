@@ -8,7 +8,7 @@ import { GestaoDeCategorias } from "@/components/app/financeiro/gestao-categoria
 import { Button } from "@/components/ui/button";
 import { empresaAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Categorias e contas — Alicerce" };
+export const metadata: Metadata = { title: "Categorias e contas — Bossa" };
 
 export default async function PaginaCategorias() {
   const { vinculo } = await empresaAtual();

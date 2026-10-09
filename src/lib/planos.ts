@@ -1,5 +1,5 @@
 /**
- * Planos do Alicerce.
+ * Planos do Bossa.
  *
  * ATENÇÃO: os valores abaixo são EXEMPLO e precisam ser revisados antes do
  * lançamento (a especificação marca isso como [EXEMPLO]). A lógica é a que vale:

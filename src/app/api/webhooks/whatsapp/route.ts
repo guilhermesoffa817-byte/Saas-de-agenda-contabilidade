@@ -120,7 +120,7 @@ export async function POST(request: Request) {
             .eq("status", "agendado");
           resultado.confirmados += 1;
         } else {
-          // Remarcar é conversa: o Alicerce não move horário sozinho. Fica o
+          // Remarcar é conversa: o Bossa não move horário sozinho. Fica o
           // registro para a recepção ver e ligar.
           const { data: atendimento } = await supabase()
             .from("appointments")

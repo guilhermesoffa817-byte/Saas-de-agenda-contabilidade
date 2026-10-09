@@ -111,7 +111,7 @@ export function NavegacaoCelular({ itens }: { itens: ItemDeMenu[] }) {
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-4">
         <SheetHeader className="px-0">
-          <SheetTitle className="font-display text-lg">Alicerce</SheetTitle>
+          <SheetTitle className="font-display text-lg">Bossa</SheetTitle>
         </SheetHeader>
         <Itens itens={itens} aoClicar={() => setAberto(false)} />
       </SheetContent>

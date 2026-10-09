@@ -22,7 +22,7 @@ import { join } from "node:path";
  */
 
 const BASE = process.env.SITE_URL ?? "http://localhost:3000";
-const DESTINO = "alicerce-site-completo.html";
+const DESTINO = "bossa-site-completo.html";
 
 const PAGINAS = [
   ["/", "index", "Página de vendas"],
@@ -47,7 +47,7 @@ const navegador = await chromium.launch({
 const contexto = await navegador.newContext({ viewport: { width: 1280, height: 900 }, locale: "pt-BR" });
 const aba = await contexto.newPage();
 
-const pasta = mkdtempSync(join(tmpdir(), "alicerce-"));
+const pasta = mkdtempSync(join(tmpdir(), "bossa-"));
 const baixados = new Map();
 
 aba.on("response", async (resposta) => {
@@ -184,12 +184,12 @@ writeFileSync(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Alicerce — o site inteiro em um arquivo</title>
+<title>Bossa — o site inteiro em um arquivo</title>
 <style>${css}</style>
 <style>${estiloDoArquivo}</style>
 </head>
 <body class="tema-papel">
-<nav id="indice-do-arquivo"><strong>ALICERCE</strong>${indice}</nav>
+<nav id="indice-do-arquivo"><strong>BOSSA</strong>${indice}</nav>
 ${secoes}
 <script>${scriptDoArquivo}</script>
 </body>

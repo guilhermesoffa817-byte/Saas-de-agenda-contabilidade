@@ -24,7 +24,7 @@ export type ReciboDoMes = {
  * Controle dos recibos do Receita Saúde.
  *
  * Quem emite o recibo é o profissional, no aplicativo da Receita Federal — o
- * Alicerce não emite nada. O que ele faz é não deixar nenhum ficar para trás:
+ * Bossa não emite nada. O que ele faz é não deixar nenhum ficar para trás:
  * lista quem falta e guarda quais já saíram. Funciona com o mês fechado, porque
  * emitir recibo acontece depois e não mexe em número nenhum do fechamento.
  */
@@ -101,7 +101,7 @@ export function RecibosDoReceitaSaude({
     <div className="flex flex-col gap-5">
       <Alert>
         <AlertDescription>
-          O Alicerce não emite o recibo do Receita Saúde. Você emite no aplicativo da Receita
+          O Bossa não emite o recibo do Receita Saúde. Você emite no aplicativo da Receita
           Federal e marca aqui, para nenhum ficar para trás na declaração.
         </AlertDescription>
       </Alert>

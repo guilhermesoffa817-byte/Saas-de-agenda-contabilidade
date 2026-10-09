@@ -209,7 +209,7 @@ export default async function PaginaDoCliente({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        O Alicerce organiza os lançamentos do cliente. A apuração, as guias e a escrituração seguem
+        O Bossa organiza os lançamentos do cliente. A apuração, as guias e a escrituração seguem
         sendo do escritório.
       </p>
     </div>

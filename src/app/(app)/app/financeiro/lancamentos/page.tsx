@@ -13,7 +13,7 @@ import { empresaAtual } from "@/lib/supabase/sessao";
 import { permiteNotaFiscal } from "@/lib/planos";
 import { nfseConfigurada } from "@/lib/nfse";
 
-export const metadata: Metadata = { title: "Lançamentos — Alicerce" };
+export const metadata: Metadata = { title: "Lançamentos — Bossa" };
 
 const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
 

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { PaginaDeSegmento } from "@/components/marketing/pagina-de-segmento";
 
 export const metadata: Metadata = {
-  title: "Alicerce para personal trainers e terapeutas — agenda e financeiro",
+  title: "Bossa para personal trainers e terapeutas — agenda e financeiro",
   description:
     "Treinos e sessões com hora marcada, lembrete no WhatsApp, pacote mensal controlado e o financeiro do mês fechando sozinho. Teste 7 dias grátis.",
   alternates: { canonical: "/para-personal" },
@@ -18,7 +18,7 @@ export default function PaginaParaPersonal() {
         icone: Dumbbell,
         titulo: "Sua semana organizada e o recebimento em dia.",
         subtitulo:
-          "Você atende em horários espalhados, em lugares diferentes. O Alicerce junta os atendimentos, os lembretes e o dinheiro num lugar só.",
+          "Você atende em horários espalhados, em lugares diferentes. O Bossa junta os atendimentos, os lembretes e o dinheiro num lugar só.",
         dores: [
           {
             titulo: "Aluno que falta e não avisa",
@@ -44,7 +44,7 @@ export default function PaginaParaPersonal() {
         fiscal: {
           titulo: "Autônomo pessoa física",
           texto:
-            "Atendendo no CPF, o que vale é a data do pagamento. O Alicerce organiza o Livro-Caixa nesse formato, separa receita de pessoa física e de empresa e marca as despesas que costumam ser dedutíveis — como anuidade de conselho, congresso e material de trabalho.",
+            "Atendendo no CPF, o que vale é a data do pagamento. O Bossa organiza o Livro-Caixa nesse formato, separa receita de pessoa física e de empresa e marca as despesas que costumam ser dedutíveis — como anuidade de conselho, congresso e material de trabalho.",
         },
       }}
     />

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-/** Canal de crescimento: o contador indica o Alicerce para os clientes dele. */
+/** Canal de crescimento: o contador indica o Bossa para os clientes dele. */
 export function LinkDeIndicacao({ link }: { link: string }) {
   return (
     <Card className="border-gold/50">

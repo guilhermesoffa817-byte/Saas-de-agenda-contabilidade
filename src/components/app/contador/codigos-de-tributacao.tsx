@@ -113,7 +113,7 @@ function LinhaDoServico({ empresaId, servico }: { empresaId: string; servico: Se
 }
 
 /**
- * Códigos de tributação por serviço. O Alicerce não calcula imposto: ele manda
+ * Códigos de tributação por serviço. O Bossa não calcula imposto: ele manda
  * ao provedor da nota exatamente o que está escrito aqui.
  */
 export function CodigosDeTributacao({
@@ -137,7 +137,7 @@ export function CodigosDeTributacao({
     <div className="flex flex-col gap-4">
       <Alert>
         <AlertDescription>
-          O Alicerce não calcula imposto. Ele manda ao provedor da nota exatamente o que estiver
+          O Bossa não calcula imposto. Ele manda ao provedor da nota exatamente o que estiver
           escrito aqui, por serviço.
         </AlertDescription>
       </Alert>

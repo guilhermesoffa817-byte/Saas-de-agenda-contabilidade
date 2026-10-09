@@ -6,7 +6,7 @@ import { ALERTAS_LIMITE_MEI, LIMITE_MEI_ANUAL_CENTS } from "@/lib/fiscal/constan
 import { formatarBRL } from "@/lib/money";
 
 export const metadata: Metadata = {
-  title: "Alicerce para salões e barbearias — agenda e caixa no mesmo lugar",
+  title: "Bossa para salões e barbearias — agenda e caixa no mesmo lugar",
   description:
     "Agenda por profissional, link para o cliente marcar sozinho, lembrete no WhatsApp e o caixa do dia fechando sem planilha. Teste 7 dias grátis.",
   alternates: { canonical: "/para-saloes" },

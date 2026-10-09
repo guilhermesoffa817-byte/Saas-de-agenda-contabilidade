@@ -70,13 +70,13 @@ export function Problema() {
               </div>
               <span className="flex items-center gap-2 text-sm text-foreground">
                 <ArrowRight className="size-4 text-primary" aria-hidden />
-                Com o Alicerce, isso vira a tela ao lado.
+                Com o Bossa, isso vira a tela ao lado.
               </span>
             </div>
           </div>
 
           <Reveal className="min-w-0">
-            <BrowserFrame url="app.alicerce.com.br/app/financeiro">
+            <BrowserFrame url="app.bossa.com.br/app/financeiro">
               <TelaFinanceiro />
             </BrowserFrame>
           </Reveal>

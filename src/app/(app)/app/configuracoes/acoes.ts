@@ -95,11 +95,11 @@ export async function convidarMembro(
   const link = `${await enderecoDoSite()}/convite/${data.token}`;
   const envio = await enviarEmail({
     para: validado.data.email,
-    assunto: `${empresa?.name ?? "Um negócio"} te convidou para o Alicerce`,
+    assunto: `${empresa?.name ?? "Um negócio"} te convidou para o Bossa`,
     texto: `Aceite o convite em ${link} (vale por 7 dias).`,
     html: moldura({
       titulo: "Você foi convidado",
-      corpo: `<p><strong>${empresa?.name ?? "Um negócio"}</strong> quer te dar acesso no Alicerce. O convite vale por 7 dias.</p>`,
+      corpo: `<p><strong>${empresa?.name ?? "Um negócio"}</strong> quer te dar acesso no Bossa. O convite vale por 7 dias.</p>`,
       botao: { texto: "Aceitar convite", url: link },
     }),
   });

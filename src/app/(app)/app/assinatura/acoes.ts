@@ -91,7 +91,7 @@ export async function assinar(
       await atualizarAssinaturaAsaas(empresa.asaas_subscription_id, {
         valorCents,
         ciclo,
-        descricao: `Alicerce ${PLANOS[plano].nome} (${ciclo})`,
+        descricao: `Bossa ${PLANOS[plano].nome} (${ciclo})`,
       });
 
       await admin
@@ -111,7 +111,7 @@ export async function assinar(
       cliente: clienteId,
       valorCents,
       ciclo,
-      descricao: `Alicerce ${PLANOS[plano].nome} (${ciclo})`,
+      descricao: `Bossa ${PLANOS[plano].nome} (${ciclo})`,
       // Primeiro vencimento amanhã: dá tempo de pagar por Pix ou boleto.
       primeiroVencimento: format(addDays(new Date(), 1), "yyyy-MM-dd"),
     });

@@ -77,7 +77,7 @@ export function AgendaNoCelular({
         <p className="text-sm text-muted-foreground">
           Assine o link no Google Agenda ou no calendário do iPhone e os atendimentos aparecem lá,
           atualizados sozinhos. O calendário relê a cada 15 minutos, mais ou menos — quem manda no
-          intervalo é o aplicativo, não o Alicerce.
+          intervalo é o aplicativo, não o Bossa.
         </p>
       </div>
 

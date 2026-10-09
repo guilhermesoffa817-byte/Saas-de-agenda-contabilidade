@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CONTATO, IDENTIDADE, rotuloDoDocumento } from "@/lib/contato";
 
 export const metadata: Metadata = {
-  title: "Termos de uso — Alicerce",
-  description: "Condições de uso do Alicerce: o que o sistema faz, o que não faz e como é a cobrança.",
+  title: "Termos de uso — Bossa",
+  description: "Condições de uso do Bossa: o que o sistema faz, o que não faz e como é a cobrança.",
 };
 
 /** Texto de referência para revisão jurídica (FASE 8). Trocar tudo marcado como [EXEMPLO]. */
@@ -18,16 +18,16 @@ export default function PaginaTermos() {
       </header>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-semibold tracking-tight">O que o Alicerce faz</h2>
+        <h2 className="text-xl font-semibold tracking-tight">O que o Bossa faz</h2>
         <p className="text-sm leading-relaxed">
-          O Alicerce é um sistema de agenda e controle financeiro para autônomos e pequenos negócios.
+          O Bossa é um sistema de agenda e controle financeiro para autônomos e pequenos negócios.
           Ele organiza atendimentos, registra o que entra e o que sai e prepara relatórios para o seu
           contador.
         </p>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-semibold tracking-tight">O que o Alicerce não faz</h2>
+        <h2 className="text-xl font-semibold tracking-tight">O que o Bossa não faz</h2>
         <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed">
           <li>Não substitui o contador nem presta serviço de contabilidade.</li>
           <li>Não calcula impostos por conta própria.</li>
@@ -56,7 +56,7 @@ export default function PaginaTermos() {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">Contato</h2>
         <p className="text-sm leading-relaxed">
-          O Alicerce é oferecido por <strong>{IDENTIDADE.nome}</strong>,{" "}
+          O Bossa é oferecido por <strong>{IDENTIDADE.nome}</strong>,{" "}
           {rotuloDoDocumento()} <strong>{IDENTIDADE.documento}</strong>, com contato em{" "}
           <a className="underline underline-offset-4" href={`mailto:${CONTATO}`}>
             {CONTATO}

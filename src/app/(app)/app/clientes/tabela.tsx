@@ -197,7 +197,7 @@ function FormularioCliente({
             placeholder="Prefere atendimento pela manhã. Indicada pela Júlia."
           />
           <p className="text-xs text-muted-foreground">
-            Não use para dados de saúde: o Alicerce não é prontuário eletrônico.
+            Não use para dados de saúde: o Bossa não é prontuário eletrônico.
           </p>
         </div>
       </div>

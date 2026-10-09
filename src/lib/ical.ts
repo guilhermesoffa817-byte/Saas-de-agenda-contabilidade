@@ -67,7 +67,7 @@ export function montarICal(params: {
   const linhas: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Alicerce//Agenda//PT-BR",
+    "PRODID:-//Bossa//Agenda//PT-BR",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `X-WR-CALNAME:${escaparTexto(params.nomeDaAgenda)}`,

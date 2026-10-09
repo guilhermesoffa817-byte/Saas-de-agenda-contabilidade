@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
 import { normalizarTelefone } from "@/lib/telefone";
 
-export const metadata: Metadata = { title: "Clientes — Alicerce" };
+export const metadata: Metadata = { title: "Clientes — Bossa" };
 
 export default async function PaginaClientes({
   searchParams,

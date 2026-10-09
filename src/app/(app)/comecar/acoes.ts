@@ -201,11 +201,11 @@ export async function convidarPessoa(
 
   const envio = await enviarEmail({
     para: validado.data.email,
-    assunto: `${empresa?.name ?? "Um negócio"} te convidou para o Alicerce`,
+    assunto: `${empresa?.name ?? "Um negócio"} te convidou para o Bossa`,
     texto: `${empresa?.name ?? "Um negócio"} quer te dar acesso como ${papel}. Aceite o convite em ${link} (o link vale por 7 dias).`,
     html: moldura({
       titulo: "Você foi convidado",
-      corpo: `<p><strong>${empresa?.name ?? "Um negócio"}</strong> quer te dar acesso como ${papel} no Alicerce, o sistema de agenda e financeiro do negócio.</p><p>O convite vale por 7 dias.</p>`,
+      corpo: `<p><strong>${empresa?.name ?? "Um negócio"}</strong> quer te dar acesso como ${papel} no Bossa, o sistema de agenda e financeiro do negócio.</p><p>O convite vale por 7 dias.</p>`,
       botao: { texto: "Aceitar convite", url: link },
     }),
   });

@@ -1,4 +1,4 @@
-# Lançamento do Alicerce
+# Lançamento do Bossa
 
 O que precisa estar pronto antes de abrir para o primeiro cliente pagante, e o
 que já está conferido no código.
@@ -20,7 +20,7 @@ que já está conferido no código.
 
 ### E-mail (Resend)
 - [ ] Domínio verificado, com SPF e DKIM publicados.
-- [ ] `RESEND_FROM` no formato `Alicerce <nao-responda@seudominio.com.br>`.
+- [ ] `RESEND_FROM` no formato `Bossa <nao-responda@seudominio.com.br>`.
 
 ### Lembretes (WhatsApp Cloud API)
 - [ ] App da Meta criado, número ligado, `WHATSAPP_TOKEN` e `WHATSAPP_PHONE_NUMBER_ID` preenchidos.

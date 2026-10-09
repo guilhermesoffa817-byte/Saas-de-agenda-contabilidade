@@ -17,7 +17,7 @@ const arquivos = readdirSync(PASTA)
   .sort();
 
 const cabecalho = `-- ============================================================================
--- ALICERCE — banco de dados completo
+-- BOSSA — banco de dados completo
 --
 -- COMO USAR:
 --   1. No painel do Supabase, abra "SQL Editor" no menu da esquerda.

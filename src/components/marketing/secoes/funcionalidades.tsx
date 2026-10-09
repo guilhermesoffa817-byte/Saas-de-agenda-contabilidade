@@ -34,7 +34,7 @@ const GRUPOS: { nome: string; itens: Item[] }[] = [
         icone: Link2,
         titulo: "Link de agendamento próprio",
         texto:
-          "alicerce.com.br/agendar/seu-negocio na bio do Instagram. O cliente marca em cinco toques, pelo celular.",
+          "bossa.com.br/agendar/seu-negocio na bio do Instagram. O cliente marca em cinco toques, pelo celular.",
         grande: true,
       },
       {

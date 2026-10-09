@@ -50,7 +50,7 @@ export default async function LayoutSistema({ children }: { children: ReactNode 
         <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
           <NavegacaoCelular itens={itens} />
           <Link href="/app" className="font-display text-lg font-semibold tracking-tight">
-            Alicerce
+            Bossa
           </Link>
 
           <div className="flex min-w-0 flex-1 items-center gap-3">

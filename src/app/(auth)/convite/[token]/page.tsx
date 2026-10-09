@@ -10,7 +10,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { supabaseConfigurado } from "@/lib/supabase/config";
 import { usuarioAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Convite — Alicerce" };
+export const metadata: Metadata = { title: "Convite — Bossa" };
 
 export const dynamic = "force-dynamic";
 

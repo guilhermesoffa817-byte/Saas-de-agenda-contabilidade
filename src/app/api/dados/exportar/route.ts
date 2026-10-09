@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 /**
  * Portabilidade (LGPD, art. 18): o dono baixa tudo o que é da empresa dele, em
  * JSON, num arquivo só. Vale também como saída sem rancor — quem quiser sair do
- * Alicerce leva os dados.
+ * Bossa leva os dados.
  *
  * Fica de fora o que não é dado da empresa: chave de API, token de cobrança e
  * qualquer segredo do servidor.
@@ -43,7 +43,7 @@ export async function GET() {
   const pacote: Record<string, unknown> = {
     exportado_em: new Date().toISOString(),
     observacao:
-      "Exportação completa dos dados desta empresa no Alicerce. Valores em centavos; datas em UTC.",
+      "Exportação completa dos dados desta empresa no Bossa. Valores em centavos; datas em UTC.",
     empresa: {
       id: empresa.id,
       nome: empresa.name,
@@ -67,7 +67,7 @@ export async function GET() {
     pacote[tabela] = error ? { erro: error.message } : (data ?? []);
   }
 
-  const nome = `alicerce-${empresa.slug}-${new Date().toISOString().slice(0, 10)}.json`;
+  const nome = `bossa-${empresa.slug}-${new Date().toISOString().slice(0, 10)}.json`;
 
   return new Response(JSON.stringify(pacote, null, 2), {
     status: 200,

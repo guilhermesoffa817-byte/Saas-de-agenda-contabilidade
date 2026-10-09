@@ -24,11 +24,11 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  if (!supabaseConfigurado) return { title: "Agendar — Alicerce" };
+  if (!supabaseConfigurado) return { title: "Agendar — Bossa" };
   const { slug } = await params;
   const empresa = await buscarEmpresa(slug);
   return {
-    title: empresa ? `Agendar em ${empresa.name}` : "Agendar — Alicerce",
+    title: empresa ? `Agendar em ${empresa.name}` : "Agendar — Bossa",
     description: empresa
       ? `Escolha o serviço, o dia e o horário para ser atendido em ${empresa.name}.`
       : undefined,
@@ -89,7 +89,7 @@ export default async function PaginaAgendamentoPublico({
         <span>
           Agenda por{" "}
           <Link href="/" className="font-medium text-foreground underline underline-offset-4">
-            Alicerce
+            Bossa
           </Link>
         </span>
         <Link href="/privacidade" className="underline underline-offset-4">

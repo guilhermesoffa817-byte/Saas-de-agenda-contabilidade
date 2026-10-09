@@ -283,7 +283,7 @@ export async function linkDoComprovante(caminho: string): Promise<Resposta<{ url
  * Marca (ou desmarca) o recibo do Receita Saúde de um recebimento.
  *
  * Quem emite o recibo é o profissional, no aplicativo da Receita Federal — o
- * Alicerce só guarda o controle de quais já saíram, para nenhum ficar para trás
+ * Bossa só guarda o controle de quais já saíram, para nenhum ficar para trás
  * na declaração. Funciona mesmo com o mês fechado: emitir recibo acontece
  * depois, e não muda nenhum número do fechamento.
  */

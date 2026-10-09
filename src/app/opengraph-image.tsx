@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Alicerce — agenda e financeiro do seu negócio em um só lugar";
+export const alt = "Bossa — agenda e financeiro do seu negócio em um só lugar";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -50,9 +50,9 @@ export default async function ImagemSocial() {
               fontWeight: 700,
             }}
           >
-            A
+            B
           </div>
-          <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: -0.5 }}>Alicerce</span>
+          <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: -0.5 }}>Bossa</span>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>

@@ -15,7 +15,7 @@ export type Resposta<T = undefined> = { erro?: string; aviso?: string; dados?: T
  *
  * Três recusas antes de falar com o provedor, porque nota errada custa caro:
  * o plano precisa ter NFS-e, o provedor precisa estar contratado e os códigos
- * de tributação precisam estar configurados pelo contador. O Alicerce não
+ * de tributação precisam estar configurados pelo contador. O Bossa não
  * calcula imposto nenhum — ele repassa o que foi configurado.
  */
 export async function emitirNotaFiscal(lancamentoId: string): Promise<Resposta> {

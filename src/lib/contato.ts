@@ -1,5 +1,5 @@
 /**
- * Quem é o Alicerce, do lado de quem vende: nome, documento, cidade e os
+ * Quem é o Bossa, do lado de quem vende: nome, documento, cidade e os
  * e-mails institucionais. Fica tudo num lugar só para não divergir entre a
  * página de vendas, o rodapé, os termos e a política de privacidade.
  *
@@ -22,9 +22,9 @@ export const IDENTIDADE = {
   estado: "MT",
 } as const;
 
-export const ENCARREGADO_DE_DADOS = "privacidade@alicerce.com.br";
-export const SUPORTE = "suporte@alicerce.com.br";
-export const CONTATO = "contato@alicerce.com.br";
+export const ENCARREGADO_DE_DADOS = "privacidade@bossa.com.br";
+export const SUPORTE = "suporte@bossa.com.br";
+export const CONTATO = "contato@bossa.com.br";
 
 /** "CPF" ou "CNPJ", conforme o tipo — para não escrever o rótulo errado na tela. */
 export function rotuloDoDocumento(tipo: TipoDePessoa = IDENTIDADE.tipo) {

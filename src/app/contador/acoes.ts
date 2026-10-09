@@ -123,7 +123,7 @@ const CodigosDoServico = z.object({
 
 /**
  * Códigos de tributação por serviço, para a NFS-e. Quem preenche é o contador,
- * que é quem entende — o Alicerce só repassa ao provedor o que está aqui, sem
+ * que é quem entende — o Bossa só repassa ao provedor o que está aqui, sem
  * calcular imposto nenhum.
  */
 export async function salvarCodigosDeTributacao(

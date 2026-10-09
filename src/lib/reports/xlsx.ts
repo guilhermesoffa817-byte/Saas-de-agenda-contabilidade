@@ -8,7 +8,7 @@ const PAPEL = "FFFBF9F4";
 /** O mesmo relatório em Excel, com dinheiro em coluna de moeda e datas de verdade. */
 export async function tabelaParaExcel(tabela: Tabela) {
   const livro = new ExcelJS.Workbook();
-  livro.creator = "Alicerce";
+  livro.creator = "Bossa";
   livro.created = new Date();
 
   const aba = livro.addWorksheet(tabela.titulo.slice(0, 31), {

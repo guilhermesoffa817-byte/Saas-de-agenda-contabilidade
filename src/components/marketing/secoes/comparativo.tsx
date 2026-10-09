@@ -3,15 +3,15 @@ import { Check, Minus } from "lucide-react";
 import { Reveal } from "@/components/marketing/reveal";
 import { cn } from "@/lib/utils";
 
-const LINHAS: { recurso: string; alicerce: boolean; caderno: boolean; agenda: boolean }[] = [
-  { recurso: "Agendamento online por link", alicerce: true, caderno: false, agenda: true },
-  { recurso: "Lembrete no WhatsApp", alicerce: true, caderno: false, agenda: true },
-  { recurso: "Controle de caixa do dono", alicerce: true, caderno: true, agenda: false },
-  { recurso: "Recebimento automático ao concluir", alicerce: true, caderno: false, agenda: false },
-  { recurso: "Fechamento do mês", alicerce: true, caderno: false, agenda: false },
-  { recurso: "Relatório pronto para o contador", alicerce: true, caderno: false, agenda: false },
-  { recurso: "Portal do contador", alicerce: true, caderno: false, agenda: false },
-  { recurso: "Suporte em português", alicerce: true, caderno: false, agenda: true },
+const LINHAS: { recurso: string; bossa: boolean; caderno: boolean; agenda: boolean }[] = [
+  { recurso: "Agendamento online por link", bossa: true, caderno: false, agenda: true },
+  { recurso: "Lembrete no WhatsApp", bossa: true, caderno: false, agenda: true },
+  { recurso: "Controle de caixa do dono", bossa: true, caderno: true, agenda: false },
+  { recurso: "Recebimento automático ao concluir", bossa: true, caderno: false, agenda: false },
+  { recurso: "Fechamento do mês", bossa: true, caderno: false, agenda: false },
+  { recurso: "Relatório pronto para o contador", bossa: true, caderno: false, agenda: false },
+  { recurso: "Portal do contador", bossa: true, caderno: false, agenda: false },
+  { recurso: "Suporte em português", bossa: true, caderno: false, agenda: true },
 ];
 
 function Marca({ tem, destaque }: { tem: boolean; destaque?: boolean }) {
@@ -43,7 +43,7 @@ export function Comparativo() {
           <div className="overflow-x-auto rounded-lg border border-border bg-card">
             <table className="w-full min-w-2xl border-collapse text-sm">
               <caption className="sr-only">
-                Comparação entre o Alicerce, caderno com planilha e sistemas de agenda genéricos
+                Comparação entre o Bossa, caderno com planilha e sistemas de agenda genéricos
               </caption>
               <thead>
                 <tr className="border-b border-border">
@@ -51,7 +51,7 @@ export function Comparativo() {
                     O que você precisa
                   </th>
                   <th scope="col" className="bg-muted px-4 py-3 text-center font-medium">
-                    Alicerce
+                    Bossa
                   </th>
                   <th scope="col" className="px-4 py-3 text-center font-medium text-muted-foreground">
                     Caderno + planilha
@@ -68,7 +68,7 @@ export function Comparativo() {
                       {linha.recurso}
                     </th>
                     <td className="bg-muted px-4 py-3">
-                      <Marca tem={linha.alicerce} destaque />
+                      <Marca tem={linha.bossa} destaque />
                     </td>
                     <td className="px-4 py-3">
                       <Marca tem={linha.caderno} />

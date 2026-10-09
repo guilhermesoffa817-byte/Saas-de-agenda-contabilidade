@@ -37,7 +37,7 @@ const PASSOS = [
   {
     titulo: "Fim do mês em um clique",
     texto:
-      "O Alicerce confere o que ficou faltando, trava o mês e manda o pacote de relatórios para o seu contador.",
+      "O Bossa confere o que ficou faltando, trava o mês e manda o pacote de relatórios para o seu contador.",
     Tela: TelaFechamento,
   },
 ];
@@ -48,7 +48,7 @@ export function Tour() {
       <div className="mx-auto w-full max-w-6xl px-6 py-20">
         <div className="mb-10 flex flex-col gap-3">
           <h2 className="max-w-2xl font-display text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl">
-            Por dentro do Alicerce
+            Por dentro do Bossa
           </h2>
           <p className="max-w-2xl text-lg text-muted-foreground">
             Quatro passos que acontecem no seu dia. Role para ver cada tela.

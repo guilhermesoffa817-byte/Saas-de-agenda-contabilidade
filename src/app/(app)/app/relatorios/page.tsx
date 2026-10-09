@@ -16,7 +16,7 @@ import { filtroDeData, montarRelatorio, relatoriosDoRegime, type TipoDeRelatorio
 import { empresaAtual } from "@/lib/supabase/sessao";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Relatórios — Alicerce" };
+export const metadata: Metadata = { title: "Relatórios — Bossa" };
 
 const DIA = /^\d{4}-\d{2}-\d{2}$/;
 

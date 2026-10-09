@@ -12,7 +12,7 @@ import { formatarData } from "@/lib/dates";
 import { planoDe } from "@/lib/planos";
 import { empresaAtual, situacaoDaEmpresa } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Assinatura — Alicerce" };
+export const metadata: Metadata = { title: "Assinatura — Bossa" };
 
 const SITUACAO_DA_COBRANCA: Record<string, string> = {
   PENDING: "Aguardando pagamento",

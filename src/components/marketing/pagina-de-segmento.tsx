@@ -53,7 +53,7 @@ export function PaginaDeSegmento({ conteudo }: { conteudo: ConteudoDeSegmento })
         </div>
 
         <div className="min-w-0">
-          <BrowserFrame url="app.alicerce.com.br/app/agenda">
+          <BrowserFrame url="app.bossa.com.br/app/agenda">
             <TelaAgenda />
           </BrowserFrame>
         </div>
@@ -83,7 +83,7 @@ export function PaginaDeSegmento({ conteudo }: { conteudo: ConteudoDeSegmento })
         <div className="grid gap-10 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight text-balance">
-              Como fica com o Alicerce
+              Como fica com o Bossa
             </h2>
             <ul className="flex flex-col gap-2.5">
               {conteudo.ganhos.map((ganho) => (
@@ -100,7 +100,7 @@ export function PaginaDeSegmento({ conteudo }: { conteudo: ConteudoDeSegmento })
               <span className="font-display text-xl font-semibold">{conteudo.fiscal.titulo}</span>
               <p className="text-sm leading-relaxed text-muted-foreground">{conteudo.fiscal.texto}</p>
               <p className="text-xs text-muted-foreground">
-                O Alicerce organiza e entrega os números; quem confirma a regra fiscal é o seu
+                O Bossa organiza e entrega os números; quem confirma a regra fiscal é o seu
                 contador.
               </p>
             </div>

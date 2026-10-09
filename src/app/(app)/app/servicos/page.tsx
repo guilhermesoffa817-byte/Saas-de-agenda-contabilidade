@@ -5,7 +5,7 @@ import { GestaoDeServicos, type ProfissionalDaTabela, type ServicoDaTabela } fro
 import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
 
-export const metadata: Metadata = { title: "Serviços — Alicerce" };
+export const metadata: Metadata = { title: "Serviços — Bossa" };
 
 export default async function PaginaServicos() {
   const { vinculo } = await empresaAtual();

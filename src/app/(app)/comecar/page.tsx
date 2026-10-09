@@ -7,7 +7,7 @@ import { supabaseConfigurado } from "@/lib/supabase/config";
 import { exigirUsuario, vinculosDoUsuario } from "@/lib/supabase/sessao";
 import { enderecoDoSite } from "@/lib/url";
 
-export const metadata: Metadata = { title: "Começar — Alicerce" };
+export const metadata: Metadata = { title: "Começar — Bossa" };
 
 export const dynamic = "force-dynamic";
 

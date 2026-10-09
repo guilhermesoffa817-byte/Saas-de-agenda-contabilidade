@@ -6,7 +6,7 @@
  * da NT 008/2026 e dos campos de IBS/CBS. Trocar de provedor deve ser trocar a
  * implementação desta interface, e nada mais.
  *
- * O Alicerce **não calcula imposto**. Os códigos de tributação de cada serviço
+ * O Bossa **não calcula imposto**. Os códigos de tributação de cada serviço
  * são configurados pelo contador em `service_tax_codes` e repassados como estão.
  */
 
@@ -31,7 +31,7 @@ export type CodigosDeTributacao = {
 };
 
 export type PedidoDeNota = {
-  /** Id do lançamento no Alicerce: volta no webhook para fechar o ciclo. */
+  /** Id do lançamento no Bossa: volta no webhook para fechar o ciclo. */
   referencia: string;
   valorCents: number;
   competencia: string; // AAAA-MM-DD
