@@ -28,6 +28,14 @@ const TABELAS = [
   "invoices",
   "message_logs",
   "audit_logs",
+  "staff_members",
+  "staff_private",
+  "staff_absences",
+  "staff_payments",
+  "transaction_cost_overrides",
+  "ai_conversations",
+  "ai_usage_logs",
+  "ai_consents",
 ] as const;
 
 export async function GET() {
@@ -66,6 +74,15 @@ export async function GET() {
       .eq("organization_id", empresa.id);
     pacote[tabela] = error ? { erro: error.message } : (data ?? []);
   }
+
+  // Mensagens do assistente: só o texto que a pessoa viu. O conteúdo bruto da API
+  // (com o raciocínio do modelo) é detalhe interno e fica de fora.
+  const mensagens = await supabase
+    .from("ai_messages")
+    .select("id, conversation_id, role, display_text, created_at")
+    .eq("organization_id", empresa.id)
+    .order("id", { ascending: true });
+  pacote.ai_messages = mensagens.error ? { erro: mensagens.error.message } : (mensagens.data ?? []);
 
   const nome = `bossa-${empresa.slug}-${new Date().toISOString().slice(0, 10)}.json`;
 

@@ -29,6 +29,7 @@ que já está conferido no código.
 - [ ] Extensões `pg_cron` e `pg_net` habilitadas no Supabase.
 - [ ] Segredos no Vault (`app_url` e `cron_secret`) criados **à mão** no SQL Editor, nunca em migração.
 - [ ] Job `lembretes-whatsapp` agendado e testado com um agendamento de verdade a 23h30 do horário.
+- [ ] Job `limpeza-diaria` agendado (README): conversas de IA, uso de IA e tentativas antigas.
 - [ ] Tabela de preços da Meta conferida antes de definir as franquias em `src/lib/planos.ts` (os preços só mudam no primeiro dia de cada trimestre).
 
 ### NFS-e (plano Negócio)

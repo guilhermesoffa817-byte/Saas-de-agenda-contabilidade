@@ -9,9 +9,17 @@ import { describe, expect, it } from "vitest";
  * Regra escrita que ninguém verifica é regra que se perde na terceira pressa.
  */
 
-/** Lista arquivos versionados que casam com o padrão, direto do git. */
+/**
+ * Lista os arquivos do projeto que casam com o padrão, direto do git: os
+ * versionados e os novos ainda não commitados (fora os do .gitignore) — senão
+ * um arquivo novo só seria conferido depois de entrar no repositório.
+ */
 function arquivos(...padroes: string[]) {
-  const saida = execFileSync("git", ["ls-files", ...padroes], { encoding: "utf8" });
+  const saida = execFileSync(
+    "git",
+    ["ls-files", "--cached", "--others", "--exclude-standard", "--deduplicate", ...padroes],
+    { encoding: "utf8" },
+  );
   return saida.split("\n").filter(Boolean);
 }
 
@@ -34,16 +42,32 @@ describe("a chave secreta nunca vaza para o navegador", () => {
     expect(vazando).toEqual([]);
   });
 
+  it("ANTHROPIC_API_KEY só aparece em arquivo com import \"server-only\"", () => {
+    const vazando = fontes
+      .filter((caminho) => !caminho.includes(".test."))
+      .filter((caminho) => {
+        const texto = ler(caminho);
+        return texto.includes("ANTHROPIC_API_KEY") && !texto.includes('import "server-only"');
+      });
+
+    expect(vazando).toEqual([]);
+  });
+
   it("nenhuma chave secreta ganha o prefixo NEXT_PUBLIC", () => {
     const errados = fontes
       .concat(arquivos(".env.example"))
-      .filter((caminho) => /NEXT_PUBLIC_[A-Z_]*(SECRET|SERVICE_ROLE|PRIVATE)/.test(ler(caminho)));
+      .filter((caminho) => /NEXT_PUBLIC_[A-Z_]*(SECRET|SERVICE_ROLE|PRIVATE|ANTHROPIC)/.test(ler(caminho)));
 
     expect(errados).toEqual([]);
   });
 
   it("os clientes com chave secreta declaram server-only", () => {
-    for (const caminho of ["src/lib/supabase/admin.ts", "src/lib/asaas.ts", "src/lib/nfse/index.ts"]) {
+    for (const caminho of [
+      "src/lib/supabase/admin.ts",
+      "src/lib/asaas.ts",
+      "src/lib/nfse/index.ts",
+      "src/lib/ia/cliente.ts",
+    ]) {
       expect(ler(caminho), caminho).toContain('import "server-only"');
     }
   });

@@ -133,6 +133,23 @@ select cron.schedule(
 );
 ```
 
+Na mesma hora, agende a limpeza diária dos dados com prazo de guarda — é tudo SQL, sem passar pela
+aplicação. Hoje ela apaga as conversas do assistente de IA paradas há mais de 90 dias e os registros
+de uso de IA com mais de 12 meses (`public.limpar_dados_de_ia`, migração 0014), além das tentativas
+de agendamento e de login com mais de 7 dias:
+
+```sql
+select cron.schedule(
+  'limpeza-diaria',
+  '17 6 * * *',
+  $$
+  select public.limpar_dados_de_ia();
+  select public.limpar_tentativas_antigas();
+  select public.limpar_tentativas_de_conta();
+  $$
+);
+```
+
 A rota reserva os lembretes com um `update ... returning` antes de enviar, então duas execuções ao
 mesmo tempo nunca mandam o mesmo lembrete. Se o envio falhar, a reserva volta e a execução seguinte
 tenta de novo.

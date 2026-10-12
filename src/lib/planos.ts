@@ -13,6 +13,9 @@ export const PLANOS = {
     anualCents: 690_00,
     maxProfissionais: 1,
     lembretesAutomaticosMes: 0,
+    // Franquias de IA por mês. [EXEMPLO — revisar antes do lançamento]
+    perguntasIaMes: 20,
+    classificacoesIaMes: 100,
     nfse: false,
     resumo: "Para quem atende sozinho.",
   },
@@ -22,6 +25,9 @@ export const PLANOS = {
     anualCents: 1_290_00,
     maxProfissionais: 5,
     lembretesAutomaticosMes: 500,
+    // [EXEMPLO — revisar antes do lançamento]
+    perguntasIaMes: 60,
+    classificacoesIaMes: 300,
     nfse: false,
     resumo: "Para equipe pequena, com lembrete automático no WhatsApp.",
   },
@@ -31,6 +37,9 @@ export const PLANOS = {
     anualCents: 2_190_00,
     maxProfissionais: Infinity,
     lembretesAutomaticosMes: 2000,
+    // [EXEMPLO — revisar antes do lançamento]
+    perguntasIaMes: 200,
+    classificacoesIaMes: 1000,
     nfse: true,
     resumo: "Para equipe sem limite, com emissão de nota fiscal de serviço.",
   },
@@ -95,4 +104,23 @@ export function limiteDeLembretes(chave: string | null | undefined) {
 export function permiteNotaFiscal(chave: string | null | undefined) {
   if (!chave || chave === "trial") return false;
   return planoDe(chave)?.nfse ?? false;
+}
+
+/**
+ * Teste grátis: teto menor que o do plano do meio, contra abuso (a IA tem custo
+ * por uso). [EXEMPLO — revisar antes do lançamento]
+ */
+export const PERGUNTAS_IA_NO_TESTE = 10;
+export const CLASSIFICACOES_IA_NO_TESTE = 30;
+
+export type RecursoDeIa = "assistente" | "classificacao";
+
+/** Quantos usos de IA por mês o plano dá: perguntas ao assistente ou despesas classificadas. */
+export function limiteDeIa(chave: string | null | undefined, recurso: RecursoDeIa) {
+  if (!chave || chave === "trial") {
+    return recurso === "assistente" ? PERGUNTAS_IA_NO_TESTE : CLASSIFICACOES_IA_NO_TESTE;
+  }
+  const plano = planoDe(chave);
+  if (!plano) return 0;
+  return recurso === "assistente" ? plano.perguntasIaMes : plano.classificacoesIaMes;
 }

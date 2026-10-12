@@ -326,6 +326,8 @@ export type Database = {
           report_group: string;
           deductible_hint: boolean;
           accounting_code: string | null;
+          cost_behavior: string | null;
+          cost_behavior_source: string;
         };
         Insert: {
           id?: string;
@@ -335,6 +337,8 @@ export type Database = {
           report_group?: string;
           deductible_hint?: boolean;
           accounting_code?: string | null;
+          cost_behavior?: string | null;
+          cost_behavior_source?: string;
         };
         Update: {
           id?: string;
@@ -344,6 +348,8 @@ export type Database = {
           report_group?: string;
           deductible_hint?: boolean;
           accounting_code?: string | null;
+          cost_behavior?: string | null;
+          cost_behavior_source?: string;
         };
         Relationships: [
           {
@@ -982,6 +988,422 @@ export type Database = {
         };
         Relationships: [];
       };
+      staff_members: {
+        Row: {
+          id: string;
+          organization_id: string;
+          professional_id: string | null;
+          name: string;
+          job_title: string | null;
+          contract: Database["public"]["Enums"]["staff_contract"];
+          started_on: string;
+          ended_on: string | null;
+          base_pay_cents: number;
+          commission_bps: number;
+          per_service_cents: number;
+          anonymized_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          professional_id?: string | null;
+          name: string;
+          job_title?: string | null;
+          contract: Database["public"]["Enums"]["staff_contract"];
+          started_on: string;
+          ended_on?: string | null;
+          base_pay_cents?: number;
+          commission_bps?: number;
+          per_service_cents?: number;
+          anonymized_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          professional_id?: string | null;
+          name?: string;
+          job_title?: string | null;
+          contract?: Database["public"]["Enums"]["staff_contract"];
+          started_on?: string;
+          ended_on?: string | null;
+          base_pay_cents?: number;
+          commission_bps?: number;
+          per_service_cents?: number;
+          anonymized_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_members_professional_id_fkey";
+            columns: ["professional_id"];
+            isOneToOne: false;
+            referencedRelation: "professionals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff_private: {
+        Row: {
+          staff_id: string;
+          organization_id: string;
+          document: string | null;
+          pix_key: string | null;
+          phone_e164: string | null;
+          email: string | null;
+          notes: string | null;
+        };
+        Insert: {
+          staff_id: string;
+          organization_id: string;
+          document?: string | null;
+          pix_key?: string | null;
+          phone_e164?: string | null;
+          email?: string | null;
+          notes?: string | null;
+        };
+        Update: {
+          staff_id?: string;
+          organization_id?: string;
+          document?: string | null;
+          pix_key?: string | null;
+          phone_e164?: string | null;
+          email?: string | null;
+          notes?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "staff_private_staff_id_fkey";
+            columns: ["staff_id"];
+            isOneToOne: true;
+            referencedRelation: "staff_members";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_private_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff_absences: {
+        Row: {
+          id: string;
+          organization_id: string;
+          staff_id: string;
+          kind: Database["public"]["Enums"]["staff_absence_kind"];
+          starts_on: string;
+          ends_on: string;
+          time_off_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          staff_id: string;
+          kind: Database["public"]["Enums"]["staff_absence_kind"];
+          starts_on: string;
+          ends_on: string;
+          time_off_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          staff_id?: string;
+          kind?: Database["public"]["Enums"]["staff_absence_kind"];
+          starts_on?: string;
+          ends_on?: string;
+          time_off_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "staff_absences_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_absences_staff_id_fkey";
+            columns: ["staff_id"];
+            isOneToOne: false;
+            referencedRelation: "staff_members";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_absences_time_off_id_fkey";
+            columns: ["time_off_id"];
+            isOneToOne: false;
+            referencedRelation: "time_off";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff_payments: {
+        Row: {
+          id: string;
+          organization_id: string;
+          staff_id: string;
+          kind: Database["public"]["Enums"]["staff_payment_kind"];
+          reference_month: string;
+          amount_cents: number;
+          paid_on: string;
+          transaction_id: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          staff_id: string;
+          kind: Database["public"]["Enums"]["staff_payment_kind"];
+          reference_month: string;
+          amount_cents: number;
+          paid_on: string;
+          transaction_id: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          staff_id?: string;
+          kind?: Database["public"]["Enums"]["staff_payment_kind"];
+          reference_month?: string;
+          amount_cents?: number;
+          paid_on?: string;
+          transaction_id?: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "staff_payments_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_payments_staff_id_fkey";
+            columns: ["staff_id"];
+            isOneToOne: false;
+            referencedRelation: "staff_members";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_payments_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: true;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      transaction_cost_overrides: {
+        Row: {
+          transaction_id: string;
+          organization_id: string;
+          cost_behavior: string;
+          source: string;
+          reason: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          transaction_id: string;
+          organization_id: string;
+          cost_behavior: string;
+          source: string;
+          reason?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          transaction_id?: string;
+          organization_id?: string;
+          cost_behavior?: string;
+          source?: string;
+          reason?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "transaction_cost_overrides_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: true;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transaction_cost_overrides_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_conversations: {
+        Row: {
+          id: string;
+          organization_id: string;
+          user_id: string;
+          title: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          user_id: string;
+          title: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          user_id?: string;
+          title?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_messages: {
+        Row: {
+          id: number;
+          conversation_id: string;
+          organization_id: string;
+          role: string;
+          content: Json;
+          display_text: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          conversation_id: string;
+          organization_id: string;
+          role: string;
+          content: Json;
+          display_text?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          conversation_id?: string;
+          organization_id?: string;
+          role?: string;
+          content?: Json;
+          display_text?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_messages_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_usage_logs: {
+        Row: {
+          id: number;
+          organization_id: string;
+          user_id: string | null;
+          feature: string;
+          input_tokens: number;
+          output_tokens: number;
+          cache_read_tokens: number;
+          web_searches: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          organization_id: string;
+          user_id?: string | null;
+          feature: string;
+          input_tokens?: number;
+          output_tokens?: number;
+          cache_read_tokens?: number;
+          web_searches?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: never;
+          organization_id?: string;
+          user_id?: string | null;
+          feature?: string;
+          input_tokens?: number;
+          output_tokens?: number;
+          cache_read_tokens?: number;
+          web_searches?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_logs_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_consents: {
+        Row: {
+          organization_id: string;
+          user_id: string;
+          accepted_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          user_id: string;
+          accepted_at?: string;
+        };
+        Update: {
+          organization_id?: string;
+          user_id?: string;
+          accepted_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_consents_organization_id_fkey";
+            columns: ["organization_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       clientes_para_contabilidade: {
@@ -1084,6 +1506,51 @@ export type Database = {
         };
         Returns: string;
       };
+      registrar_ausencia: {
+        Args: {
+          p_staff: string;
+          p_kind: Database["public"]["Enums"]["staff_absence_kind"];
+          p_inicio: string;
+          p_fim: string;
+        };
+        Returns: string;
+      };
+      excluir_ausencia: {
+        Args: { p_absence: string };
+        Returns: undefined;
+      };
+      registrar_pagamento_equipe: {
+        Args: {
+          p_staff: string;
+          p_kind: Database["public"]["Enums"]["staff_payment_kind"];
+          p_mes: string;
+          p_valor_cents: number;
+          p_pago_em: string;
+          p_conta: string | null;
+          p_forma: Database["public"]["Enums"]["payment_method"] | null;
+        };
+        Returns: string;
+      };
+      excluir_pagamento_equipe: {
+        Args: { p_payment: string };
+        Returns: undefined;
+      };
+      base_de_comissao: {
+        Args: { p_staff: string; p_mes: string };
+        Returns: number;
+      };
+      remover_colaborador: {
+        Args: { p_staff: string };
+        Returns: string;
+      };
+      uso_de_ia_no_mes: {
+        Args: { p_org: string; p_feature: string };
+        Returns: number;
+      };
+      limpar_dados_de_ia: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
     };
     Enums: {
       appointment_status: "agendado" | "confirmado" | "concluido" | "faltou" | "cancelado";
@@ -1095,6 +1562,27 @@ export type Database = {
         | "cartao_debito"
         | "boleto"
         | "transferencia"
+        | "outro";
+      staff_absence_kind:
+        | "ferias"
+        | "recesso"
+        | "folga"
+        | "atestado"
+        | "licenca"
+        | "falta"
+        | "indisponivel";
+      staff_contract: "clt" | "parceria" | "mei" | "pj" | "autonomo" | "estagio";
+      staff_payment_kind:
+        | "salario"
+        | "comissao"
+        | "cota_parte"
+        | "repasse"
+        | "bolsa"
+        | "adiantamento"
+        | "bonus"
+        | "beneficio"
+        | "encargo"
+        | "rescisao"
         | "outro";
       tax_regime: "pf_autonomo" | "mei" | "simples_nacional" | "outro";
       tx_kind: "receita" | "despesa";
