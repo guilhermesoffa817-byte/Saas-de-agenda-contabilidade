@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CONTATO, IDENTIDADE, rotuloDoDocumento } from "@/lib/contato";
+import { ORDEM_DOS_PLANOS, PERGUNTAS_IA_NO_TESTE, PLANOS } from "@/lib/planos";
 
 export const metadata: Metadata = {
   title: "Termos de uso — Bossa",
@@ -13,7 +14,7 @@ export default function PaginaTermos() {
       <header className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Termos de uso</h1>
         <p className="text-sm text-muted-foreground">
-          Última atualização: setembro de 2026 · Versão para revisão jurídica
+          Última atualização: outubro de 2026 · Versão para revisão jurídica
         </p>
       </header>
 
@@ -33,6 +34,15 @@ export default function PaginaTermos() {
           <li>Não calcula impostos por conta própria.</li>
           <li>Não é prontuário eletrônico.</li>
           <li>Não emite o recibo do Receita Saúde, que é feito nos canais da Receita Federal.</li>
+          <li>
+            Não faz folha de pagamento, não calcula encargos trabalhistas e não envia informações ao
+            eSocial. Os valores pagos à equipe são os que você registra, a partir do que o seu
+            contador enviou.
+          </li>
+          <li>
+            As sugestões do assistente de IA são informativas, podem conter erros e não são
+            consultoria contábil, jurídica ou financeira.
+          </li>
         </ul>
       </section>
 
@@ -42,6 +52,19 @@ export default function PaginaTermos() {
           O teste grátis dura 7 dias e não pede cartão de crédito. Depois disso, a assinatura é
           cobrada conforme o plano escolhido e pode ser cancelada a qualquer momento, sem multa. O
           valor pago no período já iniciado não é devolvido <strong>[EXEMPLO]</strong>.
+        </p>
+        <p className="text-sm leading-relaxed">
+          Cada plano inclui uma franquia mensal de perguntas ao assistente de IA:{" "}
+          {ORDEM_DOS_PLANOS.map((chave, i) => (
+            <span key={chave}>
+              {i > 0 ? (i === ORDEM_DOS_PLANOS.length - 1 ? " e " : ", ") : ""}
+              {PLANOS[chave].perguntasIaMes} no {PLANOS[chave].nome}
+            </span>
+          ))}
+          . Durante o teste grátis, são {PERGUNTAS_IA_NO_TESTE} perguntas <strong>[EXEMPLO]</strong>.
+          A franquia renova no primeiro dia de cada mês e não acumula de um mês para o outro. Os
+          limites do seu plano e o quanto já foi usado aparecem na tela do assistente. Quando ela acaba, o assistente para de responder até
+          a renovação; o restante do sistema continua funcionando.
         </p>
       </section>
 

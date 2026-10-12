@@ -84,6 +84,9 @@ export default async function PaginaFinanceiro({
             <Link href={`/app/financeiro/categorias`}>Categorias e contas</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
+            <Link href={`/app/financeiro/custos?mes=${mes}`}>Custos operacionais</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href={`/app/financeiro/fechamento?mes=${mes}`}>
               <Lock aria-hidden />
               Fechar o mês

@@ -17,16 +17,21 @@ import {
   ativoNoMes,
   ausenciaPermitida,
   bpsParaTexto,
+  categoriaDoPagamento,
   contratosDoSegmento,
+  diasNoPeriodo,
   estaAtivo,
+  formatarDia,
   formatarPercentual,
   limitesDoMes,
   pagamentoPermitido,
+  profissionaisLivres,
   remuneracaoDoVinculo,
   resumirRemuneracao,
   somarMeses,
   textoParaBps,
   tipoDePagamentoSugerido,
+  valorDoTipoDePagamento,
   valorSugeridoDoMes,
   type ColaboradorParaAlerta,
 } from "./equipe";
@@ -105,6 +110,17 @@ describe("vocabulário igual ao do banco", () => {
   it("PAGAMENTOS_POR_VINCULO bate com private.pagamento_permitido", () => {
     const banco = mapaDoCase(corpoDaFuncao("private.pagamento_permitido"), contratos);
     expect(ordenado(PAGAMENTOS_POR_VINCULO)).toEqual(banco);
+  });
+
+  it("a categoria do pagamento é a mesma que registrar_pagamento_equipe escolhe", () => {
+    const corpo = corpoDaFuncao("public.registrar_pagamento_equipe");
+    const achado = /case\s+when\s+p_kind\s+in\s*\(([^)]*)\)\s*then\s*'([^']+)'\s*else\s*'([^']+)'/i.exec(corpo);
+    expect(achado).not.toBeNull();
+    const [, lista, comissoes, salarios] = achado!;
+    const deComissao = [...lista.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
+    for (const tipo of TIPOS_DE_PAGAMENTO) {
+      expect(categoriaDoPagamento(tipo), tipo).toBe(deComissao.includes(tipo) ? comissoes : salarios);
+    }
   });
 
   it("todo tipo tem rótulo e todo vínculo tem descrição", () => {
@@ -331,7 +347,67 @@ describe("valor sugerido do mês", () => {
   });
 });
 
+describe("valor que já vem no diálogo de pagamento", () => {
+  const sugerido = valorSugeridoDoMes({
+    fixoCents: 190000,
+    percentualBps: 1000,
+    porAtendimentoCents: 2500,
+    baseCents: 845000,
+    atendimentos: 4,
+  });
+
+  it("cada tipo puxa a parte certa do combinado", () => {
+    expect(valorDoTipoDePagamento("salario", sugerido)).toBe(190000);
+    expect(valorDoTipoDePagamento("bolsa", sugerido)).toBe(190000);
+    expect(valorDoTipoDePagamento("comissao", sugerido)).toBe(84500);
+    expect(valorDoTipoDePagamento("cota_parte", sugerido)).toBe(94500);
+    expect(valorDoTipoDePagamento("repasse", sugerido)).toBe(94500);
+  });
+
+  it("o que não tem conta combinada vem vazio, para o dono digitar", () => {
+    for (const tipo of ["adiantamento", "bonus", "beneficio", "encargo", "rescisao", "outro"] as const) {
+      expect(valorDoTipoDePagamento(tipo, sugerido)).toBe(0);
+    }
+  });
+});
+
+describe("profissionais da agenda livres para ligar", () => {
+  const profissionais = [
+    { id: "p1", nome: "Juliana Prado" },
+    { id: "p2", nome: "Bianca Rocha" },
+    { id: "p3", nome: "Marcos Teixeira" },
+  ];
+  const colaboradores = [
+    { id: "c1", profissionalId: "p1" },
+    { id: "c2", profissionalId: null },
+    { id: "c3", profissionalId: "p2" },
+  ];
+
+  it("esconde quem já está ligado a outro colaborador", () => {
+    expect(profissionaisLivres(profissionais, colaboradores).map((p) => p.id)).toEqual(["p3"]);
+  });
+
+  it("mantém o profissional do próprio colaborador em edição", () => {
+    expect(profissionaisLivres(profissionais, colaboradores, "c1").map((p) => p.id)).toEqual([
+      "p1",
+      "p3",
+    ]);
+  });
+});
+
 describe("datas de calendário", () => {
+  it("formata o dia sem passar por fuso", () => {
+    expect(formatarDia("2026-10-05")).toBe("05/10/2026");
+    expect(formatarDia("2026-01-01")).toBe("01/01/2026");
+  });
+
+  it("conta os dias do período, inclusive o primeiro e o último", () => {
+    expect(diasNoPeriodo("2026-11-03", "2026-11-03")).toBe(1);
+    expect(diasNoPeriodo("2026-11-03", "2026-11-17")).toBe(15);
+    expect(diasNoPeriodo("2026-02-27", "2026-03-02")).toBe(4);
+    expect(diasNoPeriodo("2026-10-01", "2026-10-31")).toBe(31);
+  });
+
   it("soma meses encostando no fim do mês", () => {
     expect(somarMeses("2024-01-31", 1)).toBe("2024-02-29");
     expect(somarMeses("2025-01-31", 1)).toBe("2025-02-28");

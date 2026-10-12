@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import {
+  colunasDoComportamento,
   esquemaBaixa,
   esquemaCategoria,
   esquemaConclusaoComPagamento,
@@ -206,6 +207,7 @@ export async function salvarCategoria(entrada: CategoriaInput): Promise<Resposta
     report_group: validado.data.grupo,
     deductible_hint: validado.data.sugestaoDedutivel,
     accounting_code: validado.data.codigoContabil || null,
+    ...colunasDoComportamento(validado.data),
   };
 
   const { error } = validado.data.categoriaId
@@ -222,6 +224,7 @@ export async function salvarCategoria(entrada: CategoriaInput): Promise<Resposta
   }
 
   revalidatePath("/app/financeiro/categorias");
+  revalidatePath("/app/financeiro/custos");
   limpar();
   return { aviso: "Categoria salva." };
 }

@@ -59,7 +59,42 @@ export const esquemaCategoria = z.object({
   grupo: z.enum(["operacional", "imposto", "financeiro", "retirada"]),
   sugestaoDedutivel: z.boolean(),
   codigoContabil: z.string().trim().max(30).optional().or(z.literal("")),
+  /**
+   * Comportamento do custo (custos operacionais). Só vai junto quando o dono
+   * mexeu no seletor: ausente, a categoria mantém o que tinha (e a origem dela).
+   */
+  comportamento: z.enum(["fixo", "variavel", "nao_operacional", "sem"]).optional(),
 });
+
+/**
+ * As colunas `cost_behavior` e `cost_behavior_source` que acompanham o save da
+ * categoria. Entrada e retirada do dono nunca têm comportamento de custo.
+ */
+export function colunasDoComportamento(dados: Pick<CategoriaInput, "tipo" | "grupo" | "comportamento">):
+  | { cost_behavior: null }
+  | { cost_behavior: "fixo" | "variavel" | "nao_operacional" | null; cost_behavior_source: "dono" }
+  | Record<string, never> {
+  if (dados.tipo === "receita" || dados.grupo === "retirada") return { cost_behavior: null };
+  if (dados.comportamento === undefined) return {};
+  return {
+    cost_behavior: dados.comportamento === "sem" ? null : dados.comportamento,
+    cost_behavior_source: "dono",
+  };
+}
+
+export const ROTULO_COMPORTAMENTO_DO_CUSTO: Record<"fixo" | "variavel" | "nao_operacional" | "sem", string> = {
+  fixo: "Custo fixo",
+  variavel: "Custo variável",
+  nao_operacional: "Fora da operação",
+  sem: "Sem classificação",
+};
+
+export const AJUDA_COMPORTAMENTO_DO_CUSTO: Record<"fixo" | "variavel" | "nao_operacional" | "sem", string> = {
+  fixo: "Você paga mesmo num mês sem nenhum atendimento.",
+  variavel: "Sobe e desce junto com os atendimentos.",
+  nao_operacional: "Não tem a ver com atender clientes.",
+  sem: "Cada lançamento é classificado um a um, na tela de custos.",
+};
 
 export const esquemaConta = z.object({
   contaId: z.uuid().optional(),

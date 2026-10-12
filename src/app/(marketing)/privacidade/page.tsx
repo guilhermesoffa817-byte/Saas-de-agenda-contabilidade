@@ -17,7 +17,7 @@ export default function PaginaPrivacidade() {
       <header className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Política de privacidade</h1>
         <p className="text-sm text-muted-foreground">
-          Última atualização: setembro de 2026 · Versão para revisão jurídica
+          Última atualização: outubro de 2026 · Versão para revisão jurídica
         </p>
       </header>
 
@@ -25,8 +25,8 @@ export default function PaginaPrivacidade() {
         <h2 className="text-xl font-semibold tracking-tight">Quem é responsável pelos dados</h2>
         <p className="text-sm leading-relaxed">
           O negócio que usa o Bossa (o salão, a clínica, o consultório) é o{" "}
-          <strong>controlador</strong> dos dados dos clientes dele: é quem decide coletar nome,
-          telefone e histórico de atendimentos. O Bossa é <strong>operador</strong>: trata esses
+          <strong>controlador</strong> dos dados dos clientes e da equipe dele: é quem decide coletar
+          nome, telefone, histórico de atendimentos e o que foi combinado com cada colaborador. O Bossa é <strong>operador</strong>: trata esses
           dados seguindo as instruções do negócio, para fazer a agenda e o controle financeiro
           funcionarem.
         </p>
@@ -46,6 +46,11 @@ export default function PaginaPrivacidade() {
           <li>
             <strong>Dos clientes do negócio:</strong> nome, WhatsApp, e-mail e CPF quando informados,
             histórico de atendimentos e anotações administrativas.
+          </li>
+          <li>
+            <strong>Da equipe do negócio:</strong> nome, função, tipo de contrato, remuneração
+            combinada, pagamentos registrados, períodos de ausência e, quando informados, CPF, chave
+            Pix e contato. Atestado entra só como período, sem diagnóstico nem outro dado de saúde.
           </li>
           <li>
             <strong>Do agendamento online:</strong> registro da tentativa (endereço IP em forma
@@ -98,6 +103,13 @@ export default function PaginaPrivacidade() {
             <strong>Provedor de NFS-e:</strong> só no plano Negócio e só quando o negócio pede a
             emissão. Vão o valor, a descrição do serviço, os códigos de tributação que o contador
             configurou e, quando informados, nome e documento do tomador.
+          </li>
+          <li>
+            <strong>Anthropic (Claude):</strong> assistente de negócios e sugestão de classificação de
+            despesas, só quando o negócio usa essas funções. Vão totais e indicadores do negócio, nomes
+            de categorias e descrições de despesas sem dados pessoais — nunca nome, telefone, CPF ou
+            anotações de clientes. A pesquisa na internet usa apenas o segmento e a cidade. O
+            processamento ocorre fora do Brasil, com cláusulas contratuais de proteção de dados.
           </li>
         </ul>
       </section>
@@ -152,6 +164,13 @@ export default function PaginaPrivacidade() {
           telefone nem anotações dos clientes. O banco de dados aplica essas regras por empresa, linha
           por linha, e registra em log as exportações e as reaberturas de mês.
         </p>
+        <p className="text-sm leading-relaxed">
+          Os dados da equipe do negócio só o dono vê por inteiro. O contador vê o necessário para a
+          folha — nome, função, contrato, remuneração combinada, ausências e pagamentos —, sem CPF,
+          chave Pix nem contato. A recepção e os profissionais não veem nada disso: na agenda aparece
+          só o bloqueio &ldquo;Ausência&rdquo;, sem o motivo. O assistente de IA só é usado pelo dono e
+          recebe os pagamentos da equipe apenas somados, sem nome, CPF nem chave Pix.
+        </p>
       </section>
 
       <section className="flex flex-col gap-3">
@@ -160,6 +179,14 @@ export default function PaginaPrivacidade() {
           Os dados ficam em servidores na região de São Paulo, no Brasil. Serviços de terceiros usados
           para operar o sistema (envio de e-mail, cobrança da assinatura, proteção contra robôs)
           recebem apenas o mínimo necessário.
+        </p>
+        <p className="text-sm leading-relaxed">
+          A exceção é o assistente de IA: quando o negócio usa o assistente ou a sugestão de
+          classificação de despesas, o processamento acontece em servidores da Anthropic fora do
+          Brasil. É uma transferência internacional de dados, feita com cláusulas contratuais de
+          proteção de dados, e só leva o que está descrito na lista de suboperadores acima. Os dados
+          continuam guardados no Brasil e, pelos termos comerciais do provedor, o que é enviado ao
+          assistente não é usado para treinar modelos de IA.
         </p>
       </section>
 
@@ -171,6 +198,22 @@ export default function PaginaPrivacidade() {
           7 dias. Encerrada a conta, os dados são excluídos ou devolvidos em até{" "}
           <strong>[EXEMPLO: 30 dias]</strong>.
         </p>
+        <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed">
+          <li>
+            <strong>Conversas com o assistente de IA:</strong> apagadas depois de{" "}
+            <strong>[EXEMPLO: 90 dias]</strong> sem uso. O dono pode apagar qualquer conversa antes
+            disso.
+          </li>
+          <li>
+            <strong>Registros de uso da IA</strong> (quando, quantas perguntas, quanto processamento):
+            12 meses, para a contagem da franquia do plano e para auditoria.
+          </li>
+          <li>
+            <strong>Ex-colaboradores:</strong> ao remover alguém da equipe, o Bossa apaga CPF, chave
+            Pix, contato e nome. Os pagamentos já registrados continuam no financeiro, sem identificar
+            a pessoa, pelo prazo que o contador indicar.
+          </li>
+        </ul>
       </section>
 
       <section className="flex flex-col gap-3">

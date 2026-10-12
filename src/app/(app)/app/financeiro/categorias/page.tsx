@@ -3,10 +3,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { carregarCategorias, carregarContas } from "../dados";
+import { carregarContas } from "../dados";
 import { GestaoDeCategorias } from "@/components/app/financeiro/gestao-categorias";
 import { Button } from "@/components/ui/button";
+import { eNatureza } from "@/lib/custos/calculo";
+import { createClient } from "@/lib/supabase/server";
 import { empresaAtual } from "@/lib/supabase/sessao";
+
+/** Como `carregarCategorias`, mais o comportamento do custo. */
+async function categoriasComComportamento(empresaId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("id, name, kind, report_group, deductible_hint, accounting_code, cost_behavior")
+    .eq("organization_id", empresaId)
+    .order("kind")
+    .order("name");
+  return data ?? [];
+}
 
 export const metadata: Metadata = { title: "Categorias e contas — Bossa" };
 
@@ -16,7 +30,7 @@ export default async function PaginaCategorias() {
   if (vinculo.papel !== "dono") redirect("/app");
 
   const [categorias, contas] = await Promise.all([
-    carregarCategorias(vinculo.empresa.id),
+    categoriasComComportamento(vinculo.empresa.id),
     carregarContas(vinculo.empresa.id),
   ]);
 
@@ -45,6 +59,7 @@ export default async function PaginaCategorias() {
           grupo: categoria.report_group as "operacional",
           dedutivel: categoria.deductible_hint,
           codigoContabil: categoria.accounting_code,
+          comportamento: eNatureza(categoria.cost_behavior) ? categoria.cost_behavior : null,
         }))}
         contas={contas.map((conta) => ({
           id: conta.id,

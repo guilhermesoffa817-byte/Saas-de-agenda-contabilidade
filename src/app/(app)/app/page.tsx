@@ -1,10 +1,21 @@
-import { CalendarPlus, CheckCircle2, Circle, Scissors, UserPlus, Users } from "lucide-react";
+import {
+  CalendarPlus,
+  ChartPie,
+  CheckCircle2,
+  ChevronRight,
+  Circle,
+  MessageSquareText,
+  Scissors,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LinkDeAgendamento } from "@/components/app/link-de-agendamento";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { iaConfigurada } from "@/lib/ia/cliente";
 import { formatarBRL } from "@/lib/money";
 import { nomeDoSegmento } from "@/lib/segmentos";
 import { createClient } from "@/lib/supabase/server";
@@ -13,11 +24,23 @@ import { enderecoDoSite } from "@/lib/url";
 
 export const metadata: Metadata = { title: "Painel — Bossa" };
 
+/**
+ * Perguntas prontas do cartão do assistente. A página /app/assistente lê o
+ * parâmetro `pergunta` e já preenche o campo com ela.
+ */
+const PERGUNTAS_DO_PAINEL = [
+  "Quais serviços mais deram resultado nos últimos 3 meses?",
+  "Quanto preciso faturar por mês para cobrir os custos fixos?",
+];
+
+const linkDaPergunta = (pergunta: string) => `/app/assistente?${new URLSearchParams({ pergunta })}`;
+
 export default async function PaginaPainel() {
   const { vinculo } = await empresaAtual();
   if (!vinculo) return null;
 
   const empresa = vinculo.empresa;
+  const souDono = vinculo.papel === "dono";
   const supabase = await createClient();
 
   const [{ data: servicos }, { data: profissionais }, { count: totalClientes }, { count: totalEquipe }] =
@@ -172,6 +195,50 @@ export default async function PaginaPainel() {
           </CardContent>
         </Card>
       </div>
+
+      {souDono ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageSquareText className="size-4 text-muted-foreground" aria-hidden />
+              Pergunte ao assistente
+            </CardTitle>
+            <CardDescription>
+              Ele lê os totais do financeiro e da agenda e responde com sugestões. Confira os números antes de
+              decidir.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            {iaConfigurada() ? (
+              <ul className="flex flex-col gap-2">
+                {PERGUNTAS_DO_PAINEL.map((pergunta) => (
+                  <li key={pergunta}>
+                    <Link
+                      href={linkDaPergunta(pergunta)}
+                      className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm transition-colors hover:bg-accent"
+                    >
+                      <span>{pergunta}</span>
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                O assistente ainda não foi ativado neste servidor.
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link href="/app/financeiro/custos">
+                  <ChartPie aria-hidden />
+                  Ver custos fixos e variáveis
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

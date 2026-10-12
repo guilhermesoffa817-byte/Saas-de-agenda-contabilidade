@@ -220,23 +220,56 @@ describe("design: só os tokens, e movimento com freio", () => {
 });
 
 describe("nada que o produto não faz é prometido", () => {
-  const marketing = arquivos("src/components/marketing/**/*.tsx", "src/app/(marketing)/**/*.tsx");
+  // O Bossa não substitui o contador, não calcula imposto, não emite o recibo do
+  // Receita Saúde e não faz folha de pagamento (spec L59 e L85). Vale para a
+  // página de vendas e para a interface do sistema.
+  const PROMESSAS =
+    /substitui o (seu )?contador\b(?! *[,.]? *(não|nao))|calcula (os )?impostos? por você|emitimos o recibo do receita saúde|faz (a )?(sua )?folha de pagamento|calcula (os )?encargos|envia (para o |ao )?e-?social/gi;
 
-  it("nenhum texto diz que substitui o contador ou calcula imposto", () => {
-    const promessas =
-      /substitui o (seu )?contador\b(?! *[,.]? *(não|nao))|calcula (os )?impostos? por você|emitimos o recibo do receita saúde/i;
+  /** "Não faz folha de pagamento" e "nem substitui o contador" dizem o contrário da promessa. */
+  const NEGADA = /\b(não|nao|nem)\s+$/i;
 
-    const errados = marketing.filter((caminho) => {
-      const texto = ler(caminho);
-      // "não substitui o contador" é o que a gente quer dizer — e é o contrário.
-      const semNegativa = texto.replace(/não substitui o (seu )?contador/gi, "");
-      return promessas.test(semNegativa);
-    });
+  function promessasEm(texto: string) {
+    return [...texto.matchAll(PROMESSAS)]
+      .filter((achado) => !NEGADA.test(texto.slice(Math.max(0, achado.index - 40), achado.index)))
+      .map((achado) => achado[0]);
+  }
+
+  it("a regra pega a promessa e deixa passar a negativa", () => {
+    expect(promessasEm("O Bossa faz a sua folha de pagamento.")).toHaveLength(1);
+    expect(promessasEm("Calcula os encargos e envia ao eSocial.")).toHaveLength(2);
+    expect(promessasEm("Substitui o seu contador.")).toHaveLength(1);
+    expect(promessasEm("Calcula impostos por você.")).toHaveLength(1);
+    expect(
+      promessasEm(
+        "Não faz folha de pagamento, não calcula encargos trabalhistas e não envia informações ao eSocial. " +
+          "Não substitui o contador nem calcula impostos por você. O Bossa NÃO faz folha de pagamento.",
+      ),
+    ).toEqual([]);
+  });
+
+  it("nenhum texto promete substituir o contador, calcular imposto ou fazer a folha", () => {
+    const fontes = arquivos(
+      "src/components/**/*.tsx",
+      "src/app/**/*.tsx",
+      "src/lib/**/*.ts",
+    ).filter((caminho) => !/\.test\.tsx?$/.test(caminho));
+
+    const errados = fontes.flatMap((caminho) =>
+      promessasEm(ler(caminho)).map((promessa) => `${caminho}: "${promessa}"`),
+    );
 
     expect(errados).toEqual([]);
   });
 
   it("o aviso de que não substitui o contador está no rodapé", () => {
     expect(ler("src/components/marketing/rodape.tsx")).toMatch(/não substitui o contador/i);
+  });
+
+  it("os termos dizem que o Bossa não faz folha e que a IA não é consultoria", () => {
+    const termos = ler("src/app/(marketing)/termos/page.tsx");
+    expect(termos).toMatch(/não faz folha de pagamento/i);
+    expect(termos).toMatch(/eSocial/);
+    expect(termos).toMatch(/não são\s+consultoria/i);
   });
 });

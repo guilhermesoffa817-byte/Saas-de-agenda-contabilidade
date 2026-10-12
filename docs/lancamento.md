@@ -32,6 +32,19 @@ que já está conferido no código.
 - [ ] Job `limpeza-diaria` agendado (README): conversas de IA, uso de IA e tentativas antigas.
 - [ ] Tabela de preços da Meta conferida antes de definir as franquias em `src/lib/planos.ts` (os preços só mudam no primeiro dia de cada trimestre).
 
+### Assistente de IA e classificação de custos (Anthropic)
+- [ ] `ANTHROPIC_API_KEY` configurada nas variáveis de ambiente do **servidor** na Vercel, nunca com prefixo `NEXT_PUBLIC`. Conferir na tela `/app/assistente` que o aviso "ainda não foi ativado" sumiu.
+- [ ] Limite de gasto mensal e alerta de uso ligados no console da Anthropic.
+- [ ] Plano da Vercel aceita `maxDuration = 300` na rota `/api/assistente`.
+- [ ] Franquias de IA por plano revistas com o custo real e o câmbio do dia (`perguntasIaMes`, `classificacoesIaMes`, `PERGUNTAS_IA_NO_TESTE` e `CLASSIFICACOES_IA_NO_TESTE` em `src/lib/planos.ts`, hoje **[EXEMPLO]**). Decidir também se o modelo continua `claude-opus-5-5` ou passa a um mais barato.
+- [ ] Prazos de retenção revistos: conversas do assistente (90 dias **[EXEMPLO]**, em `private.limpar_dados_de_ia`, migração 0014) e registros de uso (12 meses). O texto da política de privacidade acompanha o que for decidido.
+- [ ] Prazo de guarda dos pagamentos de ex-colaboradores combinado com o contador (hoje ficam anonimizados, sem prazo de exclusão).
+
+### Equipe
+- [ ] **Decisão com o contador:** a cota-parte do profissional-parceiro (Lei 13.352/2016) entra ou não na receita bruta do salão. Hoje o atendimento entra 100% como receita e o repasse vira despesa, o que infla o termômetro do MEI, o relatório de receitas brutas e o Livro-Caixa de quem usa parceria. Opções: um grupo de relatório próprio para repasse, excluído da receita bruta, ou manter como está com aviso para conferir com o contador.
+- [ ] Decidir se o contador vê o CPF dos colaboradores (hoje não vê CPF, Pix nem contato).
+- [ ] Decidir em quais planos a Equipe entra.
+
 ### NFS-e (plano Negócio)
 - [ ] Provedor contratado e comparado (Focus NFe, PlugNotas/Tecnospeed, Nuvem Fiscal, Notaas): preço, cobertura de municípios, webhooks e suporte ao padrão nacional.
 - [ ] `NFSE_PROVIDER`, `NFSE_API_KEY`, `NFSE_WEBHOOK_TOKEN` preenchidos; começar com `NFSE_ENV=homologacao`.
@@ -44,6 +57,8 @@ que já está conferido no código.
 - [ ] Depoimentos: só de cliente real, com autorização por escrito. O lugar deles está marcado no código com `{/* SUBSTITUIR POR DEPOIMENTO REAL */}` — publicar vazio é melhor que publicar inventado.
 - [ ] Textos fiscais revisados por contador (`src/lib/fiscal/constantes.ts`, com fonte e data de cada valor).
 - [ ] Termos de uso, política de privacidade e contrato de tratamento de dados revisados por advogado.
+- [ ] Advogado revisa o suboperador novo (Anthropic): transferência internacional de dados (LGPD arts. 33 a 36, cláusulas-padrão da Resolução CD/ANPD nº 19/2024), o aviso de primeiro uso do assistente, o prazo de retenção e a política de treino nos Termos Comerciais e no DPA da Anthropic **[VERIFICAR o prazo vigente]**.
+- [ ] Advogado revisa os itens novos dos termos: "não faz folha de pagamento, encargos nem eSocial", "sugestões da IA não são consultoria" e a franquia de perguntas por plano.
 - [ ] Encarregado de dados (DPO) definido, com e-mail que alguém lê.
 
 ### Monitoramento
@@ -64,6 +79,7 @@ Cada linha abaixo tem teste automatizado ou verificação registrada.
 - [x] Duas empresas: nenhuma lê nem altera nada da outra (`tests/db/seguranca.test.ts`).
 - [x] O contador não lê telefone, e-mail nem anotações — só a visão com nome, CPF e tipo de pagador.
 - [x] Recepção não vê relatório; profissional não vê financeiro.
+- [x] Equipe e assistente só aparecem no menu do dono (`src/components/app/navegacao.test.ts`).
 - [x] Convite só é aceito pelo e-mail convidado, e convite vencido não vale.
 - [x] Chave secreta do Supabase só em arquivos com `import "server-only"`.
 
@@ -100,7 +116,7 @@ Cada linha abaixo tem teste automatizado ou verificação registrada.
 - [x] Toda tela do produto mostrada é o componente real, em modo demonstração, com dados brasileiros coerentes.
 - [x] Toda seção tem movimento, e `prefers-reduced-motion` desliga tudo (verificado no navegador).
 - [x] Uma só chamada principal, acessibilidade 100, SEO 100, sem rolagem lateral em 375px.
-- [x] Nenhum texto promete substituir o contador, emitir o recibo do Receita Saúde nem calcular imposto.
+- [x] Nenhum texto promete substituir o contador, emitir o recibo do Receita Saúde, calcular imposto, fazer folha de pagamento, calcular encargos nem enviar ao eSocial — na página de vendas e no sistema (`src/lib/regras-do-projeto.test.ts`).
 
 ## O que ainda não dá para verificar aqui
 

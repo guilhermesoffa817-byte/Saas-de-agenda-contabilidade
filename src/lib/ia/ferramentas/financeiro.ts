@@ -10,6 +10,7 @@ import {
   diasDoPeriodo,
   esquemaPeriodo,
   ferramenta,
+  ocultarNomes,
   percentual,
   periodoAnterior,
   variacao,
@@ -46,7 +47,11 @@ function porCategoria(lista: LancamentoDoResumo[], total: number, limite: number
   return [...mapa.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limite)
-    .map(([categoria, cents]) => ({ categoria, ...brl(cents), participacao: percentual(cents, total) }));
+    .map(([categoria, cents]) => ({
+      categoria,
+      ...brl(cents),
+      participacao: percentual(cents, total),
+    }));
 }
 
 function totais(lista: LancamentoDoResumo[]) {
@@ -62,7 +67,13 @@ function totais(lista: LancamentoDoResumo[]) {
  * data do pagamento. A retirada do dono não é custo — fica numa linha à parte,
  * como no resumo do contador.
  */
-export function resumirFinanceiro(lancamentos: LancamentoDoResumo[], periodo: Periodo) {
+export function resumirFinanceiro(
+  lancamentos: LancamentoDoResumo[],
+  periodo: Periodo,
+  historico?: { primeiroPagamento: string | null; hoje: string },
+  /** Nomes de profissionais e da equipe, tirados das descrições livres. */
+  nomesDePessoas: string[] = [],
+) {
   const anterior = periodoAnterior(periodo);
   const doPeriodo = lancamentos.filter((l) => l.pagoEm >= periodo.inicio && l.pagoEm <= periodo.fim);
   const doAnterior = lancamentos.filter((l) => l.pagoEm >= anterior.inicio && l.pagoEm <= anterior.fim);
@@ -85,7 +96,7 @@ export function resumirFinanceiro(lancamentos: LancamentoDoResumo[], periodo: Pe
     .sort((a, b) => b.valorCents - a.valorCents)
     .slice(0, 5)
     .map((d) => ({
-      descricao: sanitizarParaIA(d.descricao),
+      descricao: ocultarNomes(sanitizarParaIA(d.descricao), nomesDePessoas),
       categoria: d.categoria ?? "Sem categoria",
       pago_em: d.pagoEm,
       ...brl(d.valorCents),
@@ -93,6 +104,11 @@ export function resumirFinanceiro(lancamentos: LancamentoDoResumo[], periodo: Pe
 
   return {
     periodo: { ...periodo, dias: diasDoPeriodo(periodo) },
+    ...(historico
+      ? {
+          historico_de_lancamentos: descreverHistorico(historico.primeiroPagamento, historico.hoje),
+        }
+      : {}),
     base: "Regime de caixa: lançamentos pagos, pela data do pagamento. Retirada do dono não entra como custo.",
     receitas: brl(atual.receitas),
     despesas: brl(atual.custos),
@@ -126,6 +142,25 @@ export function resumirFinanceiro(lancamentos: LancamentoDoResumo[], periodo: Pe
   };
 }
 
+/** Menos de 30 dias de lançamentos pagos: o assistente avisa que a análise é frágil. */
+export const DIAS_MINIMOS_DE_HISTORICO = 30;
+
+export function descreverHistorico(primeiroPagamento: string | null, hoje: string) {
+  if (!primeiroPagamento) {
+    return {
+      primeiro_lancamento_pago_em: null,
+      dias_de_historico: 0,
+      poucos_dados: true,
+    };
+  }
+  const dias = Math.max(0, diasDoPeriodo({ inicio: primeiroPagamento, fim: hoje }));
+  return {
+    primeiro_lancamento_pago_em: primeiroPagamento,
+    dias_de_historico: dias,
+    poucos_dados: dias < DIAS_MINIMOS_DE_HISTORICO,
+  };
+}
+
 type LinhaDoBanco = {
   kind: "receita" | "despesa";
   amount_cents: number;
@@ -143,7 +178,16 @@ export const resumoFinanceiro = ferramenta({
   esquema: esquemaPeriodo,
   async executar(periodo, ctx) {
     const anterior = periodoAnterior(periodo);
-    const { linhas, cortado } = await buscarTodas<LinhaDoBanco>((de, ate) =>
+    const primeiro = ctx.supabase
+      .from("transactions")
+      .select("paid_at")
+      .eq("organization_id", ctx.empresa.id)
+      .eq("status", "pago")
+      .not("paid_at", "is", null)
+      .order("paid_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    const consulta = buscarTodas<LinhaDoBanco>((de, ate) =>
       ctx.supabase
         .from("transactions")
         .select("kind, amount_cents, paid_at, description, client_id, categories ( name, report_group )")
@@ -155,6 +199,13 @@ export const resumoFinanceiro = ferramenta({
         .range(de, ate)
         .overrideTypes<LinhaDoBanco[], { merge: false }>(),
     );
+    const [{ linhas, cortado }, { data: maisAntigo }, profissionais, equipe] = await Promise.all([
+      consulta,
+      primeiro,
+      ctx.supabase.from("professionals").select("name").eq("organization_id", ctx.empresa.id),
+      ctx.supabase.from("staff_members").select("name").eq("organization_id", ctx.empresa.id),
+    ]);
+    const nomesDePessoas = [...(profissionais.data ?? []), ...(equipe.data ?? [])].map((p) => p.name);
 
     const lancamentos: LancamentoDoResumo[] = linhas
       .filter((l) => l.paid_at)
@@ -168,7 +219,15 @@ export const resumoFinanceiro = ferramenta({
         grupo: l.categories?.report_group ?? null,
       }));
 
-    const resumo = resumirFinanceiro(lancamentos, periodo);
+    const resumo = resumirFinanceiro(
+      lancamentos,
+      periodo,
+      {
+        primeiroPagamento: maisAntigo?.paid_at ?? null,
+        hoje: ctx.hoje,
+      },
+      nomesDePessoas,
+    );
     return cortado ? { ...resumo, aviso: AVISO_CORTADO } : resumo;
   },
 });

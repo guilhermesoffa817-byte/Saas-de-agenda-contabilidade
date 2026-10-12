@@ -62,9 +62,6 @@ export function diasDaSemanaNoPeriodo(periodo: Periodo) {
   return contagem;
 }
 
-/** A agenda "ocupa" o horário em tudo que não foi cancelado (a falta também ocupou). */
-const ocupa = (s: Status) => s !== "cancelado";
-
 export function analisarAgenda(params: {
   atendimentos: AtendimentoDaAgenda[];
   jornadas: Jornada[];

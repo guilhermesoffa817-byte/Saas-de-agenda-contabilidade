@@ -35,7 +35,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ROTULO_GRUPO } from "@/lib/validacao/financeiro";
+import {
+  AJUDA_COMPORTAMENTO_DO_CUSTO,
+  ROTULO_COMPORTAMENTO_DO_CUSTO,
+  ROTULO_GRUPO,
+} from "@/lib/validacao/financeiro";
+
+type Comportamento = "fixo" | "variavel" | "nao_operacional";
+type ComportamentoNoSeletor = Comportamento | "sem";
 
 export type CategoriaDaTabela = {
   id: string;
@@ -44,6 +51,8 @@ export type CategoriaDaTabela = {
   grupo: "operacional" | "imposto" | "financeiro" | "retirada";
   dedutivel: boolean;
   codigoContabil: string | null;
+  /** Comportamento do custo (só saídas fora da retirada do dono). */
+  comportamento: Comportamento | null;
 };
 
 export type ContaDaTabela = {
@@ -68,6 +77,9 @@ function FormularioCategoria({
   const [grupo, setGrupo] = useState(categoria?.grupo ?? "operacional");
   const [dedutivel, setDedutivel] = useState(categoria?.dedutivel ?? false);
   const [codigo, setCodigo] = useState(categoria?.codigoContabil ?? "");
+  const comportamentoInicial: ComportamentoNoSeletor = categoria?.comportamento ?? "sem";
+  const [comportamento, setComportamento] = useState<ComportamentoNoSeletor>(comportamentoInicial);
+  const temComportamento = tipo === "despesa" && grupo !== "retirada";
 
   return (
     <>
@@ -121,6 +133,31 @@ function FormularioCategoria({
           </div>
         </div>
 
+        {temComportamento ? (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="comportamento-categoria">Comportamento do custo</Label>
+            <Select
+              value={comportamento}
+              onValueChange={(valor) => setComportamento(valor as ComportamentoNoSeletor)}
+            >
+              <SelectTrigger id="comportamento-categoria" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(["fixo", "variavel", "nao_operacional", "sem"] as const).map((valor) => (
+                  <SelectItem key={valor} value={valor}>
+                    {ROTULO_COMPORTAMENTO_DO_CUSTO[valor]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {AJUDA_COMPORTAMENTO_DO_CUSTO[comportamento]} Serve só para a análise de custos
+              operacionais; não muda o relatório do contador.
+            </p>
+          </div>
+        ) : null}
+
         <div className="flex items-start gap-3 rounded-lg border border-border p-3">
           <Switch id="dedutivel-categoria" checked={dedutivel} onCheckedChange={setDedutivel} />
           <div className="flex flex-col gap-0.5">
@@ -164,6 +201,12 @@ function FormularioCategoria({
               grupo,
               sugestaoDedutivel: dedutivel,
               codigoContabil: codigo,
+              // Só manda o comportamento quando o dono escolheu: assim a origem
+              // "padrão" de uma categoria do Bossa não vira "dono" à toa.
+              comportamento:
+                temComportamento && (!categoria || comportamento !== comportamentoInicial)
+                  ? comportamento
+                  : undefined,
             });
             setSalvando(false);
             if (resposta.erro) {
@@ -305,8 +348,8 @@ export function GestaoDeCategorias({
         </div>
 
         {[
-          { titulo: "Entradas", lista: entradas },
-          { titulo: "Saídas", lista: saidas },
+          { titulo: "Entradas", lista: entradas, comCusto: false },
+          { titulo: "Saídas", lista: saidas, comCusto: true },
         ].map((secao) => (
           <div key={secao.titulo} className="flex flex-col gap-3">
             <h2 className="text-sm font-medium">{secao.titulo}</h2>
@@ -316,6 +359,7 @@ export function GestaoDeCategorias({
                   <TableRow>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Grupo</TableHead>
+                    {secao.comCusto ? <TableHead>Comportamento do custo</TableHead> : null}
                     <TableHead>Livro-Caixa</TableHead>
                     <TableHead>Código</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -328,6 +372,17 @@ export function GestaoDeCategorias({
                       <TableCell className="text-sm text-muted-foreground">
                         {ROTULO_GRUPO[categoria.grupo]}
                       </TableCell>
+                      {secao.comCusto ? (
+                        <TableCell className="text-sm">
+                          {categoria.grupo === "retirada" ? (
+                            <span className="text-xs text-muted-foreground">Não é custo</span>
+                          ) : categoria.comportamento ? (
+                            ROTULO_COMPORTAMENTO_DO_CUSTO[categoria.comportamento]
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Sem classificação</span>
+                          )}
+                        </TableCell>
+                      ) : null}
                       <TableCell>
                         {categoria.dedutivel ? (
                           <Badge variant="outline">Costuma ser dedutível</Badge>
@@ -434,7 +489,9 @@ export function GestaoDeCategorias({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{categoriaEmEdicao.nome}</DialogTitle>
-              <DialogDescription>Ajustar grupo, dedutibilidade e código.</DialogDescription>
+              <DialogDescription>
+                Ajustar grupo, comportamento do custo, dedutibilidade e código.
+              </DialogDescription>
             </DialogHeader>
             <FormularioCategoria
               categoria={categoriaEmEdicao}

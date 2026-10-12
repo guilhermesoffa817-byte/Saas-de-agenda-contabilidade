@@ -181,3 +181,28 @@ export async function buscarTodas<T>(pagina: (de: number, ate: number) => Pagina
 
 export const AVISO_CORTADO =
   "Há mais registros do que o assistente consegue ler de uma vez; os números deste período estão incompletos. Use um período menor.";
+
+/* --------------------------------------------------------- nomes */
+
+const escapar = (texto: string) => texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Tira de um texto livre os nomes de pessoas que o Bossa conhece (profissionais
+ * e equipe): cada parte do nome com 3 letras ou mais vira "[nome]". Complementa
+ * o sanitizarParaIA, que pega documento e contato, mas não nome.
+ */
+export function ocultarNomes(texto: string, nomes: string[]) {
+  const partes = [
+    ...new Set(
+      nomes.flatMap((nome) =>
+        nome
+          .trim()
+          .split(/\s+/)
+          .filter((parte) => parte.length >= 3),
+      ),
+    ),
+  ].sort((a, b) => b.length - a.length);
+  if (partes.length === 0) return texto;
+  const padrao = new RegExp(`(?<![\\p{L}\\p{N}])(?:${partes.map(escapar).join("|")})(?![\\p{L}\\p{N}])`, "giu");
+  return texto.replace(padrao, "[nome]").replace(/\[nome\](\s+\[nome\])+/g, "[nome]");
+}

@@ -78,7 +78,7 @@ e clique em **Run**. É a junção de todas as migrações na ordem certa.
 ```
 npx supabase login          # abre o navegador para autenticar
 npx supabase link           # escolha o projeto na lista
-npm run db:push             # aplica as 12 migrações
+npm run db:push             # aplica as 14 migrações
 ```
 
 O `link` pede a senha do banco — a que você definiu ao criar o projeto. Esqueceu?
@@ -92,6 +92,45 @@ Redefina em Project Settings → Database.
 
 O arquivo juntado é gerado a partir de `supabase/migrations/`, que continua
 sendo a fonte. Mudou uma migração? Gere o arquivo de novo com `npm run db:sql`.
+
+## Equipe, custos e assistente de IA
+
+Três módulos, todos só do dono (recepção e profissional não veem nenhum deles).
+
+| Módulo | O que faz | O que **não** faz |
+|---|---|---|
+| **Equipe** (`/app/equipe`) | Cadastro de quem trabalha no negócio (CLT, profissional-parceiro, MEI, PJ, autônomo, estágio), o que foi combinado com cada um, ausências e pagamentos. O pagamento registrado vira despesa no financeiro. A comissão ou cota-parte é só a conta comercial combinada (percentual × valor recebido). | Folha de pagamento, encargos (INSS, FGTS, IRRF, 13º, férias, rescisão), envio ao eSocial, holerite, controle de jornada e enquadramento de vínculo. O valor pago é sempre digitado pelo dono, a partir do que o contador mandou. |
+| **Custos** (`/app/financeiro/custos`) | Separa as despesas em custo fixo, custo variável e fora da operação, e mostra margem de contribuição e quanto faturar no mês para empatar. Categoria e regras resolvem a maior parte; a IA só **sugere** a natureza das despesas que sobraram, e o dono confirma. | Não mexe no resumo do contador (`report_group`), na DRE nem na exportação contábil. É visão gerencial. |
+| **Assistente** (`/app/assistente`) | Responde perguntas sobre o negócio lendo totais do financeiro, da agenda, dos serviços e da equipe, com a permissão do próprio dono (RLS), e pode pesquisar tendências na internet usando só o segmento e a cidade. | Não escreve nada no sistema, não vê nome, telefone, CPF nem anotações de clientes, não dá orientação tributária (redireciona ao contador), não avalia nem ranqueia pessoas da equipe. |
+
+**Como ligar a IA.** Preencha `ANTHROPIC_API_KEY` nas variáveis de ambiente do **servidor** — nunca com
+prefixo `NEXT_PUBLIC`; a chave só é lida em `src/lib/ia/cliente.ts`, que é `server-only`. Sem ela, o
+resto do sistema funciona e a tela do assistente explica o que falta. O modelo é `claude-opus-5-5`
+(`MODELO_IA`, no mesmo arquivo), com fallback automático do lado do servidor. A rota
+`/api/assistente` usa `maxDuration = 300`: confira se o plano da Vercel permite.
+
+**Custo estimado por pergunta** (preço de tabela de outubro de 2026, US$ 4 / US$ 20 por milhão de
+tokens de entrada / saída e US$ 10 por mil buscas na web) **[VERIFICAR câmbio]**:
+
+- com pesquisa na internet (~20 mil tokens de entrada, ~3 mil de saída, 3 buscas): ~US$ 0,17, cerca
+  de R$ 1;
+- sem pesquisa: ~US$ 0,08;
+- sugestão de classificação de despesas: na casa de centavos de dólar por chamada, com até 60
+  despesas por lote **[VERIFICAR com o uso real]**. Na franquia, cada despesa enviada conta 1.
+
+**Limites por plano [EXEMPLO]**, em `src/lib/planos.ts` e conferidos no servidor antes de chamar a IA:
+
+| Plano | Perguntas ao assistente por mês | Despesas enviadas para classificar por mês |
+|---|---|---|
+| Teste grátis | 10 | 30 |
+| Essencial | 20 | 100 |
+| Profissional | 60 | 300 |
+| Negócio | 200 | 1.000 |
+
+No Essencial (R$ 69), 20 perguntas com pesquisa custariam cerca de R$ 20 — perto de 30% da
+mensalidade. Revise as franquias com o custo real antes de abrir. As conversas do assistente são
+apagadas depois de 90 dias sem uso **[EXEMPLO]** e os registros de uso, depois de 12 meses (tarefa
+`limpeza-diaria`, abaixo).
 
 ## Integrações (o que configurar antes de ligar)
 
@@ -196,6 +235,7 @@ código, está em [`docs/lancamento.md`](docs/lancamento.md).
 
 ## Avisos do produto
 
-O Bossa não substitui o contador, não calcula impostos por conta própria e não é prontuário
-eletrônico. As regras fiscais embutidas foram pesquisadas em setembro de 2026, ficam centralizadas em
+O Bossa não substitui o contador, não calcula impostos por conta própria, não faz folha de
+pagamento e não é prontuário eletrônico. As respostas do assistente de IA são sugestões, não
+consultoria. As regras fiscais embutidas foram pesquisadas em setembro de 2026, ficam centralizadas em
 `src/lib/fiscal/constantes.ts` e precisam de revisão anual.

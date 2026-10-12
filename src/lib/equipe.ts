@@ -266,6 +266,13 @@ export function tipoDePagamentoSugerido(contrato: Contrato, valores: Remuneracao
   }
 }
 
+/** Categoria de despesa em que o pagamento cai no Financeiro (a mesma regra de registrar_pagamento_equipe). */
+export function categoriaDoPagamento(tipo: TipoDePagamento) {
+  return tipo === "comissao" || tipo === "cota_parte" || tipo === "repasse"
+    ? "Comissões e repasses a profissionais"
+    : "Salários e encargos";
+}
+
 // ---------------------------------------------------------------------------
 // Percentual em pontos-base (10000 = 100%), sem float
 // ---------------------------------------------------------------------------
@@ -334,6 +341,27 @@ export function valorSugeridoDoMes(
   };
 }
 
+/**
+ * Valor que já vem preenchido no diálogo de pagamento, conforme o tipo
+ * escolhido. Salário e bolsa puxam o fixo; comissão, só o percentual; cota-parte
+ * e repasse, o percentual mais o valor por atendimento. Adiantamento, bônus,
+ * benefício, guia de encargos e rescisão não têm conta combinada: o dono digita.
+ */
+export function valorDoTipoDePagamento(tipo: TipoDePagamento, sugerido: ValorSugerido) {
+  switch (tipo) {
+    case "salario":
+    case "bolsa":
+      return sugerido.fixoCents;
+    case "comissao":
+      return sugerido.percentualCents;
+    case "cota_parte":
+    case "repasse":
+      return sugerido.percentualCents + sugerido.porAtendimentoCents;
+    default:
+      return 0;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Datas (dias no formato aaaa-mm-dd, sem fuso: são datas de calendário)
 // ---------------------------------------------------------------------------
@@ -356,6 +384,19 @@ export function limitesDoMes(mes: string) {
   return { de: `${mes}-01`, ate: `${mes}-${String(ultimo).padStart(2, "0")}` };
 }
 
+/** "2026-10-05" → "05/10/2026". Data de calendário: não passa por fuso nenhum. */
+export function formatarDia(dia: string) {
+  const [ano, mes, diaDoMes] = dia.slice(0, 10).split("-");
+  return `${diaDoMes}/${mes}/${ano}`;
+}
+
+/** Quantos dias de calendário o período cobre, contando o primeiro e o último. */
+export function diasNoPeriodo(inicio: string, fim: string) {
+  const [a1, m1, d1] = inicio.split("-").map(Number);
+  const [a2, m2, d2] = fim.split("-").map(Number);
+  return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a1, m1 - 1, d1)) / 86_400_000) + 1;
+}
+
 type Periodo = { inicio: string; fim: string | null };
 
 /** Ativo hoje: começou e ainda não terminou (o último dia ainda conta). */
@@ -367,6 +408,23 @@ export function estaAtivo(periodo: Periodo, hoje: string) {
 export function ativoNoMes(periodo: Periodo, mes: string) {
   const { de, ate } = limitesDoMes(mes);
   return periodo.inicio <= ate && (periodo.fim === null || periodo.fim >= de);
+}
+
+/**
+ * Profissionais da agenda que ainda podem ser ligados a um colaborador: os que
+ * ninguém usa, mais o do próprio colaborador em edição.
+ */
+export function profissionaisLivres<P extends { id: string }>(
+  profissionais: P[],
+  colaboradores: { id: string; profissionalId: string | null }[],
+  colaboradorEmEdicao?: string,
+) {
+  const usados = new Set(
+    colaboradores
+      .filter((c) => c.id !== colaboradorEmEdicao && c.profissionalId)
+      .map((c) => c.profissionalId),
+  );
+  return profissionais.filter((p) => !usados.has(p.id));
 }
 
 // ---------------------------------------------------------------------------
