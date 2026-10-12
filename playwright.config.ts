@@ -8,7 +8,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
-  use: { baseURL, trace: "on-first-retry", locale: "pt-BR", timezoneId: "America/Sao_Paulo" },
+  use: {
+    baseURL,
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    locale: "pt-BR",
+    timezoneId: "America/Sao_Paulo",
+  },
   projects: [
     {
       name: "chromium",
@@ -20,10 +26,13 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  // scripts/e2e-local.sh sobe os servidores ele mesmo (dois, com e sem IA) e liga E2E_SERVIDOR_EXTERNO.
+  webServer: process.env.E2E_SERVIDOR_EXTERNO
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });
