@@ -6,6 +6,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { carregarCategorias, carregarContas, carregarLancamentos, mesesFechados } from "../dados";
+import { pagamentosDaEquipeNosLancamentos } from "@/app/(app)/app/equipe/dados";
 import { ListaDeLancamentos } from "@/components/app/financeiro/lista-lancamentos";
 import { SeletorDeMes } from "@/components/app/financeiro/seletor-mes";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,11 @@ export default async function PaginaLancamentos({
     mesesFechados(empresa.id),
   ]);
 
+  const daEquipe = await pagamentosDaEquipeNosLancamentos(
+    empresa.id,
+    lancamentos.map((lancamento) => lancamento.id),
+  );
+
   const rotuloDoMes = format(new Date(`${de}T12:00:00Z`), "MMMM 'de' yyyy", { locale: ptBR });
 
   return (
@@ -71,7 +77,10 @@ export default async function PaginaLancamentos({
       <ListaDeLancamentos
         empresaId={empresa.id}
         fuso={empresa.timezone}
-        lancamentos={lancamentos}
+        lancamentos={lancamentos.map((lancamento) => ({
+          ...lancamento,
+          mesDoPagamentoDaEquipe: daEquipe.get(lancamento.id) ?? null,
+        }))}
         categorias={categorias.map((categoria) => ({
           id: categoria.id,
           nome: categoria.name,

@@ -1,21 +1,22 @@
 import "server-only";
 
-import { planoDe } from "@/lib/planos";
 import { nomeDoSegmento, REGIMES } from "@/lib/segmentos";
 import type { Tables } from "@/lib/supabase/database.types";
 
-export type EmpresaDoSistema = Pick<Tables<"organizations">, "segment" | "city" | "state" | "tax_regime" | "plan">;
+export type EmpresaDoSistema = Pick<Tables<"organizations">, "segment" | "city" | "state" | "tax_regime">;
 
 /**
  * Prompt de sistema do assistente. Depende só de dados estáveis da empresa e
- * NUNCA da data, do usuário ou da pergunta: no Opus 5.5 o raciocínio guardado
- * fica amarrado ao system, e mudar o texto entre pedidos de uma conversa faz a
- * API recusar. A data de hoje vai na mensagem do usuário.
+ * NUNCA da data, do usuário, da pergunta nem do plano (que muda sozinho quando
+ * o teste vira assinatura): no Opus 5.5 o raciocínio guardado fica amarrado ao
+ * system, e mudar o texto entre pedidos de uma conversa faz a API recusar. A
+ * data de hoje vai na mensagem do usuário. O texto usado é gravado na criação
+ * da conversa (ai_conversations.system_snapshot) e reaproveitado nas perguntas
+ * seguintes, mesmo que a cidade, o segmento ou o regime mudem depois.
  */
 export function montarSistema(empresa: EmpresaDoSistema) {
   const cidade = [empresa.city?.trim(), empresa.state?.trim().toUpperCase()].filter(Boolean).join("/");
   const regime = REGIMES.find((r) => r.valor === empresa.tax_regime)?.nome ?? "Não informado";
-  const plano = planoDe(empresa.plan)?.nome ?? "Teste grátis";
 
   return `Você é o assistente de negócios do Bossa, sistema de agenda e financeiro para pequenos negócios de serviço no Brasil (salões, barbearias, clínicas, consultórios, personal trainers, terapeutas). Você conversa com o dono do negócio, que em geral não tem formação financeira.
 
@@ -23,7 +24,6 @@ export function montarSistema(empresa: EmpresaDoSistema) {
 - Segmento: ${nomeDoSegmento(empresa.segment)}
 - Cidade/UF: ${cidade || "não informada"}
 - Regime tributário cadastrado: ${regime}
-- Plano do Bossa: ${plano}
 
 # Tom
 - Português do Brasil, tom institucional, sério e direto. Nada de gírias, emojis ou frases de efeito.

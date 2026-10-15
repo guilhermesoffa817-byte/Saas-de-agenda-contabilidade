@@ -4,6 +4,7 @@ import { CalendarCheck, Loader2, Pencil, Plus, Trash2, UserMinus } from "lucide-
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { AvisoDaAgenda } from "./aviso-da-agenda";
 import { FormularioColaborador } from "./formulario-colaborador";
 import type { ColaboradorDaTela, DadosPessoaisDaTela, ProfissionalDaAgenda } from "./tipos";
 import {
@@ -55,7 +56,7 @@ type Edicao = { colaborador: ColaboradorDaTela | null; pessoais: DadosPessoaisDa
 
 function Situacao({ colaborador, hoje }: { colaborador: ColaboradorDaTela; hoje: string }) {
   if (colaborador.removido) {
-    return <span className="text-sm text-muted-foreground">Dados pessoais apagados</span>;
+    return <span className="text-sm text-muted-foreground">Removido, sem dados pessoais</span>;
   }
   if (colaborador.inicio > hoje) {
     return (
@@ -276,6 +277,11 @@ export function AbaColaboradores({
             </DialogHeader>
             <FormularioDesligamento
               colaborador={desligando}
+              profissional={
+                desligando.profissionalId
+                  ? (profissionais.find((p) => p.id === desligando.profissionalId) ?? null)
+                  : null
+              }
               hoje={hoje}
               aoFechar={() => setDesligando(null)}
             />
@@ -295,10 +301,17 @@ export function AbaColaboradores({
                     ausências e os bloqueios que elas criaram na agenda.
                   </span>
                   <span>
-                    Se já há pagamentos, eles continuam no Financeiro para o contador: os dados
-                    pessoais (CPF, Pix, contato e observações) são apagados e o nome passa a aparecer
-                    como &quot;Ex-colaborador&quot;.
+                    Se já há pagamentos, eles continuam no Financeiro para o contador, com os valores,
+                    mas sem identificar a pessoa: o nome vira &quot;Ex-colaborador&quot; (também na
+                    descrição dos lançamentos) e são apagados CPF, Pix, contato, observações, as
+                    ausências com os bloqueios na agenda e a ligação com o profissional da agenda.
                   </span>
+                  {removendo.profissionalId ? (
+                    <span>
+                      O profissional ligado na agenda é desativado e deixa de receber agendamentos
+                      online. Os atendimentos já marcados continuam lá.
+                    </span>
+                  ) : null}
                   <span>Não dá para desfazer.</span>
                 </div>
               </AlertDialogDescription>
@@ -319,7 +332,7 @@ export function AbaColaboradores({
                   });
                 }}
               >
-                {processando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+                {processando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
                 Remover
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -332,10 +345,12 @@ export function AbaColaboradores({
 
 function FormularioDesligamento({
   colaborador,
+  profissional,
   hoje,
   aoFechar,
 }: {
   colaborador: ColaboradorDaTela;
+  profissional: ProfissionalDaAgenda | null;
   hoje: string;
   aoFechar: () => void;
 }) {
@@ -380,13 +395,14 @@ function FormularioDesligamento({
             ? "Aviso prévio, rescisão e baixa na carteira ou no termo de estágio são feitos pelo contador. Quando ele mandar os valores, registre o pagamento na aba Pagamentos."
             : "Encerrar o contrato de prestação de serviço ou de parceria segue o que foi assinado. Se houver valor a acertar, registre na aba Pagamentos."}
         </p>
+        {profissional?.ativo ? <AvisoDaAgenda nome={profissional.nome} fim={fim} hoje={hoje} /> : null}
       </div>
       <DialogFooter>
         <Button variant="ghost" onClick={aoFechar} disabled={salvando}>
           Cancelar
         </Button>
         <Button onClick={salvar} disabled={salvando}>
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Registrar desligamento
         </Button>
       </DialogFooter>

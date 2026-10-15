@@ -1,6 +1,7 @@
 import "server-only";
 
 import { addMonths, endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import { lerTodasAsPaginas } from "@/lib/custos/paginar";
 import { LIMITE_MEI_ANUAL_CENTS, LIMITE_MEI_POR_MES_CENTS } from "@/lib/fiscal/constantes";
@@ -89,7 +90,7 @@ export async function seisMeses(empresaId: string, mesAtual: string): Promise<Me
     const data = addMonths(primeiro, indice);
     return {
       mes: format(data, "yyyy-MM"),
-      rotulo: format(data, "MMM").replace(".", ""),
+      rotulo: format(data, "MMM", { locale: ptBR }).replace(".", ""),
       entrouCents: 0,
       saiuCents: 0,
     };

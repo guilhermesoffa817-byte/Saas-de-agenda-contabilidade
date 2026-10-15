@@ -29,9 +29,13 @@ function limpar() {
   revalidatePath("/app");
 }
 
-/** O gatilho do banco recusa mudança em mês fechado; aqui a mensagem fica amigável. */
+const PAGAMENTO_DA_EQUIPE =
+  "Este lançamento é um pagamento da equipe: valor, tipo, situação e datas mudam pela tela Equipe, na aba Pagamentos.";
+
+/** Os gatilhos do banco recusam mudança em mês fechado e em pagamento da equipe; aqui a mensagem fica amigável. */
 function traduzirErro(mensagem: string) {
   if (mensagem.includes("Mês fechado")) return MES_FECHADO;
+  if (mensagem.includes("pagamento da equipe")) return PAGAMENTO_DA_EQUIPE;
   return mensagem;
 }
 

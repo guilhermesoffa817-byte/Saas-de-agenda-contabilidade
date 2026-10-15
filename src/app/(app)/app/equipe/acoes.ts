@@ -2,8 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 
+import { basesDoMes, carregarColaboradores } from "./dados";
 import type { DadosPessoaisDaTela } from "@/components/app/equipe/tipos";
-import { contratosDoSegmento, remuneracaoDoVinculo } from "@/lib/equipe";
+import { hojeNaEmpresa } from "@/lib/dates";
+import {
+  ativoNoMes,
+  contratosDoSegmento,
+  formatarDia,
+  remuneracaoDoVinculo,
+  sugestoesDoMes,
+  type ValorSugerido,
+} from "@/lib/equipe";
 import { createClient } from "@/lib/supabase/server";
 import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
 import { formatarTelefone } from "@/lib/telefone";
@@ -21,10 +30,16 @@ import {
 export type Resposta<T = undefined> = { erro?: string; aviso?: string; dados?: T };
 
 const MES_FECHADO = "Este mês já foi fechado. Reabra o fechamento para alterar lançamentos.";
+const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/** Recusa da 0015: trocar para parceria, MEI, PJ ou autônomo quem já tem histórico de emprego. */
+const TROCA_DE_VINCULO_RECUSADA =
+  "Esta pessoa já tem férias, faltas, salário ou outros registros de emprego, então o vínculo não pode virar parceria, MEI, PJ ou autônomo. Registre o desligamento deste cadastro e cadastre a pessoa de novo, com o vínculo novo.";
 
 /** O banco já fala português; aqui só ficam amigáveis as mensagens técnicas. */
 function traduzirErro(erro: { code?: string; message: string }) {
   if (erro.message.includes("Mês fechado")) return MES_FECHADO;
+  if (erro.message.includes("registros de emprego")) return TROCA_DE_VINCULO_RECUSADA;
   if (erro.code === "23505") return "Esse profissional da agenda já está ligado a outro colaborador.";
   if (erro.code === "23514") return "Confira as datas e os valores: algum deles não é aceito.";
   return erro.message;
@@ -71,16 +86,18 @@ export async function salvarColaborador(
   const supabase = await createClient();
 
   let contratoAtual: ColaboradorInput["contrato"] | undefined;
+  let fimAtual: string | null = null;
   if (dados.colaboradorId) {
     const { data: atual } = await supabase
       .from("staff_members")
-      .select("contract, anonymized_at")
+      .select("contract, anonymized_at, ended_on")
       .eq("organization_id", empresaId)
       .eq("id", dados.colaboradorId)
       .maybeSingle();
     if (!atual) return { erro: "Colaborador não encontrado." };
     if (atual.anonymized_at) return { erro: "Este colaborador foi removido e não pode ser editado." };
     contratoAtual = atual.contract;
+    fimAtual = atual.ended_on;
   }
 
   if (!contratosDoSegmento(vinculo.empresa.segment, contratoAtual).includes(dados.contrato)) {
@@ -144,7 +161,13 @@ export async function salvarColaborador(
         .eq("organization_id", empresaId)
         .eq("staff_id", colaboradorId);
 
-  limpar();
+  // Último dia preenchido (ou mudado) pela edição vale como desligamento.
+  const agenda =
+    registro.ended_on && registro.ended_on !== fimAtual && registro.professional_id
+      ? await agendaDeQuemSai(supabase, vinculo.empresa, registro.professional_id, registro.ended_on)
+      : "";
+
+  limpar({ agenda: Boolean(agenda) });
   if (erroPessoal) {
     return {
       dados: { colaboradorId },
@@ -153,7 +176,7 @@ export async function salvarColaborador(
   }
   return {
     dados: { colaboradorId },
-    aviso: dados.colaboradorId ? "Colaborador atualizado." : "Colaborador cadastrado.",
+    aviso: (dados.colaboradorId ? "Colaborador atualizado." : "Colaborador cadastrado.") + agenda,
   };
 }
 
@@ -185,6 +208,62 @@ export async function carregarDadosPessoais(
   };
 }
 
+type ClienteDoBanco = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Quem saiu não pode continuar recebendo agendamento online: desativa o
+ * profissional ligado (o mesmo que o dono faria em Serviços e equipe). Os
+ * atendimentos já marcados ficam na agenda. Devolve a frase para o aviso.
+ */
+async function desativarNaAgenda(
+  supabase: ClienteDoBanco,
+  empresaId: string,
+  profissionalId: string,
+): Promise<string> {
+  const { data, error } = await supabase
+    .from("professionals")
+    .update({ active: false })
+    .eq("organization_id", empresaId)
+    .eq("id", profissionalId)
+    .eq("active", true)
+    .select("name");
+  if (error) {
+    return " Não conseguimos desativar o profissional ligado na agenda: desative em Serviços e equipe para parar os agendamentos online.";
+  }
+  const nome = data?.[0]?.name;
+  if (!nome) return ""; // já estava inativo
+  return ` O perfil de ${nome} na agenda foi desativado e não recebe mais agendamentos online. Os atendimentos já marcados continuam lá: remarque ou cancele se precisar.`;
+}
+
+/** Último dia no futuro: a agenda segue aberta até lá, e o dono precisa saber. */
+async function lembrarDeDesativar(
+  supabase: ClienteDoBanco,
+  empresaId: string,
+  profissionalId: string,
+  fim: string,
+): Promise<string> {
+  const { data } = await supabase
+    .from("professionals")
+    .select("name, active")
+    .eq("organization_id", empresaId)
+    .eq("id", profissionalId)
+    .maybeSingle();
+  if (!data?.active) return "";
+  return ` ${data.name} continua recebendo agendamentos online: depois de ${formatarDia(fim)}, desative o profissional em Serviços e equipe.`;
+}
+
+/** Desligamento com último dia até hoje desativa na agenda; com último dia no futuro, avisa. */
+async function agendaDeQuemSai(
+  supabase: ClienteDoBanco,
+  empresa: { id: string; timezone: string },
+  profissionalId: string,
+  fim: string,
+) {
+  return fim <= hojeNaEmpresa(empresa.timezone)
+    ? desativarNaAgenda(supabase, empresa.id, profissionalId)
+    : lembrarDeDesativar(supabase, empresa.id, profissionalId, fim);
+}
+
 export async function desligarColaborador(entrada: DesligamentoInput): Promise<Resposta> {
   const validado = esquemaDesligamento.safeParse(entrada);
   if (!validado.success) {
@@ -197,7 +276,7 @@ export async function desligarColaborador(entrada: DesligamentoInput): Promise<R
   const supabase = await createClient();
   const { data: atual } = await supabase
     .from("staff_members")
-    .select("started_on, anonymized_at")
+    .select("started_on, anonymized_at, professional_id")
     .eq("organization_id", vinculo.empresa.id)
     .eq("id", validado.data.colaboradorId)
     .maybeSingle();
@@ -213,8 +292,12 @@ export async function desligarColaborador(entrada: DesligamentoInput): Promise<R
     .eq("id", validado.data.colaboradorId);
   if (error) return { erro: traduzirErro(error) };
 
-  limpar();
-  return { aviso: "Desligamento registrado." };
+  const agenda = atual.professional_id
+    ? await agendaDeQuemSai(supabase, vinculo.empresa, atual.professional_id, validado.data.fim)
+    : "";
+
+  limpar({ agenda: Boolean(atual.professional_id) });
+  return { aviso: `Desligamento registrado.${agenda}` };
 }
 
 export async function removerColaborador(colaboradorId: string): Promise<Resposta> {
@@ -222,16 +305,47 @@ export async function removerColaborador(colaboradorId: string): Promise<Respost
   if (erro || !vinculo) return { erro };
 
   const supabase = await createClient();
+  // Lido antes: a remoção apaga a ligação com a agenda.
+  const { data: atual } = await supabase
+    .from("staff_members")
+    .select("professional_id")
+    .eq("organization_id", vinculo.empresa.id)
+    .eq("id", colaboradorId)
+    .maybeSingle();
+
   const { data, error } = await supabase.rpc("remover_colaborador", { p_staff: colaboradorId });
   if (error) return { erro: traduzirErro(error) };
 
-  limpar({ agenda: true });
+  const agenda = atual?.professional_id
+    ? await desativarNaAgenda(supabase, vinculo.empresa.id, atual.professional_id)
+    : "";
+
+  limpar({ agenda: true, financeiro: data !== "removido" });
   return {
     aviso:
-      data === "removido"
-        ? "Colaborador removido."
-        : "Dados pessoais apagados. Os pagamentos ficam no histórico como Ex-colaborador.",
+      (data === "removido"
+        ? "Colaborador removido, com as ausências e os bloqueios que elas criaram na agenda."
+        : "Colaborador removido. CPF, Pix, contato, observações, ausências e a ligação com a agenda foram apagados; os pagamentos ficam no Financeiro como “Ex-colaborador”, sem o nome.") +
+      agenda,
   };
+}
+
+/**
+ * Sugestões do diálogo de pagamento para outro mês de referência: a base da
+ * comissão e os atendimentos DESSE mês, não do mês aberto na página.
+ */
+export async function sugestoesDePagamento(
+  mes: string,
+): Promise<Resposta<Record<string, ValorSugerido>>> {
+  if (!MES.test(mes)) return { erro: "Escolha o mês de referência." };
+  const { vinculo } = await empresaAtual();
+  if (!vinculo) return { erro: "Empresa não encontrada." };
+  if (vinculo.papel !== "dono") return { erro: "Só o dono vê os pagamentos da equipe." };
+
+  const colaboradores = await carregarColaboradores(vinculo.empresa.id);
+  const doMes = colaboradores.filter((c) => !c.removido && ativoNoMes(c, mes));
+  const bases = await basesDoMes(vinculo.empresa.id, doMes, mes);
+  return { dados: sugestoesDoMes(colaboradores, bases, mes) };
 }
 
 // ---------------------------------------------------------------------------

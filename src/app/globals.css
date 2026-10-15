@@ -232,3 +232,11 @@
     }
   }
 }
+
+/* Indicadores de carregando (animate-spin) param para quem pede menos movimento.
+   Vale para todos de uma vez, inclusive os que não têm motion-reduce na classe. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin {
+    animation: none;
+  }
+}

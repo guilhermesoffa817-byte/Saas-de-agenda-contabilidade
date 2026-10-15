@@ -12,7 +12,7 @@ import {
   type DespesaParaCusto,
   type TotaisDeCustos,
 } from "./calculo";
-import { motivoDaRegraParaGravar } from "./regras";
+import { motivoDaRegraParaGravar, PREFIXO_DA_REGRA } from "./regras";
 
 let sequencia = 0;
 function despesa(dados: Partial<DespesaParaCusto> = {}): DespesaParaCusto {
@@ -68,13 +68,15 @@ describe("classificar", () => {
     expect(item).toMatchObject({ natureza: "nao_operacional", origem: "ia", motivo: "Multa de trânsito." });
   });
 
-  it("exceção gravada pela regra aparece como 'regra'", () => {
-    const item = classificar(
-      despesa({
-        excecao: { natureza: "fixo", fonte: "ia", motivo: motivoDaRegraParaGravar("Aluguel.") },
-      }),
+  it("exceção gravada pela regra aparece como 'regra' (source novo e linha antiga com prefixo)", () => {
+    const nova = classificar(
+      despesa({ excecao: { natureza: "fixo", fonte: "regra", motivo: motivoDaRegraParaGravar("Aluguel.") } }),
     );
-    expect(item.origem).toBe("regra");
+    expect(nova.origem).toBe("regra");
+    const antiga = classificar(
+      despesa({ excecao: { natureza: "fixo", fonte: "ia", motivo: `${PREFIXO_DA_REGRA}Aluguel.` } }),
+    );
+    expect(antiga.origem).toBe("regra");
   });
 
   it("sem exceção usa a categoria; sem as duas fica sem classificação", () => {

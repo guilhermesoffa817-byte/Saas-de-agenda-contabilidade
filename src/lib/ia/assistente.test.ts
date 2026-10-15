@@ -5,8 +5,10 @@ import type { EventoAssistente } from "@/components/app/assistente/protocolo";
 
 import {
   AVISO_DE_CORTE,
+  AVISO_DE_PRAZO,
   AVISO_DE_VOLTAS,
   deveGravar,
+  fecharTurno,
   fontesDoConteudo,
   MAX_VOLTAS,
   mensagensParaTela,
@@ -186,23 +188,147 @@ describe("laço do assistente", () => {
     expect(resultado.usos).toHaveLength(1); // a pergunta gastou tokens e conta na franquia
   });
 
-  it("max_tokens com tool_use cortado: não executa a ferramenta nem guarda o bloco", async () => {
+  it("max_tokens com tool_use cortado: não executa a ferramenta, guarda o texto já lido e tira o tool_use", async () => {
     const { cliente } = apiFalsa([
       sse([
         inicio("a"),
-        ...blocoDeTexto(0, "Vou consultar"),
-        { type: "content_block_start", index: 1, content_block: { type: "tool_use", id: "tu1", name: "resumo_financeiro", input: {} } },
-        { type: "content_block_delta", index: 1, delta: { type: "input_json_delta", partial_json: '{"inicio":"2026-' } },
-        { type: "content_block_stop", index: 1 },
+        { type: "content_block_start", index: 0, content_block: { type: "thinking", thinking: "", signature: "" } },
+        { type: "content_block_delta", index: 0, delta: { type: "signature_delta", signature: "assinatura-1" } },
+        { type: "content_block_stop", index: 0 },
+        ...blocoDeTexto(1, "Setembro fechou com R$ 12.500,00 de receita. Vou consultar as despesas."),
+        { type: "content_block_start", index: 2, content_block: { type: "tool_use", id: "tu1", name: "resumo_financeiro", input: {} } },
+        { type: "content_block_delta", index: 2, delta: { type: "input_json_delta", partial_json: '{"inicio":"2026-' } },
+        { type: "content_block_stop", index: 2 },
         ...fim("max_tokens"),
       ]),
     ]);
     const { base, eventos, executadas } = opcoes(cliente);
     const resultado = await rodarAssistente(base);
     expect(resultado.desfecho).toBe("cortado");
+    expect(deveGravar(resultado.desfecho)).toBe(true);
     expect(executadas).toEqual([]);
-    expect(resultado.novas).toEqual([]);
+    // O texto que a tela já mostrou fica gravado; o tool_use sem resultado sai.
+    expect(resultado.novas).toHaveLength(1);
+    const blocos = resultado.novas[0].content as { type: string }[];
+    expect(blocos.map((b) => b.type)).toEqual(["thinking", "text"]);
+    expect(textoVisivel(resultado.novas[0].content)).toContain("Setembro fechou");
     expect(eventos.at(-1)).toEqual({ tipo: "aviso", mensagem: AVISO_DE_CORTE });
+  });
+
+  it("pause_turn com pesquisa pendente e continuação cortada: o histórico não termina em server_tool_use sem par", async () => {
+    const { cliente } = apiFalsa([
+      sse([
+        inicio("a"),
+        ...blocoDeTexto(0, "Vou pesquisar o mercado."),
+        { type: "content_block_start", index: 1, content_block: { type: "server_tool_use", id: "srv1", name: "web_search", input: {} } },
+        { type: "content_block_delta", index: 1, delta: { type: "input_json_delta", partial_json: '{"query":"salão Cuiabá"}' } },
+        { type: "content_block_stop", index: 1 },
+        ...fim("pause_turn"),
+      ]),
+      sse([
+        inicio("b"),
+        { type: "content_block_start", index: 0, content_block: { type: "tool_use", id: "tu1", name: "resumo_financeiro", input: {} } },
+        { type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: '{"inicio"' } },
+        { type: "content_block_stop", index: 0 },
+        ...fim("max_tokens"),
+      ]),
+    ]);
+    const { base } = opcoes(cliente);
+    const resultado = await rodarAssistente(base);
+    expect(resultado.desfecho).toBe("cortado");
+    const tipos = resultado.novas.flatMap((m) => (typeof m.content === "string" ? ["string"] : m.content.map((b) => b.type)));
+    expect(tipos).toEqual(["text"]);
+    expect(tipos).not.toContain("server_tool_use");
+    expect(tipos).not.toContain("tool_use");
+  });
+
+  it("model_context_window_exceeded é tratado como corte: nada de tool_use sem resultado", async () => {
+    const { cliente, corpos } = apiFalsa([
+      sse([
+        inicio("a"),
+        ...blocoDeTexto(0, "Parcial"),
+        { type: "content_block_start", index: 1, content_block: { type: "tool_use", id: "tu1", name: "resumo_financeiro", input: {} } },
+        { type: "content_block_stop", index: 1 },
+        ...fim("model_context_window_exceeded"),
+      ]),
+    ]);
+    const { base, executadas } = opcoes(cliente);
+    const resultado = await rodarAssistente(base);
+    expect(corpos).toHaveLength(1);
+    expect(resultado.desfecho).toBe("cortado");
+    expect(executadas).toEqual([]);
+    expect(resultado.novas.map((m) => (m.content as { type: string }[]).map((b) => b.type))).toEqual([["text"]]);
+  });
+
+  it("grava os tokens a cada volta concluída, com o total acumulado da pergunta", async () => {
+    const { cliente } = apiFalsa([
+      sse([
+        inicio("a"),
+        { type: "content_block_start", index: 0, content_block: { type: "tool_use", id: "tu1", name: "resumo_financeiro", input: {} } },
+        { type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: "{}" } },
+        { type: "content_block_stop", index: 0 },
+        ...fim("tool_use"),
+      ]),
+      sse([inicio("b"), ...blocoDeTexto(0, "Pronto."), ...fim("end_turn")]),
+    ]);
+    const registros: number[] = [];
+    const { base } = opcoes(cliente, { aoConcluirVolta: (usos) => void registros.push(usos.length) });
+    const resultado = await rodarAssistente(base);
+    expect(resultado.desfecho).toBe("concluido");
+    expect(registros).toEqual([1, 2]);
+  });
+
+  it("prazo total vencido no meio da resposta: para, avisa e devolve as voltas completas para gravar", async () => {
+    const prazo = new AbortController();
+    let respondidas = 0;
+    const cliente = new Anthropic({
+      apiKey: "sk-teste",
+      maxRetries: 0,
+      fetch: async (_url, init) => {
+        if (!respondidas++) {
+          return sse([
+            inicio("a"),
+            { type: "content_block_start", index: 0, content_block: { type: "tool_use", id: "tu1", name: "resumo_financeiro", input: {} } },
+            { type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: "{}" } },
+            { type: "content_block_stop", index: 0 },
+            ...fim("tool_use"),
+          ])();
+        }
+        // 2ª volta: fica pendurada até o prazo vencer.
+        setTimeout(() => prazo.abort(new DOMException("prazo", "TimeoutError")), 10);
+        return new Promise<Response>((_, rejeitar) =>
+          init?.signal?.addEventListener("abort", () => rejeitar(new DOMException("abortado", "AbortError"))),
+        );
+      },
+    });
+    const navegador = new AbortController();
+    const { base, eventos } = opcoes(cliente, { signal: navegador.signal, prazo: prazo.signal });
+    const resultado = await rodarAssistente(base);
+    expect(resultado.desfecho).toBe("prazo");
+    expect(deveGravar(resultado.desfecho)).toBe(true);
+    expect(resultado.chamadas).toBe(2);
+    expect(resultado.usos).toHaveLength(1);
+    expect(eventos.at(-1)).toEqual({ tipo: "aviso", mensagem: AVISO_DE_PRAZO });
+    // A volta completa (tool_use + tool_result) fica; a volta cortada não entra.
+    expect(resultado.novas.map((m) => m.role)).toEqual(["assistant", "user"]);
+  });
+
+  it("prazo já vencido antes de chamar: nenhuma chamada à API", async () => {
+    const { cliente, corpos } = apiFalsa([]);
+    const { base } = opcoes(cliente, { prazo: AbortSignal.abort() });
+    const resultado = await rodarAssistente(base);
+    expect(corpos).toHaveLength(0);
+    expect(resultado).toMatchObject({ desfecho: "prazo", chamadas: 0, novas: [] });
+  });
+
+  it("cancelamento pelo navegador não vira prazo", async () => {
+    const navegador = new AbortController();
+    navegador.abort();
+    const { cliente } = apiFalsa([]);
+    const { base, eventos } = opcoes(cliente, { signal: navegador.signal, prazo: AbortSignal.timeout(60_000) });
+    const resultado = await rodarAssistente(base);
+    expect(resultado.desfecho).toBe("cancelado");
+    expect(eventos).toEqual([]);
   });
 
   it("max_tokens só com texto: guarda o texto cortado e avisa", async () => {
@@ -368,6 +494,35 @@ describe("reenvio depois de fallback", () => {
     expect(prepararParaReenvio(conteudo).map((b) => b.type)).toEqual(["text", "fallback", "text"]);
   });
 
+  it("mantém o par de execução de código da filtragem dinâmica antes do fallback", () => {
+    const conteudo = [
+      { type: "thinking", thinking: "", signature: "s" },
+      { type: "server_tool_use", id: "srv_busca", name: "web_search", input: { query: "salão Cuiabá" } },
+      { type: "web_search_tool_result", tool_use_id: "srv_busca", content: [] },
+      { type: "server_tool_use", id: "srv_bash", name: "bash_code_execution", input: { command: "python filtra.py" } },
+      { type: "bash_code_execution_tool_result", tool_use_id: "srv_bash", content: { type: "bash_code_execution_result", stdout: "ok", stderr: "", return_code: 0, content: [] } },
+      { type: "server_tool_use", id: "srv_code", name: "code_execution", input: { code: "print(1)" } },
+      { type: "code_execution_tool_result", tool_use_id: "srv_code", content: { type: "code_execution_result", stdout: "1", stderr: "", return_code: 0, content: [] } },
+      { type: "server_tool_use", id: "srv_sem_par", name: "web_search", input: { query: "x" } },
+      { type: "fallback", from: { model: "a" }, to: { model: "b" }, trigger: { type: "refusal" } },
+      { type: "text", text: "continua", citations: null },
+    ] as unknown as Anthropic.Beta.BetaContentBlock[];
+    const limpo = prepararParaReenvio(conteudo);
+    expect(limpo.map((b) => ("id" in b ? `${b.type}:${b.id}` : "tool_use_id" in b ? `${b.type}:${b.tool_use_id}` : b.type))).toEqual([
+      "server_tool_use:srv_busca",
+      "web_search_tool_result:srv_busca",
+      "server_tool_use:srv_bash",
+      "bash_code_execution_tool_result:srv_bash",
+      "server_tool_use:srv_code",
+      "code_execution_tool_result:srv_code",
+      "fallback",
+      "text",
+    ]);
+    // Todo resultado mantido tem o seu server_tool_use antes.
+    const usos = new Set(limpo.flatMap((b) => (b.type === "server_tool_use" ? [b.id] : [])));
+    for (const b of limpo) if ("tool_use_id" in b) expect(usos.has(b.tool_use_id)).toBe(true);
+  });
+
   it("sem fallback, nada muda", () => {
     const conteudo = [{ type: "text", text: "a", citations: null }] as unknown as Anthropic.Beta.BetaContentBlock[];
     expect(prepararParaReenvio(conteudo)).toBe(conteudo);
@@ -428,5 +583,48 @@ describe("o que a tela recebe de uma conversa gravada", () => {
         },
       ]),
     ).toEqual([]);
+  });
+});
+
+describe("fechar o turno de uma pergunta interrompida", () => {
+  it("sem nada pendente, devolve as mesmas mensagens (os bytes enviados se mantêm)", () => {
+    const novas: Anthropic.Beta.BetaMessageParam[] = [
+      { role: "assistant", content: [{ type: "tool_use", id: "t", name: "resumo_financeiro", input: {} }] },
+      { role: "user", content: [{ type: "tool_result", tool_use_id: "t", content: "{}" }] },
+      { role: "assistant", content: [{ type: "text", text: "Pronto." }] },
+    ];
+    const fechado = fecharTurno(novas);
+    expect(fechado).toHaveLength(3);
+    fechado.forEach((m, i) => expect(m).toBe(novas[i]));
+  });
+
+  it("tira a mensagem que só teria raciocínio depois de tirar o pendente", () => {
+    const novas: Anthropic.Beta.BetaMessageParam[] = [
+      {
+        role: "assistant",
+        content: [
+          { type: "thinking", thinking: "", signature: "s" },
+          { type: "tool_use", id: "t", name: "resumo_financeiro", input: {} },
+        ],
+      },
+    ];
+    expect(fecharTurno(novas)).toEqual([]);
+  });
+
+  it("server_tool_use cujo resultado veio na continuação fica", () => {
+    const novas = [
+      { role: "assistant", content: [{ type: "server_tool_use", id: "s1", name: "web_search", input: {} }] },
+      {
+        role: "assistant",
+        content: [
+          { type: "web_search_tool_result", tool_use_id: "s1", content: [] },
+          { type: "text", text: "Achei." },
+          { type: "tool_use", id: "t", name: "resumo_financeiro", input: {} },
+        ],
+      },
+    ] as unknown as Anthropic.Beta.BetaMessageParam[];
+    const fechado = fecharTurno(novas);
+    expect(fechado[0]).toBe(novas[0]);
+    expect((fechado[1].content as { type: string }[]).map((b) => b.type)).toEqual(["web_search_tool_result", "text"]);
   });
 });

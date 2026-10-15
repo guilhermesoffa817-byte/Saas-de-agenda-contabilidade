@@ -10,6 +10,7 @@ import {
   CodigosDeTributacao,
   type ServicoParaTributar,
 } from "@/components/app/contador/codigos-de-tributacao";
+import { EquipeDoCliente } from "./equipe-do-cliente";
 import { PedirComprovante } from "@/components/app/contador/pedir-comprovante";
 import { BarraDeRelatorios } from "@/components/app/relatorios/barra-relatorios";
 import { TabelaDeRelatorio } from "@/components/app/relatorios/tabela-relatorio";
@@ -18,6 +19,7 @@ import {
   carregarCategorias,
   carregarContas,
 } from "@/app/(app)/app/financeiro/dados";
+import { carregarEquipeParaOContador } from "@/app/(app)/app/equipe/dados";
 import { carregarFechamentos, carregarLancamentosParaRelatorio } from "@/app/(app)/app/relatorios/dados";
 import { filtroDeData, montarRelatorio, relatoriosDoRegime, type TipoDeRelatorio } from "@/lib/reports";
 import { createClient } from "@/lib/supabase/server";
@@ -65,7 +67,7 @@ export default async function PaginaDoCliente({
   const inicio = tipo === "receitas-mei" ? `${de.slice(0, 4)}-01-01` : de;
   const fim = tipo === "receitas-mei" ? `${de.slice(0, 4)}-12-31` : ate;
 
-  const [lancamentos, categorias, contas, fechamentos] = await Promise.all([
+  const [lancamentos, categorias, contas, fechamentos, equipe] = await Promise.all([
     carregarLancamentosParaRelatorio({
       empresaId: empresa.id,
       de: inicio,
@@ -75,12 +77,18 @@ export default async function PaginaDoCliente({
     carregarCategorias(empresa.id),
     carregarContas(empresa.id),
     carregarFechamentos(empresa.id, 6),
+    carregarEquipeParaOContador(empresa.id, de, ate),
   ]);
 
   const periodo =
     inicio.slice(0, 7) === fim.slice(0, 7)
       ? format(new Date(`${inicio}T12:00:00Z`), "MMMM 'de' yyyy", { locale: ptBR })
       : `${inicio.split("-").reverse().join("/")} a ${fim.split("-").reverse().join("/")}`;
+
+  const periodoDaEquipe =
+    de.slice(0, 7) === ate.slice(0, 7)
+      ? format(new Date(`${de}T12:00:00Z`), "MMMM 'de' yyyy", { locale: ptBR })
+      : `${de.split("-").reverse().join("/")} a ${ate.split("-").reverse().join("/")}`;
 
   // Códigos de tributação só fazem sentido onde a nota pode ser emitida.
   const servicosParaTributar = permiteNotaFiscal(empresa.plan)
@@ -141,6 +149,8 @@ export default async function PaginaDoCliente({
       <BarraDeRelatorios de={de} ate={ate} tipo={tipo} empresaId={empresa.id} />
 
       <TabelaDeRelatorio tabela={tabela} />
+
+      <EquipeDoCliente equipe={equipe} periodo={periodoDaEquipe} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <CodigosContabeis

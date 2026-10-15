@@ -252,6 +252,16 @@ export function pagamentoPermitido(contrato: Contrato, tipo: TipoDePagamento) {
   return PAGAMENTOS_POR_VINCULO[contrato].includes(tipo);
 }
 
+const VINCULOS_SEM_EMPREGO: Contrato[] = ["parceria", "mei", "pj", "autonomo"];
+
+/**
+ * Troca que o banco recusa quando já há histórico de emprego (0015,
+ * private.conferir_colaborador): de CLT ou estágio para um vínculo sem emprego.
+ */
+export function trocaParaVinculoSemEmprego(de: Contrato, para: Contrato) {
+  return de !== para && !VINCULOS_SEM_EMPREGO.includes(de) && VINCULOS_SEM_EMPREGO.includes(para);
+}
+
 /** Tipo de pagamento que já vem marcado no diálogo. */
 export function tipoDePagamentoSugerido(contrato: Contrato, valores: Remuneracao): TipoDePagamento {
   switch (contrato) {
@@ -341,6 +351,51 @@ export function valorSugeridoDoMes(
   };
 }
 
+export const SUGESTAO_ZERADA: ValorSugerido = {
+  fixoCents: 0,
+  percentualCents: 0,
+  porAtendimentoCents: 0,
+  totalCents: 0,
+};
+
+type ColaboradorComCombinado = Remuneracao & {
+  id: string;
+  contrato: Contrato;
+  inicio: string;
+  fim: string | null;
+  removido?: boolean;
+};
+type BaseDoColaborador = { baseCents: number; atendimentos: number | null };
+
+/** A conta do combinado de um colaborador sobre a base de um mês. */
+export function sugestaoDoColaborador(
+  colaborador: Pick<ColaboradorComCombinado, "contrato"> & Remuneracao,
+  base: BaseDoColaborador | undefined,
+): ValorSugerido {
+  return valorSugeridoDoMes({
+    ...remuneracaoDoVinculo(colaborador.contrato, colaborador),
+    baseCents: base?.baseCents ?? 0,
+    atendimentos: base?.atendimentos ?? 0,
+  });
+}
+
+/**
+ * Sugestão de cada colaborador para o mês de referência "aaaa-mm", com a base
+ * DESSE mês. Quem não trabalhou no mês (ou foi removido) fica zerado.
+ */
+export function sugestoesDoMes(
+  colaboradores: ColaboradorComCombinado[],
+  bases: Record<string, BaseDoColaborador>,
+  mes: string,
+): Record<string, ValorSugerido> {
+  return Object.fromEntries(
+    colaboradores.map((c) => [
+      c.id,
+      !c.removido && ativoNoMes(c, mes) ? sugestaoDoColaborador(c, bases[c.id]) : SUGESTAO_ZERADA,
+    ]),
+  );
+}
+
 /**
  * Valor que já vem preenchido no diálogo de pagamento, conforme o tipo
  * escolhido. Salário e bolsa puxam o fixo; comissão, só o percentual; cota-parte
@@ -382,6 +437,50 @@ export function limitesDoMes(mes: string) {
   const [ano, numero] = mes.split("-").map(Number);
   const ultimo = new Date(Date.UTC(ano, numero, 0)).getUTCDate();
   return { de: `${mes}-01`, ate: `${mes}-${String(ultimo).padStart(2, "0")}` };
+}
+
+const NOMES_DOS_MESES = [
+  "janeiro",
+  "fevereiro",
+  "março",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro",
+];
+
+/** "2026-09" → "setembro de 2026". */
+export function nomeDoMes(mes: string) {
+  const [ano, numero] = mes.split("-").map(Number);
+  return `${NOMES_DOS_MESES[numero - 1]} de ${ano}`;
+}
+
+/** Soma meses a um mês "aaaa-mm". */
+export function somarMesesAoMes(mes: string, meses: number) {
+  return somarMeses(`${mes}-01`, meses).slice(0, 7);
+}
+
+/**
+ * Opções do campo "Mês de referência", da mais recente para a mais antiga: de
+ * 2 meses depois de hoje até 24 meses antes, mais os meses de `incluir` (o mês
+ * aberto na página pode estar fora dessa faixa). Lista fechada em vez de
+ * <input type="month">, que vira texto livre no Safari e no Firefox de desktop.
+ */
+export function mesesDeReferencia(hoje: string, incluir: string[] = []) {
+  const atual = hoje.slice(0, 7);
+  const meses = new Set<string>();
+  for (let deslocamento = 2; deslocamento >= -24; deslocamento--) {
+    meses.add(somarMesesAoMes(atual, deslocamento));
+  }
+  for (const mes of incluir) meses.add(mes);
+  return [...meses]
+    .sort((a, b) => b.localeCompare(a))
+    .map((valor) => ({ valor, rotulo: nomeDoMes(valor) }));
 }
 
 /** "2026-10-05" → "05/10/2026". Data de calendário: não passa por fuso nenhum. */

@@ -1,11 +1,15 @@
 "use client";
 
 import { Loader2, Lock, Plus, Trash2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { BaseDoMes, ColaboradorDaTela, ContaSimples, PagamentoDaTela } from "./tipos";
-import { excluirPagamento, registrarPagamento } from "@/app/(app)/app/equipe/acoes";
+import {
+  excluirPagamento,
+  registrarPagamento,
+  sugestoesDePagamento,
+} from "@/app/(app)/app/equipe/acoes";
 import { CampoDinheiro } from "@/components/app/campo-dinheiro";
 import { SeletorDeMes } from "@/components/app/financeiro/seletor-mes";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -50,16 +54,20 @@ import {
 import {
   PAGAMENTOS_POR_VINCULO,
   ROTULO_PAGAMENTO,
+  SUGESTAO_ZERADA,
   VINCULOS,
   ativoNoMes,
   categoriaDoPagamento,
   formatarDia,
   limitesDoMes,
+  mesesDeReferencia,
+  nomeDoMes,
   remuneracaoDoVinculo,
   resumirRemuneracao,
+  sugestaoDoColaborador,
+  sugestoesDoMes,
   tipoDePagamentoSugerido,
   valorDoTipoDePagamento,
-  valorSugeridoDoMes,
   type TipoDePagamento,
   type ValorSugerido,
 } from "@/lib/equipe";
@@ -69,17 +77,6 @@ import { ROTULO_FORMA_DE_PAGAMENTO } from "@/lib/validacao/financeiro";
 const SEM_CONTA = "sem-conta";
 const FORMAS = ["pix", "transferencia", "dinheiro", "boleto", "cartao_debito", "cartao_credito", "outro"] as const;
 type Forma = (typeof FORMAS)[number];
-
-const ZERADO: ValorSugerido = { fixoCents: 0, percentualCents: 0, porAtendimentoCents: 0, totalCents: 0 };
-
-function sugestaoDe(colaborador: ColaboradorDaTela, base: BaseDoMes | undefined) {
-  const combinado = remuneracaoDoVinculo(colaborador.contrato, colaborador);
-  return valorSugeridoDoMes({
-    ...combinado,
-    baseCents: base?.baseCents ?? 0,
-    atendimentos: base?.atendimentos ?? 0,
-  });
-}
 
 type Abertura = { colaboradorId: string | null };
 
@@ -119,7 +116,7 @@ export function AbaPagamentos({
     );
   }
   const totalPago = pagamentos.reduce((soma, p) => soma + p.valorCents, 0);
-  const totalSugerido = doMes.reduce((soma, c) => soma + sugestaoDe(c, bases[c.id]).totalCents, 0);
+  const totalSugerido = doMes.reduce((soma, c) => soma + sugestaoDoColaborador(c, bases[c.id]).totalCents, 0);
 
   const temPorAtendimento = doMes.some((c) => remuneracaoDoVinculo(c.contrato, c).porAtendimentoCents > 0);
 
@@ -172,7 +169,7 @@ export function AbaPagamentos({
                 {doMes.map((colaborador) => {
                   const combinado = remuneracaoDoVinculo(colaborador.contrato, colaborador);
                   const base = bases[colaborador.id];
-                  const sugerido = sugestaoDe(colaborador, base);
+                  const sugerido = sugestaoDoColaborador(colaborador, base);
                   const usaBase = combinado.percentualBps > 0 || combinado.porAtendimentoCents > 0;
                   return (
                     <TableRow key={colaborador.id}>
@@ -321,15 +318,14 @@ export function AbaPagamentos({
             <DialogHeader>
               <DialogTitle>Registrar pagamento</DialogTitle>
               <DialogDescription>
-                O valor já vem com a conta do combinado. Confira e ajuste antes de salvar.
+                O valor já vem com a conta do combinado para o mês de referência. Confira e ajuste
+                antes de salvar.
               </DialogDescription>
             </DialogHeader>
             <FormularioPagamento
               colaboradores={pagaveis}
               colaboradorInicial={abertura.colaboradorId}
-              sugestoes={Object.fromEntries(
-                pagaveis.map((c) => [c.id, ativoNoMes(c, mes) ? sugestaoDe(c, bases[c.id]) : ZERADO]),
-              )}
+              sugestoes={sugestoesDoMes(pagaveis, bases, mes)}
               mes={mes}
               hoje={hoje}
               contas={contas}
@@ -366,7 +362,7 @@ export function AbaPagamentos({
                   });
                 }}
               >
-                {processando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+                {processando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
                 Excluir
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -377,7 +373,7 @@ export function AbaPagamentos({
   );
 }
 
-function FormularioPagamento({
+export function FormularioPagamento({
   colaboradores,
   colaboradorInicial,
   sugestoes,
@@ -406,8 +402,15 @@ function FormularioPagamento({
   const [colaboradorId, setColaboradorId] = useState(inicial?.id ?? "");
   const [tipo, setTipo] = useState<TipoDePagamento>(tipoInicial);
   const [mesDeReferencia, setMesDeReferencia] = useState(mes);
+  // A sugestão depende da base do mês de referência: cada mês escolhido é calculado uma vez.
+  const [sugestoesPorMes, setSugestoesPorMes] = useState<Record<string, Record<string, ValorSugerido>>>(
+    () => ({ [mes]: sugestoes }),
+  );
+  const [calculando, setCalculando] = useState(false);
+  const [avisoDoMes, setAvisoDoMes] = useState<string | null>(null);
+  const ultimoPedido = useRef(0);
   const [valorCents, setValorCents] = useState(
-    inicial ? valorDoTipoDePagamento(tipoInicial, sugestoes[inicial.id] ?? ZERADO) : 0,
+    inicial ? valorDoTipoDePagamento(tipoInicial, sugestoes[inicial.id] ?? SUGESTAO_ZERADA) : 0,
   );
   const [pagoEm, setPagoEm] = useState(hoje);
   const [contaId, setContaId] = useState(contas[0]?.id ?? SEM_CONTA);
@@ -416,9 +419,40 @@ function FormularioPagamento({
   const colaborador = colaboradores.find((c) => c.id === colaboradorId) ?? null;
   const tipos = colaborador ? PAGAMENTOS_POR_VINCULO[colaborador.contrato] : [];
   const pagoEmFechado = mesesFechados.includes(pagoEm.slice(0, 7));
+  const opcoesDeMes = mesesDeReferencia(hoje, [mes]);
 
-  function sugestaoPara(id: string, novoTipo: TipoDePagamento) {
-    return valorDoTipoDePagamento(novoTipo, sugestoes[id] ?? ZERADO);
+  function sugestaoPara(
+    id: string,
+    novoTipo: TipoDePagamento,
+    doMes: Record<string, ValorSugerido> | undefined = sugestoesPorMes[mesDeReferencia],
+  ) {
+    return valorDoTipoDePagamento(novoTipo, doMes?.[id] ?? SUGESTAO_ZERADA);
+  }
+
+  /** Trocar o mês de referência refaz a conta com a base DESSE mês. */
+  async function escolherMes(novo: string) {
+    setMesDeReferencia(novo);
+    setAvisoDoMes(null);
+    const pedido = ++ultimoPedido.current;
+    const jaCalculado = sugestoesPorMes[novo];
+    if (jaCalculado) {
+      setCalculando(false);
+      setValorCents(sugestaoPara(colaboradorId, tipo, jaCalculado));
+      return;
+    }
+    setCalculando(true);
+    const resposta = await sugestoesDePagamento(novo);
+    if (pedido !== ultimoPedido.current) return; // outro mês foi escolhido no meio
+    setCalculando(false);
+    if (resposta.erro || !resposta.dados) {
+      setAvisoDoMes(
+        `Não conseguimos calcular o combinado de ${nomeDoMes(novo)}. Digite o valor antes de salvar.`,
+      );
+      return;
+    }
+    const doMes = resposta.dados;
+    setSugestoesPorMes((atuais) => ({ ...atuais, [novo]: doMes }));
+    setValorCents(sugestaoPara(colaboradorId, tipo, doMes));
   }
 
   function escolherColaborador(id: string) {
@@ -468,7 +502,7 @@ function FormularioPagamento({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Label htmlFor="pagamento-colaborador">Colaborador</Label>
-            <Select value={colaboradorId} onValueChange={escolherColaborador}>
+            <Select value={colaboradorId} onValueChange={escolherColaborador} disabled={calculando}>
               <SelectTrigger id="pagamento-colaborador" className="w-full">
                 <SelectValue placeholder="Escolha" />
               </SelectTrigger>
@@ -483,7 +517,11 @@ function FormularioPagamento({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="pagamento-tipo">Tipo</Label>
-            <Select value={tipo} onValueChange={(valor) => escolherTipo(valor as TipoDePagamento)}>
+            <Select
+              value={tipo}
+              onValueChange={(valor) => escolherTipo(valor as TipoDePagamento)}
+              disabled={calculando}
+            >
               <SelectTrigger id="pagamento-tipo" className="w-full">
                 <SelectValue placeholder="Escolha" />
               </SelectTrigger>
@@ -505,15 +543,25 @@ function FormularioPagamento({
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="pagamento-referencia">Mês de referência</Label>
-            <Input
-              id="pagamento-referencia"
-              type="month"
-              className="font-mono tabular"
-              value={mesDeReferencia}
-              onChange={(evento) => setMesDeReferencia(evento.target.value)}
-            />
+            <Select value={mesDeReferencia} onValueChange={escolherMes}>
+              <SelectTrigger id="pagamento-referencia" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {opcoesDeMes.map((opcao) => (
+                  <SelectItem key={opcao.valor} value={opcao.valor}>
+                    {opcao.rotulo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
+        <p className="-mt-2 text-xs text-muted-foreground" aria-live="polite">
+          {calculando
+            ? `Calculando o combinado de ${nomeDoMes(mesDeReferencia)}…`
+            : (avisoDoMes ?? `Valor sugerido com o que entrou em ${nomeDoMes(mesDeReferencia)}.`)}
+        </p>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="flex flex-col gap-2">
@@ -590,8 +638,8 @@ function FormularioPagamento({
         <Button variant="ghost" onClick={aoFechar} disabled={salvando}>
           Cancelar
         </Button>
-        <Button onClick={salvar} disabled={salvando || !colaborador}>
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+        <Button onClick={salvar} disabled={salvando || calculando || !colaborador}>
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Registrar pagamento
         </Button>
       </DialogFooter>

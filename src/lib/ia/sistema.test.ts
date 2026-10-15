@@ -22,13 +22,16 @@ describe("prompt de sistema", () => {
     expect(texto).toContain("Segmento: Salão de beleza");
     expect(texto).toContain("Cidade/UF: Cuiabá/MT");
     expect(texto).toContain("Regime tributário cadastrado: MEI");
-    expect(texto).toContain("Plano do Bossa: Profissional");
   });
 
-  it("sem cidade e em teste grátis, diz isso", () => {
-    const texto = montarSistema({ ...empresa, city: null, state: null, plan: "trial" });
+  it("sem cidade, diz isso", () => {
+    const texto = montarSistema({ ...empresa, city: null, state: null });
     expect(texto).toContain("Cidade/UF: não informada");
-    expect(texto).toContain("Plano do Bossa: Teste grátis");
+  });
+
+  it("não muda quando o teste grátis vira assinatura (as conversas abertas continuam)", () => {
+    expect(montarSistema({ ...empresa, plan: "trial" } as typeof empresa)).toBe(montarSistema(empresa));
+    expect(montarSistema(empresa)).not.toMatch(/plano/i);
   });
 
   it("traz as regras que não podem faltar", () => {

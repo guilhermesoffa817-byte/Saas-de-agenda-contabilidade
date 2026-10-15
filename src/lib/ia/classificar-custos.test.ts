@@ -262,7 +262,7 @@ describe("classificarLote", () => {
 describe("classificarComFranquia", () => {
   const empresa = { id: "org", plan: "essencial" as const };
   const base = { supabase: {} as never, empresa, userId: "u1", anteriores: new Set<string>(), nomes: [] };
-  const ok = (despesas: DespesaParaCusto[]) => ({
+  const ok = (despesas: unknown[]) => ({
     stop_reason: "end_turn",
     parsed_output: { itens: despesas.map((_, i) => ({ id: String(i + 1), natureza: "fixo", motivo: "Mensal." })) },
     usage: { input_tokens: 100, output_tokens: 10 },

@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarCheck, FileText, Lock, Paperclip, Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -52,6 +53,11 @@ export type LinhaDeLancamento = {
   comprovante: string | null;
   doAtendimento: boolean;
   notaFiscalEmitida: boolean;
+  /**
+   * Mês de referência ("aaaa-mm") quando o lançamento é um pagamento da equipe.
+   * Esse não se edita aqui: valor, tipo e datas mudam pela tela Equipe.
+   */
+  mesDoPagamentoDaEquipe?: string | null;
 };
 
 const TODOS = "todos";
@@ -298,7 +304,16 @@ export function ListaDeLancamentos({
                           </Button>
                         ) : null}
 
-                        {!mesFechado ? (
+                        {!mesFechado && lancamento.mesDoPagamentoDaEquipe ? (
+                          <Link
+                            href={`/app/equipe?mes=${lancamento.mesDoPagamentoDaEquipe}&aba=pagamentos`}
+                            className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                          >
+                            Pagamento da equipe: altere pela tela Equipe
+                          </Link>
+                        ) : null}
+
+                        {!mesFechado && !lancamento.mesDoPagamentoDaEquipe ? (
                           <>
                             <Button
                               variant="ghost"

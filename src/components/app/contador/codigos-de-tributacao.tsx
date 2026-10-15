@@ -104,7 +104,7 @@ function LinhaDoServico({ empresaId, servico }: { empresaId: string; servico: Se
 
       <div className="flex justify-end">
         <Button type="button" size="sm" disabled={!mudou || salvando} onClick={salvar}>
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />}
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : <Check aria-hidden />}
           Salvar
         </Button>
       </div>

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { AvisoDaAgenda } from "./aviso-da-agenda";
 import {
   DADOS_PESSOAIS_VAZIOS,
   type ColaboradorDaTela,
@@ -26,7 +27,13 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { TERMOS_POR_VINCULO, VINCULOS, bpsParaTexto, type Contrato } from "@/lib/equipe";
+import {
+  TERMOS_POR_VINCULO,
+  VINCULOS,
+  bpsParaTexto,
+  trocaParaVinculoSemEmprego,
+  type Contrato,
+} from "@/lib/equipe";
 
 const SEM_AGENDA = "sem-agenda";
 
@@ -66,6 +73,7 @@ export function FormularioColaborador({
   const [dados, setDados] = useState<DadosPessoaisDaTela>(pessoais ?? DADOS_PESSOAIS_VAZIOS);
 
   const termos = TERMOS_POR_VINCULO[contrato];
+  const profissionalLigado = profissionais.find((p) => p.id === profissionalId) ?? null;
 
   function alterarDado(campo: keyof DadosPessoaisDaTela, valor: string) {
     setDados((atuais) => ({ ...atuais, [campo]: valor }));
@@ -146,6 +154,12 @@ export function FormularioColaborador({
             O Bossa registra o vínculo que você informar; quem define o enquadramento correto é o seu
             contador.
           </p>
+          {colaborador && trocaParaVinculoSemEmprego(colaborador.contrato, contrato) ? (
+            <p className="text-xs text-warning">
+              Se já houver férias, faltas, salário ou outro registro de emprego, o vínculo não muda:
+              registre o desligamento deste cadastro e cadastre a pessoa de novo, com o vínculo novo.
+            </p>
+          ) : null}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -192,6 +206,9 @@ export function FormularioColaborador({
             Ligado à agenda, o Bossa soma o que entrou dos atendimentos dessa pessoa para sugerir o
             valor do mês, e as ausências bloqueiam os horários dela.
           </p>
+          {fim && fim !== (colaborador?.fim ?? "") && profissionalLigado?.ativo ? (
+            <AvisoDaAgenda nome={profissionalLigado.nome} fim={fim} hoje={hoje} />
+          ) : null}
         </div>
 
         <Separator />
@@ -322,7 +339,7 @@ export function FormularioColaborador({
           Cancelar
         </Button>
         <Button onClick={salvar} disabled={salvando}>
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Salvar colaborador
         </Button>
       </DialogFooter>

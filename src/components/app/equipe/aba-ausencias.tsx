@@ -200,7 +200,7 @@ export function AbaAusencias({
                   });
                 }}
               >
-                {processando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+                {processando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
                 Excluir
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -352,7 +352,7 @@ function FormularioAusencia({
           Cancelar
         </Button>
         <Button onClick={salvar} disabled={salvando || !colaborador}>
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Registrar ausência
         </Button>
       </DialogFooter>

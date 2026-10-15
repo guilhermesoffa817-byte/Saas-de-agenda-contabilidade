@@ -344,10 +344,25 @@ describe("resumo financeiro", () => {
     expect(resumo.sobrou_depois_das_retiradas.cents).toBe(1_250_000 - 444_990 - 300_000);
   });
 
-  it("compara com o período anterior de mesma duração", () => {
-    expect(resumo.periodo_anterior).toMatchObject({ inicio: "2026-08-02", fim: "2026-08-31" });
+  it("compara o mês inteiro com o mês civil anterior inteiro", () => {
+    expect(resumo.periodo_anterior).toMatchObject({ inicio: "2026-08-01", fim: "2026-08-31" });
     expect(resumo.periodo_anterior.receitas.cents).toBe(1_000_000);
     expect(resumo.variacao_sobre_o_periodo_anterior.receitas).toBe("+25%");
+  });
+
+  it("o aluguel pago no dia 1º do mês anterior entra na comparação", () => {
+    const aluguel = (pagoEm: string) => ({
+      tipo: "despesa" as const,
+      valorCents: 250_000,
+      pagoEm,
+      descricao: "Aluguel",
+      temCliente: false,
+      categoria: "Aluguel do espaço",
+      grupo: "operacional",
+    });
+    const r = resumirFinanceiro([aluguel("2026-08-01"), aluguel("2026-09-01")], { inicio: "2026-09-01", fim: "2026-09-30" });
+    expect(r.periodo_anterior.despesas.cents).toBe(250_000);
+    expect(r.variacao_sobre_o_periodo_anterior.despesas).toBe("+0%");
   });
 
   it("descrição avulsa passa pela limpeza e não traz salário nem lançamento de cliente", () => {
@@ -470,6 +485,28 @@ describe("equipe, custos e MEI", () => {
     expect(r.por_tipo_de_pagamento[0]).toMatchObject({ tipo: "Cota-parte", cents: 200_000 });
   });
 
+  it("equipe: quem foi removido e anonimizado conta no mês em que esteve ativo, como os pagamentos dele", async () => {
+    const { ctx, filtros } = contexto({
+      staff_members: [
+        { contract: "clt", started_on: "2025-02-01", ended_on: null, anonymized_at: null },
+        { contract: "clt", started_on: "2025-03-01", ended_on: null, anonymized_at: null },
+        // Saiu em outubro e foi anonimizado; em setembro estava ativo e recebeu.
+        { contract: "clt", started_on: "2025-04-01", ended_on: "2026-10-05", anonymized_at: "2026-10-06T12:00:00Z" },
+      ],
+      staff_payments: [
+        { kind: "salario", amount_cents: 200_000 },
+        { kind: "salario", amount_cents: 200_000 },
+        { kind: "salario", amount_cents: 200_000 },
+      ],
+    });
+    const r = await rodar("equipe_em_numeros", { mes: "2026-09" }, ctx);
+    const dados = JSON.parse(r.texto);
+    expect(dados.colaboradores_ativos_no_mes).toBe(3);
+    expect(dados.total_pago_a_equipe.cents).toBe(600_000);
+    // Nenhum filtro que tire o anonimizado da contagem.
+    expect(filtros.filter((f) => f.tabela === "staff_members" && f.metodo === "is")).toEqual([]);
+  });
+
   it("custos: totais e indicadores com texto em R$, somados por categoria, sem descrição", () => {
     const r = custosParaOModelo(RESUMO_DE_CUSTOS);
     expect(r.custos_fixos).toEqual({ cents: 440_000, texto: formatarBRL(440_000) });
@@ -538,8 +575,25 @@ describe("definição das ferramentas para a API", () => {
 });
 
 describe("datas do período", () => {
+  it.each([
+    ["outubro com setembro inteiro (31 dias contra 30)", "2026-10-01", "2026-10-31", "2026-09-01", "2026-09-30"],
+    ["março com fevereiro inteiro, sem dias de janeiro", "2026-03-01", "2026-03-31", "2026-02-01", "2026-02-28"],
+    ["março de ano bissexto com o dia 29", "2028-03-01", "2028-03-31", "2028-02-01", "2028-02-29"],
+    ["três meses com os três meses civis anteriores", "2026-07-01", "2026-09-30", "2026-04-01", "2026-06-30"],
+    ["janeiro com dezembro do ano anterior", "2027-01-01", "2027-01-31", "2026-12-01", "2026-12-31"],
+    ["ano inteiro com o ano anterior", "2026-01-01", "2026-12-31", "2025-01-01", "2025-12-31"],
+  ])("mês(es) inteiro(s): %s", (_caso, inicio, fim, inicioAnterior, fimAnterior) => {
+    expect(periodoAnterior({ inicio, fim })).toEqual({ inicio: inicioAnterior, fim: fimAnterior });
+  });
+
+  it("período que não é de meses inteiros: o mesmo número de dias logo antes", () => {
+    expect(periodoAnterior({ inicio: "2026-10-01", fim: "2026-10-12" })).toEqual({ inicio: "2026-09-19", fim: "2026-09-30" });
+    expect(periodoAnterior({ inicio: "2026-09-15", fim: "2026-10-14" })).toEqual({ inicio: "2026-08-16", fim: "2026-09-14" });
+    expect(periodoAnterior({ inicio: "2026-09-02", fim: "2026-09-30" })).toEqual({ inicio: "2026-08-04", fim: "2026-09-01" });
+  });
+
   it("período anterior e mês", () => {
-    expect(periodoAnterior({ inicio: "2026-09-01", fim: "2026-09-30" })).toEqual({ inicio: "2026-08-02", fim: "2026-08-31" });
+    expect(periodoAnterior({ inicio: "2026-09-01", fim: "2026-09-30" })).toEqual({ inicio: "2026-08-01", fim: "2026-08-31" });
     expect(periodoDoMes("2026-02")).toEqual({ inicio: "2026-02-01", fim: "2026-02-28" });
     expect(periodoDoMes("2028-02")).toEqual({ inicio: "2028-02-01", fim: "2028-02-29" });
   });

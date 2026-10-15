@@ -276,6 +276,18 @@ export async function criarBloqueio(entrada: BloqueioInput): Promise<Resposta> {
   return { aviso: "Horário bloqueado." };
 }
 
+/**
+ * O bloqueio pode ter nascido de uma ausência da equipe (férias, atestado…),
+ * e a recepção não deve saber o motivo: a mensagem do banco nunca vai crua.
+ */
+function erroAoRemoverBloqueio(erro: { code?: string; message: string }) {
+  if (erro.code === "42501") return "Seu acesso não permite remover este bloqueio.";
+  if (/aus[eê]ncia|colaborador|v[ií]nculo/i.test(erro.message)) {
+    return "Este bloqueio veio do cadastro da equipe e não pôde ser removido aqui. Peça ao dono para conferir na tela Equipe.";
+  }
+  return "Não conseguimos remover o bloqueio. Tente de novo.";
+}
+
 export async function removerBloqueio(bloqueioId: string): Promise<Resposta> {
   const vinculo = await empresaDoUsuario();
   const bloqueio = garantirEscrita(vinculo);
@@ -288,7 +300,7 @@ export async function removerBloqueio(bloqueioId: string): Promise<Resposta> {
     .eq("organization_id", vinculo.empresa.id)
     .eq("id", bloqueioId);
 
-  if (error) return { erro: error.message };
+  if (error) return { erro: erroAoRemoverBloqueio(error) };
   limparRevalidacao();
   return { aviso: "Bloqueio removido." };
 }

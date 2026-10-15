@@ -7,7 +7,7 @@ import type {
   PagamentoDaTela,
   ProfissionalDaAgenda,
 } from "@/components/app/equipe/tipos";
-import { limitesDoMes } from "@/lib/equipe";
+import { limitesDoMes, type TipoDePagamento } from "@/lib/equipe";
 import { createClient } from "@/lib/supabase/server";
 
 /** Todo o cadastro da equipe (inclusive desligados e ex-colaboradores), sem dados pessoais. */
@@ -52,6 +52,15 @@ export async function carregarAusenciasDoMes(
   mes: string,
 ): Promise<AusenciaDaTela[]> {
   const { de, ate } = limitesDoMes(mes);
+  return carregarAusenciasNoPeriodo(empresaId, de, ate);
+}
+
+/** Ausências que tocam algum dia entre `de` e `ate` (aaaa-mm-dd). */
+async function carregarAusenciasNoPeriodo(
+  empresaId: string,
+  de: string,
+  ate: string,
+): Promise<AusenciaDaTela[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("staff_absences")
@@ -139,4 +148,91 @@ export async function basesDoMes(
   );
 
   return Object.fromEntries(entradas);
+}
+
+/**
+ * Quais destes lançamentos são pagamentos da equipe, com o mês de referência
+ * ("aaaa-mm"). O Financeiro não oferece "Editar" neles: valor, tipo e datas
+ * mudam pela Equipe (o banco recusa o resto, 0015). Quem não lê staff_payments
+ * (recepção) recebe o mapa vazio.
+ */
+export async function pagamentosDaEquipeNosLancamentos(
+  empresaId: string,
+  lancamentoIds: string[],
+): Promise<Map<string, string>> {
+  if (!lancamentoIds.length) return new Map();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("staff_payments")
+    .select("transaction_id, reference_month")
+    .eq("organization_id", empresaId)
+    .in("transaction_id", lancamentoIds);
+  return new Map((data ?? []).map((linha) => [linha.transaction_id, linha.reference_month.slice(0, 7)]));
+}
+
+// ---------------------------------------------------------------------------
+// Portal do contador: o necessário para a folha, só leitura.
+// ---------------------------------------------------------------------------
+
+export type PagamentoParaOContador = {
+  id: string;
+  colaboradorId: string;
+  tipo: TipoDePagamento;
+  /** "aaaa-mm" */
+  mesDeReferencia: string;
+  valorCents: number;
+  pagoEm: string;
+};
+
+export type EquipeParaOContador = {
+  colaboradores: ColaboradorDaTela[];
+  ausencias: AusenciaDaTela[];
+  pagamentos: PagamentoParaOContador[];
+};
+
+/**
+ * O que o contador vê da equipe do cliente no período: cadastro (nome, cargo,
+ * vínculo, datas, combinado), ausências e pagamentos com referência nos meses
+ * do período. Nunca toca em staff_private (CPF, Pix, telefone, e-mail,
+ * observações), que a RLS nem libera ao contador.
+ */
+export async function carregarEquipeParaOContador(
+  empresaId: string,
+  de: string,
+  ate: string,
+): Promise<EquipeParaOContador> {
+  const supabase = await createClient();
+  const [todos, ausencias, { data: pagamentos }] = await Promise.all([
+    carregarColaboradores(empresaId),
+    carregarAusenciasNoPeriodo(empresaId, de, ate),
+    supabase
+      .from("staff_payments")
+      .select("id, staff_id, kind, amount_cents, paid_on, reference_month")
+      .eq("organization_id", empresaId)
+      .gte("reference_month", `${de.slice(0, 7)}-01`)
+      .lte("reference_month", `${ate.slice(0, 7)}-01`)
+      .order("reference_month")
+      .order("paid_on"),
+  ]);
+
+  const comRegistro = new Set([
+    ...ausencias.map((a) => a.colaboradorId),
+    ...(pagamentos ?? []).map((p) => p.staff_id),
+  ]);
+  const noPeriodo = (c: ColaboradorDaTela) => c.inicio <= ate && (c.fim === null || c.fim >= de);
+
+  return {
+    colaboradores: todos.filter(
+      (c) => comRegistro.has(c.id) || (!c.removido && noPeriodo(c)),
+    ),
+    ausencias,
+    pagamentos: (pagamentos ?? []).map((linha) => ({
+      id: linha.id,
+      colaboradorId: linha.staff_id,
+      tipo: linha.kind,
+      mesDeReferencia: linha.reference_month.slice(0, 7),
+      valorCents: linha.amount_cents,
+      pagoEm: linha.paid_on,
+    })),
+  };
 }

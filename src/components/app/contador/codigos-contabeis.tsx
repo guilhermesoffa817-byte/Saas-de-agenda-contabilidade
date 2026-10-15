@@ -41,7 +41,7 @@ function LinhaDeCodigo({ item, aoSalvar }: { item: Item; aoSalvar: (codigo: stri
           setSalvando(false);
         }}
       >
-        {salvando ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />}
+        {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : <Check aria-hidden />}
       </Button>
     </div>
   );
