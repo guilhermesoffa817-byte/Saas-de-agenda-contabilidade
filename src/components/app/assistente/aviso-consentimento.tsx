@@ -60,7 +60,7 @@ export function AvisoDeConsentimento() {
       </CardContent>
       <CardFooter>
         <Button onClick={aceitar} disabled={aceitando}>
-          {aceitando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {aceitando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Li e quero usar o assistente
         </Button>
       </CardFooter>

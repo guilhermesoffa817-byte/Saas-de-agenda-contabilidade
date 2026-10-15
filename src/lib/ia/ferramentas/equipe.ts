@@ -77,11 +77,13 @@ export const equipeEmNumeros = ferramenta({
   esquema: esquemaMes,
   async executar({ mes }, ctx) {
     const [colaboradores, pagamentos] = await Promise.all([
+      // Inclui quem foi removido e anonimizado: os pagamentos dele no mês entram
+      // no total, então ele entra na contagem do mês em que esteve ativo (só
+      // vínculo e datas — nada que identifique a pessoa).
       ctx.supabase
         .from("staff_members")
         .select("contract, started_on, ended_on")
-        .eq("organization_id", ctx.empresa.id)
-        .is("anonymized_at", null),
+        .eq("organization_id", ctx.empresa.id),
       ctx.supabase
         .from("staff_payments")
         .select("kind, amount_cents")

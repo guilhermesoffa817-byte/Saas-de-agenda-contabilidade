@@ -1,22 +1,22 @@
-import type { Natureza, OrigemDaNatureza } from "./calculo";
+import type { FonteDaExcecao, Natureza, OrigemDaNatureza } from "./calculo";
 
 /**
  * Classificador determinístico de custos, para quando a categoria não diz nada
- * (por exemplo "Outras despesas"). Roda antes da IA: o que a regra resolve não
- * gasta cota nem sai do servidor.
+ * (por exemplo "Outras despesas" ou "Impostos (DAS, ISS, Carnê-Leão)"). Roda
+ * antes da IA: o que a regra resolve não gasta cota nem sai do servidor.
  *
- * A exceção gravada pela regra usa `source = 'ia'` (o banco só aceita 'ia' ou
- * 'dono') e o motivo começa com PREFIXO_DA_REGRA — é assim que a tela mostra
- * "Regra" na origem em vez de "Sugestão da IA".
+ * A exceção gravada pela regra usa `source = 'regra'` (aceito desde a migração
+ * 0015). Antes disso ela ia como `source = 'ia'` com o motivo começando por
+ * PREFIXO_DA_REGRA: essas linhas antigas continuam aparecendo como "Regra".
  */
 export const PREFIXO_DA_REGRA = "Regra automática: ";
 
-export function origemDaExcecao(fonte: "ia" | "dono", motivo: string | null): OrigemDaNatureza {
-  if (fonte === "dono") return "dono";
+export function origemDaExcecao(fonte: FonteDaExcecao, motivo: string | null): OrigemDaNatureza {
+  if (fonte === "dono" || fonte === "regra") return fonte;
   return motivo?.startsWith(PREFIXO_DA_REGRA) ? "regra" : "ia";
 }
 
-/** Tira o prefixo técnico para mostrar o motivo na tela. */
+/** Tira o prefixo técnico das exceções antigas para mostrar o motivo na tela. */
 export function motivoParaTela(motivo: string | null) {
   if (!motivo) return null;
   return motivo.startsWith(PREFIXO_DA_REGRA) ? motivo.slice(PREFIXO_DA_REGRA.length) : motivo;
@@ -116,27 +116,39 @@ export function normalizar(texto: string) {
 
 export type ResultadoDaRegra = { natureza: Natureza; motivo: string };
 
+function regrasQueCasam(texto: string) {
+  const comCaixa = semAcento(texto);
+  if (!comCaixa) return [];
+  const minusculo = comCaixa.toLowerCase();
+  return REGRAS.filter((candidata) => candidata.padrao.test(candidata.mantemCaixa ? comCaixa : minusculo));
+}
+
 /**
  * Tenta pela descrição primeiro (ela é mais específica) e depois pelo nome da
  * categoria. Devolve `null` quando nenhuma regra casa — aí é com a IA ou com o dono.
+ *
+ * O nome da categoria só decide quando aponta para UMA natureza. "Impostos (DAS,
+ * ISS, Carnê-Leão)" junta imposto sobre o faturamento (variável) com imposto de
+ * renda (fora da operação): uma "Guia de setembro" nessa categoria vai para a
+ * IA, em vez de virar Carnê-Leão só porque essa regra vem primeiro na lista.
  */
 export function classificarPorRegra(entrada: {
   descricao: string;
   categoria?: string | null;
 }): ResultadoDaRegra | null {
-  for (const texto of [entrada.descricao, entrada.categoria ?? ""]) {
-    const comCaixa = semAcento(texto);
-    if (!comCaixa) continue;
-    const minusculo = comCaixa.toLowerCase();
-    const regra = REGRAS.find((candidata) =>
-      candidata.padrao.test(candidata.mantemCaixa ? comCaixa : minusculo),
-    );
-    if (regra) return { natureza: regra.natureza, motivo: regra.motivo };
-  }
-  return null;
+  const pelaDescricao = regrasQueCasam(entrada.descricao)[0];
+  if (pelaDescricao) return { natureza: pelaDescricao.natureza, motivo: pelaDescricao.motivo };
+
+  const pelaCategoria = regrasQueCasam(entrada.categoria ?? "");
+  if (pelaCategoria.length === 0) return null;
+  if (new Set(pelaCategoria.map((r) => r.natureza)).size > 1) return null;
+  return { natureza: pelaCategoria[0].natureza, motivo: pelaCategoria[0].motivo };
 }
 
-/** O texto que vai para `transaction_cost_overrides.reason` (até 200 caracteres). */
+/**
+ * O texto que vai para `transaction_cost_overrides.reason` (até 200 caracteres).
+ * Sem prefixo: a origem agora fica em `source = 'regra'`.
+ */
 export function motivoDaRegraParaGravar(motivo: string) {
-  return `${PREFIXO_DA_REGRA}${motivo}`.slice(0, 200);
+  return motivo.slice(0, 200);
 }

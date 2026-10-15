@@ -111,12 +111,15 @@ function ListaDeConversas({
 
 export function ChatDoAssistente({
   conversaInicial,
+  perguntaInicial = null,
   conversas: conversasIniciais,
   cota: cotaInicial,
   bloqueio,
   fuso,
 }: {
   conversaInicial: { id: string; mensagens: MensagemDaTela[] } | null;
+  /** Vinda do link do painel (?pergunta=): preenche o campo, sem enviar sozinha. */
+  perguntaInicial?: string | null;
   conversas: ConversaDaLista[];
   cota: CotaDoAssistente | null;
   /** Mensagem do modo somente leitura; com ela, nada é enviado. */
@@ -128,7 +131,7 @@ export function ChatDoAssistente({
   const [mensagens, setMensagens] = useState<Mensagem[]>(conversaInicial?.mensagens ?? []);
   const [conversas, setConversas] = useState(conversasIniciais);
   const [cota, setCota] = useState(cotaInicial);
-  const [pergunta, setPergunta] = useState("");
+  const [pergunta, setPergunta] = useState(perguntaInicial ?? "");
   const [enviando, setEnviando] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [apagando, setApagando] = useState<ConversaDaLista | null>(null);
@@ -143,6 +146,18 @@ export function ChatDoAssistente({
 
   // Parar o pedido se a pessoa sair da página no meio da resposta.
   useEffect(() => () => controlador.current?.abort(), []);
+
+  // Pergunta vinda do painel: o campo já vem preenchido e focado, com o cursor
+  // no fim, e o parâmetro sai do endereço (recarregar não traz a pergunta de volta).
+  useEffect(() => {
+    if (!perguntaInicial) return;
+    const el = campo.current;
+    if (el) {
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    }
+    window.history.replaceState(null, "", "/app/assistente");
+  }, [perguntaInicial]);
 
   // Acompanha a resposta enquanto ela chega.
   useEffect(() => {
@@ -172,6 +187,9 @@ export function ChatDoAssistente({
     setPergunta("");
     setEnviando(true);
     setStatus("Preparando a análise…");
+    // O botão acionado (pergunta pronta ou Enviar) some neste render: o foco vai
+    // para o campo, de onde o Tab chega ao "Parar", em vez de cair no <body>.
+    requestAnimationFrame(() => campo.current?.focus());
 
     const abortar = new AbortController();
     controlador.current = abortar;

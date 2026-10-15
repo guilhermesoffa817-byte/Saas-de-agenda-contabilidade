@@ -30,6 +30,8 @@ export const MENSAGEM_DE_RECUSA =
 export const AVISO_DE_VOLTAS =
   "A análise ficou longa demais e foi interrompida antes do fim. Tente uma pergunta mais específica, com um período menor.";
 export const AVISO_DE_CORTE = "A resposta foi cortada por tamanho. Peça a continuação ou faça uma pergunta mais específica.";
+export const AVISO_DE_PRAZO =
+  "A análise passou do tempo máximo e foi encerrada antes do fim. O que ficou pronto foi guardado; tente uma pergunta mais específica, com um período menor.";
 
 /** Título da conversa: a primeira pergunta, limpa de dados pessoais e curta. */
 export function tituloDaConversa(pergunta: string) {
@@ -47,17 +49,49 @@ export function prepararParaReenvio(content: BetaContentBlock[]): BetaContentBlo
   const corte = content.findLastIndex((b) => b.type === "fallback");
   if (corte < 0) return content;
   const antes = content.slice(0, corte);
-  const comResultado = new Set(
-    antes.flatMap((b) =>
-      b.type === "web_search_tool_result" || b.type === "web_fetch_tool_result" ? [b.tool_use_id] : [],
-    ),
-  );
+  // Todo bloco de resultado do servidor (pesquisa, leitura de página, execução
+  // de código da filtragem dinâmica…) tem tool_use_id: o par fica inteiro.
+  const comResultado = new Set(antes.flatMap((b) => ("tool_use_id" in b ? [b.tool_use_id] : [])));
   const limpos = antes.filter((b) => {
     if (b.type === "thinking" || b.type === "redacted_thinking" || b.type === "tool_use") return false;
     if (b.type === "server_tool_use") return comResultado.has(b.id);
     return true;
   });
   return [...limpos, ...content.slice(corte)];
+}
+
+type BlocoDaMensagem = Exclude<BetaMessageParam["content"], string>[number];
+
+const ehRaciocinio = (b: BlocoDaMensagem) => b.type === "thinking" || b.type === "redacted_thinking";
+
+/**
+ * Fecha o histórico de uma pergunta interrompida (corte por tamanho, prazo):
+ * na sequência final de mensagens do assistente, tira os `tool_use` (sem
+ * resultado, porque nenhuma mensagem do usuário vem depois) e os
+ * `server_tool_use` sem o resultado. Sem isso, toda pergunta seguinte da
+ * conversa daria 400. O texto que a pessoa já leu fica. Mensagens sem nada
+ * pendente não mudam (os bytes enviados à API se mantêm).
+ */
+export function fecharTurno(novas: BetaMessageParam[]): BetaMessageParam[] {
+  let inicio = novas.length;
+  while (inicio > 0 && novas[inicio - 1].role === "assistant") inicio--;
+  if (inicio === novas.length) return novas;
+
+  const cauda = novas.slice(inicio);
+  const comResultado = new Set(
+    cauda.flatMap((m) =>
+      typeof m.content === "string" ? [] : m.content.flatMap((b) => ("tool_use_id" in b ? [b.tool_use_id] : [])),
+    ),
+  );
+  const pendente = (b: BlocoDaMensagem) =>
+    b.type === "tool_use" || (b.type === "server_tool_use" && !comResultado.has(b.id));
+
+  const fechada = cauda.flatMap((m): BetaMessageParam[] => {
+    if (typeof m.content === "string" || !m.content.some(pendente)) return [m];
+    const content = m.content.filter((b) => !pendente(b));
+    return content.some((b) => !ehRaciocinio(b)) ? [{ ...m, content }] : [];
+  });
+  return [...novas.slice(0, inicio), ...fechada];
 }
 
 export type Fonte = FonteDaResposta;
@@ -131,7 +165,7 @@ export function mensagensParaTela(linhas: LinhaDeMensagem[]): MensagemDaTela[] {
   return tela;
 }
 
-export type Desfecho = "concluido" | "cortado" | "recusa" | "voltas" | "erro" | "cancelado";
+export type Desfecho = "concluido" | "cortado" | "prazo" | "recusa" | "voltas" | "erro" | "cancelado";
 
 export type ResultadoDoLaco = {
   desfecho: Desfecho;
@@ -144,9 +178,9 @@ export type ResultadoDoLaco = {
   erro?: ErroIA;
 };
 
-/** Só os desfechos que deixam o histórico consistente são gravados. */
+/** Só os desfechos que deixam o histórico consistente (depois de `fecharTurno`) são gravados. */
 export function deveGravar(desfecho: Desfecho) {
-  return desfecho === "concluido" || desfecho === "cortado";
+  return desfecho === "concluido" || desfecho === "cortado" || desfecho === "prazo";
 }
 
 export type OpcoesDoLaco = {
@@ -160,7 +194,16 @@ export type OpcoesDoLaco = {
   /** Texto curto para a tela enquanto uma ferramenta roda. */
   statusDe: (nome: string) => string | null;
   emitir: (evento: EventoAssistente) => void;
+  /** Cancelamento pelo navegador: nada desta pergunta é gravado. */
   signal?: AbortSignal;
+  /**
+   * Prazo total da pergunta, abaixo do maxDuration da rota. Quando vence, o laço
+   * para, avisa e devolve o que já ficou completo (desfecho "prazo"), para quem
+   * chamou gravar antes de a hospedagem matar a função.
+   */
+  prazo?: AbortSignal;
+  /** Chamado ao fim de cada volta com o uso ACUMULADO da pergunta (para gravar os tokens já gastos). */
+  aoConcluirVolta?: (usos: UsoDaApi[]) => Promise<void> | void;
   /** Para testes: um cliente com `fetch` falso. */
   cliente?: Anthropic;
 };
@@ -179,16 +222,25 @@ export async function rodarAssistente(opcoes: OpcoesDoLaco): Promise<ResultadoDo
   let houveTexto = false;
   const fontesEnviadas = new Set<string>();
 
+  const sinais = [opcoes.signal, opcoes.prazo].filter((s): s is AbortSignal => Boolean(s));
+  const sinal = sinais.length > 1 ? AbortSignal.any(sinais) : sinais[0];
+  const venceuOPrazo = () => Boolean(opcoes.prazo?.aborted) && !opcoes.signal?.aborted;
+
   const resultado = (desfecho: Desfecho, erro?: ErroIA): ResultadoDoLaco => ({
     desfecho,
-    novas: mensagens.slice(opcoes.historico.length),
+    novas: fecharTurno(mensagens.slice(opcoes.historico.length)),
     usos,
     chamadas,
     ...(erro ? { erro } : {}),
   });
+  const encerrarNoPrazo = () => {
+    opcoes.emitir({ tipo: "aviso", mensagem: AVISO_DE_PRAZO });
+    return resultado("prazo");
+  };
 
   try {
     for (let volta = 0; ; volta++) {
+      if (venceuOPrazo()) return encerrarNoPrazo();
       if (opcoes.signal?.aborted) return resultado("cancelado");
       if (volta >= MAX_VOLTAS) {
         opcoes.emitir({ tipo: "aviso", mensagem: AVISO_DE_VOLTAS });
@@ -209,7 +261,7 @@ export async function rodarAssistente(opcoes: OpcoesDoLaco): Promise<ResultadoDo
           tools: opcoes.ferramentas,
           messages: mensagens,
         },
-        { signal: opcoes.signal },
+        { signal: sinal },
       );
 
       stream.on("text", (delta) => {
@@ -238,6 +290,7 @@ export async function rodarAssistente(opcoes: OpcoesDoLaco): Promise<ResultadoDo
 
       const resposta = await stream.finalMessage();
       usos.push(resposta.usage);
+      await opcoes.aoConcluirVolta?.([...usos]);
       const conteudo = prepararParaReenvio(resposta.content);
 
       if (resposta.stop_reason === "refusal") {
@@ -251,9 +304,10 @@ export async function rodarAssistente(opcoes: OpcoesDoLaco): Promise<ResultadoDo
       }
 
       const pedidos = conteudo.filter((b): b is BetaToolUseBlock => b.type === "tool_use");
-      if (resposta.stop_reason === "max_tokens") {
-        // Nunca executa nem guarda um tool_use cortado no meio.
-        if (pedidos.length === 0) mensagens.push({ role: "assistant", content: conteudo });
+      if (resposta.stop_reason === "max_tokens" || resposta.stop_reason === "model_context_window_exceeded") {
+        // Nunca executa um tool_use cortado no meio. O texto que a tela já
+        // mostrou fica; fecharTurno tira o que ficou sem par.
+        mensagens.push({ role: "assistant", content: conteudo });
         opcoes.emitir({ tipo: "aviso", mensagem: AVISO_DE_CORTE });
         return resultado("cortado");
       }
@@ -265,6 +319,7 @@ export async function rodarAssistente(opcoes: OpcoesDoLaco): Promise<ResultadoDo
       mensagens.push({ role: "user", content: resultados });
     }
   } catch (err) {
+    if (venceuOPrazo()) return encerrarNoPrazo();
     const erro = traduzirErroIA(err);
     if (erro.codigo === "cancelado" || opcoes.signal?.aborted) return resultado("cancelado");
     // 400 numa conversa com histórico: em geral o system ou as ferramentas mudaram

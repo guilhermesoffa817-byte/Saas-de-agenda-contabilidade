@@ -89,6 +89,14 @@ describe("classificarPorRegra", () => {
     expect(natureza("Pagamento avulso", null)).toBeNull();
   });
 
+  it("categoria que mistura naturezas não decide sozinha (impostos: DAS/ISS × Carnê-Leão)", () => {
+    const impostos = "Impostos (DAS, ISS, Carnê-Leão)";
+    expect(natureza("Carnê-Leão set/2026", impostos)).toBe("nao_operacional");
+    expect(natureza("DAS de setembro", impostos)).toBe("variavel");
+    expect(natureza("ISS outubro", impostos)).toBe("variavel");
+    expect(natureza("Guia de setembro", impostos)).toBeNull();
+  });
+
   it("a descrição vence a categoria", () => {
     expect(natureza("Juros do atraso", "Aluguel do espaço")).toBe("nao_operacional");
   });
@@ -113,17 +121,23 @@ describe("classificarPorRegra", () => {
 });
 
 describe("origem e motivo da exceção", () => {
-  it("o prefixo da regra vira a origem 'regra'", () => {
+  it("source 'regra' é a origem 'regra'; o motivo novo vai sem prefixo", () => {
     const gravado = motivoDaRegraParaGravar("Aluguel se paga todo mês.");
-    expect(gravado.startsWith(PREFIXO_DA_REGRA)).toBe(true);
+    expect(gravado).toBe("Aluguel se paga todo mês.");
+    expect(origemDaExcecao("regra", gravado)).toBe("regra");
+    expect(motivoParaTela(gravado)).toBe("Aluguel se paga todo mês.");
+  });
+
+  it("exceção antiga ('ia' com o prefixo) continua como 'Regra'", () => {
+    const gravado = `${PREFIXO_DA_REGRA}Aluguel se paga todo mês.`;
     expect(origemDaExcecao("ia", gravado)).toBe("regra");
     expect(origemDaExcecao("ia", "Parece assinatura mensal.")).toBe("ia");
     expect(origemDaExcecao("ia", null)).toBe("ia");
     expect(origemDaExcecao("dono", gravado)).toBe("dono");
   });
 
-  it("a tela não mostra o prefixo técnico", () => {
-    expect(motivoParaTela(motivoDaRegraParaGravar("Aluguel se paga todo mês."))).toBe(
+  it("a tela não mostra o prefixo técnico das exceções antigas", () => {
+    expect(motivoParaTela(`${PREFIXO_DA_REGRA}Aluguel se paga todo mês.`)).toBe(
       "Aluguel se paga todo mês.",
     );
     expect(motivoParaTela("Assinatura mensal.")).toBe("Assinatura mensal.");

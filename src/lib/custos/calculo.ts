@@ -9,6 +9,9 @@ import { origemDaExcecao } from "./regras";
  * BigInt, porque R$ 1 milhão × R$ 1 milhão já estoura o inteiro seguro do JS.
  */
 
+/** Os mesmos valores de `transaction_cost_overrides.source`. */
+export type FonteDaExcecao = "ia" | "regra" | "dono";
+
 /** Os mesmos valores da coluna `cost_behavior` do banco. */
 export const NATUREZAS = ["fixo", "variavel", "nao_operacional"] as const;
 export type Natureza = (typeof NATUREZAS)[number];
@@ -43,10 +46,15 @@ export type DespesaParaCusto = {
   formaDePagamento: string | null;
   categoria: string | null;
   categoriaId: string | null;
+  /**
+   * Cliente ligado ao lançamento (reembolso, sinal devolvido). Com cliente, a
+   * descrição nunca vai à IA. Opcional para quem monta despesas sem o banco.
+   */
+  clienteId?: string | null;
   /** `report_group` da categoria; sem categoria conta como operacional. */
   grupo: string | null;
   naturezaDaCategoria: Natureza | null;
-  excecao: { natureza: Natureza; fonte: "ia" | "dono"; motivo: string | null } | null;
+  excecao: { natureza: Natureza; fonte: FonteDaExcecao; motivo: string | null } | null;
 };
 
 export type DespesaClassificada = DespesaParaCusto & {

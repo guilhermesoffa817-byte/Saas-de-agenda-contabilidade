@@ -100,7 +100,7 @@ function LinhaDaDespesa({
                 size="sm"
                 aria-label={`Classificação de ${despesa.descricao}`}
               >
-                {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+                {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

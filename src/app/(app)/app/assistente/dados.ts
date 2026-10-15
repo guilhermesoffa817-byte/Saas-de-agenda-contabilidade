@@ -10,7 +10,10 @@ import type { Database, Json } from "@/lib/supabase/database.types";
 /**
  * Leitura e gravação das conversas do assistente. Sempre com o cliente da
  * sessão (RLS: só o dono, só as próprias conversas) e sempre filtrando pela
- * empresa e pelo usuário também no código.
+ * empresa e pelo usuário também no código. O conteúdo bruto das mensagens (com
+ * o raciocínio do modelo) só sai do banco por public.historico_de_ia e só
+ * entra por public.acrescentar_mensagens_de_ia — o navegador não lê nem grava
+ * a coluna content.
  */
 type Cliente = SupabaseClient<Database>;
 type BetaMessageParam = Anthropic.Beta.BetaMessageParam;
@@ -42,7 +45,7 @@ export async function listarConversas(supabase: Cliente, empresaId: string, user
 export async function conversaDoUsuario(supabase: Cliente, empresaId: string, userId: string, conversaId: string) {
   const { data } = await supabase
     .from("ai_conversations")
-    .select("id, title")
+    .select("id, title, system_snapshot")
     .eq("id", conversaId)
     .eq("organization_id", empresaId)
     .eq("user_id", userId)
@@ -50,14 +53,12 @@ export async function conversaDoUsuario(supabase: Cliente, empresaId: string, us
   return data;
 }
 
-/** As linhas da conversa, na ordem em que foram gravadas. */
-export async function linhasDaConversa(supabase: Cliente, empresaId: string, conversaId: string) {
-  const { data, error } = await supabase
-    .from("ai_messages")
-    .select("id, role, content, display_text")
-    .eq("organization_id", empresaId)
-    .eq("conversation_id", conversaId)
-    .order("id", { ascending: true });
+/**
+ * As linhas da conversa, na ordem em que foram gravadas, com o content como
+ * foi enviado à API (coluna json: mesma ordem de chaves). Só no servidor.
+ */
+export async function linhasDaConversa(supabase: Cliente, conversaId: string) {
+  const { data, error } = await supabase.rpc("historico_de_ia", { p_conversa: conversaId });
   if (error) throw new Error("Não foi possível carregar a conversa.");
   return (data ?? []).map(
     (l): LinhaDeMensagem => ({
@@ -70,8 +71,8 @@ export async function linhasDaConversa(supabase: Cliente, empresaId: string, con
 }
 
 /** Para a tela: só o texto visível e as fontes. O conteúdo bruto fica no servidor. */
-export async function mensagensDaConversa(supabase: Cliente, empresaId: string, conversaId: string) {
-  return mensagensParaTela(await linhasDaConversa(supabase, empresaId, conversaId));
+export async function mensagensDaConversa(supabase: Cliente, conversaId: string) {
+  return mensagensParaTela(await linhasDaConversa(supabase, conversaId));
 }
 
 /** Para a API: o histórico exatamente como foi gravado (com o raciocínio). */
@@ -83,39 +84,80 @@ export function perguntasNaConversa(linhas: LinhaDeMensagem[]) {
   return linhas.filter((l) => l.role === "user" && l.display_text.trim()).length;
 }
 
+/** Recusas de public.acrescentar_mensagens_de_ia que a pessoa precisa ler como vieram. */
+const RECUSAS_DA_GRAVACAO = [
+  "A conversa foi atualizada em outra aba. Recarregue a página.",
+  "A resposta ficou grande demais para guardar. Comece uma nova conversa.",
+  "Esta conversa ficou longa demais. Comece uma nova conversa.",
+  "Mensagem em formato inválido.",
+  "Conversa não encontrada.",
+];
+export const RECUSA_POR_OUTRA_ABA = RECUSAS_DA_GRAVACAO[0];
+
+/** Erro ao gravar, com a mensagem já pronta para a tela. */
+export class ErroAoGravar extends Error {
+  constructor(
+    mensagem: string,
+    readonly codigo: "outra_aba" | "gravar",
+  ) {
+    super(mensagem);
+  }
+}
+
 /**
- * Acrescenta as mensagens de uma pergunta concluída. Só por acréscimo: o banco
- * nem aceita update/delete em ai_messages.
+ * Acrescenta as mensagens de uma pergunta, só por acréscimo e com o content
+ * exatamente como foi à API (sem converter string em bloco: os bytes do
+ * próximo pedido precisam ser os mesmos). `apos` é o id da última linha lida
+ * antes de chamar a API (null numa conversa nova): se outra aba gravou depois,
+ * o banco recusa, porque o histórico intercalado quebraria a conversa.
+ * Devolve o id da última linha gravada.
  */
 export async function gravarMensagens(
   supabase: Cliente,
   params: {
-    empresaId: string;
     conversaId: string;
+    apos: number | null;
     pergunta: { mensagem: BetaMessageParam; texto: string };
     novas: BetaMessageParam[];
   },
 ) {
-  const linhas = [
+  const mensagens = [
     { mensagem: params.pergunta.mensagem, texto: params.pergunta.texto },
     ...params.novas.map((m) => ({ mensagem: m, texto: m.role === "assistant" ? textoVisivel(m.content) : "" })),
-  ].map(({ mensagem, texto }) => ({
-    conversation_id: params.conversaId,
-    organization_id: params.empresaId,
-    role: mensagem.role,
-    content: (typeof mensagem.content === "string"
-      ? [{ type: "text", text: mensagem.content }]
-      : mensagem.content) as unknown as Json,
-    display_text: texto,
-  }));
-  const { error } = await supabase.from("ai_messages").insert(linhas);
-  if (error) throw new Error("Não foi possível gravar a conversa.");
+  ].map(({ mensagem, texto }) => ({ role: mensagem.role, content: mensagem.content, display_text: texto }));
+
+  const { data, error } = await supabase.rpc("acrescentar_mensagens_de_ia", {
+    p_conversa: params.conversaId,
+    p_apos: params.apos,
+    p_mensagens: mensagens as unknown as Json,
+  });
+  if (error) {
+    const conhecida = RECUSAS_DA_GRAVACAO.find((m) => error.message?.includes(m));
+    throw new ErroAoGravar(
+      conhecida ?? "A resposta não pôde ser gravada. Tente de novo.",
+      conhecida === RECUSA_POR_OUTRA_ABA ? "outra_aba" : "gravar",
+    );
+  }
+  return data;
 }
 
-export async function criarConversa(supabase: Cliente, params: { empresaId: string; userId: string; titulo: string }) {
+/**
+ * Cria a conversa e congela nela o prompt de sistema usado: o raciocínio
+ * preservado exige o mesmo system em toda a conversa, mesmo que o plano, a
+ * cidade ou o segmento mudem depois.
+ */
+export async function criarConversa(
+  supabase: Cliente,
+  params: { empresaId: string; userId: string; titulo: string; sistema: string },
+) {
   const { data, error } = await supabase
     .from("ai_conversations")
-    .insert({ organization_id: params.empresaId, user_id: params.userId, title: params.titulo })
+    .insert({
+      organization_id: params.empresaId,
+      user_id: params.userId,
+      title: params.titulo,
+      system_snapshot: params.sistema,
+    })
     .select("id")
     .single();
   if (error) throw new Error("Não foi possível abrir a conversa.");

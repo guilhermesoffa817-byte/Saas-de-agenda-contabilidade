@@ -6,23 +6,20 @@ import { z } from "zod";
 import { NATUREZAS } from "@/lib/custos/calculo";
 import { carregarMovimentoDoPeriodo, janelaDeSeisMeses } from "@/lib/custos/resumo";
 import {
-  linhasDeUso,
   motivoDoQueSobrou,
   planejarSugestao,
   resumoDaSugestao,
   type MotivoSemIa,
 } from "@/lib/custos/sugestao";
 import {
-  classificarLote,
+  classificarComFranquia,
   descricoesAnteriores,
-  emLotes,
+  nomesParaOcultar,
   TAMANHO_DO_LOTE,
-  type SugestaoDeCusto,
 } from "@/lib/ia/classificar-custos";
 import { iaConfigurada } from "@/lib/ia/cliente";
-import { cotaDeIa, somarUso, type UsoDaApi } from "@/lib/ia/cota";
 import { createClient } from "@/lib/supabase/server";
-import { empresaAtual, garantirEscrita } from "@/lib/supabase/sessao";
+import { empresaAtual, garantirEscrita, usuarioAtual } from "@/lib/supabase/sessao";
 
 export type Resposta<T = undefined> = { erro?: string; aviso?: string; dados?: T };
 
@@ -129,6 +126,7 @@ export async function sugerirClassificacao(mes: string): Promise<Resposta> {
   }
 
   let porIa = 0;
+  let recusadas = 0;
   let semIa = plano.paraIa.length;
   let motivoSemIa: MotivoSemIa | null = null;
   let erroDaIa: string | null = null;
@@ -137,52 +135,34 @@ export async function sugerirClassificacao(mes: string): Promise<Resposta> {
     if (!iaConfigurada()) {
       motivoSemIa = "nao_configurada";
     } else {
-      let restantes = 0;
+      // Sem a lista de nomes a ocultar, nenhuma descrição sai do servidor.
+      let nomes: string[] | null = null;
+      const usuario = await usuarioAtual();
       try {
-        restantes = (await cotaDeIa({ supabase, empresa, recurso: "classificacao" })).restantes;
+        const clientesLigados = movimento.despesas.flatMap((d) => (d.clienteId ? [d.clienteId] : []));
+        nomes = await nomesParaOcultar(supabase, empresa.id, clientesLigados);
       } catch {
-        motivoSemIa = "erro";
-        erroDaIa = "Não foi possível conferir a franquia de IA.";
+        erroDaIa = "Não foi possível preparar as despesas para a IA.";
       }
 
-      if (!erroDaIa && restantes <= 0) motivoSemIa = "franquia";
+      if (!usuario) erroDaIa ??= "Sessão expirada. Entre de novo.";
 
-      if (!erroDaIa && restantes > 0) {
-        const enviar = plano.paraIa.slice(0, Math.min(restantes, TAMANHO_DO_LOTE * LOTES_POR_VEZ));
-        const anteriores = descricoesAnteriores(movimento.despesas, mes);
-        const resultados = await Promise.all(
-          emLotes(enviar).map(async (lote) => ({ lote, resultado: await classificarLote(lote, anteriores) })),
-        );
+      if (nomes && usuario && !erroDaIa) {
+        const resultado = await classificarComFranquia({
+          supabase,
+          empresa,
+          userId: usuario.id,
+          despesas: plano.paraIa,
+          maximo: TAMANHO_DO_LOTE * LOTES_POR_VEZ,
+          anteriores: descricoesAnteriores(movimento.despesas, mes),
+          nomes,
+        });
+        erroDaIa = resultado.erro;
+        recusadas = resultado.recusadas.length;
 
-        const sugestoes: SugestaoDeCusto[] = [];
-        const usos: { enviados: number; uso: UsoDaApi }[] = [];
-        for (const { lote, resultado } of resultados) {
-          if (resultado.ok) {
-            sugestoes.push(...resultado.sugestoes);
-            usos.push({ enviados: lote.length, uso: resultado.uso });
-          } else {
-            erroDaIa ??= resultado.erro.mensagem;
-          }
-        }
-
-        // Cada lançamento enviado conta 1 na franquia.
-        if (usos.length > 0) {
-          const { data: usuario } = await supabase.auth.getUser();
-          const linhas = usos.flatMap(({ enviados, uso }) =>
-            linhasDeUso({
-              empresaId: empresa.id,
-              userId: usuario.user?.id ?? null,
-              enviados,
-              tokens: somarUso(uso),
-            }),
-          );
-          const { error } = await supabase.from("ai_usage_logs").insert(linhas);
-          if (error) erroDaIa ??= "Não foi possível registrar o uso da IA.";
-        }
-
-        if (sugestoes.length > 0) {
+        if (resultado.sugestoes.length > 0) {
           const { error } = await supabase.from("transaction_cost_overrides").upsert(
-            sugestoes.map((sugestao) => ({
+            resultado.sugestoes.map((sugestao) => ({
               transaction_id: sugestao.transacaoId,
               organization_id: empresa.id,
               cost_behavior: sugestao.natureza,
@@ -192,25 +172,28 @@ export async function sugerirClassificacao(mes: string): Promise<Resposta> {
             { onConflict: "transaction_id", ignoreDuplicates: true },
           );
           if (error) erroDaIa ??= traduzirErro(error.message);
-          else porIa = sugestoes.length;
+          else porIa = resultado.sugestoes.length;
         }
 
-        semIa = plano.paraIa.length - porIa;
+        semIa = plano.paraIa.length - porIa - recusadas;
         if (semIa > 0) {
           motivoSemIa = motivoDoQueSobrou({
             erroDaIa,
-            enviados: enviar.length,
+            enviados: resultado.enviados,
             total: plano.paraIa.length,
-            restantes,
+            limitadoPelaFranquia: resultado.limitadoPelaFranquia,
+            interrompido: resultado.interrompido,
           });
         }
+      } else {
+        motivoSemIa = "erro";
       }
     }
   }
 
   if (plano.porRegra.length > 0 || porIa > 0) limpar();
 
-  const frase = resumoDaSugestao({ porRegra: plano.porRegra.length, porIa, semIa, motivoSemIa });
-  if (erroDaIa && porIa === 0 && plano.porRegra.length === 0) return { erro: erroDaIa };
+  const frase = resumoDaSugestao({ porRegra: plano.porRegra.length, porIa, semIa, motivoSemIa, recusadas });
+  if (erroDaIa && porIa === 0 && plano.porRegra.length === 0 && recusadas === 0) return { erro: erroDaIa };
   return { aviso: erroDaIa ? `${frase} ${erroDaIa}` : frase };
 }

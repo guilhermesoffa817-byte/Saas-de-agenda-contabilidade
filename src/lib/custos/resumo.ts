@@ -13,12 +13,11 @@ import {
   type ReceitaParaCusto,
   type ResumoDeCustos,
 } from "./calculo";
+import { lerTodasAsPaginas } from "./paginar";
 
 export type { ResumoDeCustos } from "./calculo";
 
 const MES = /^\d{4}-(0[1-9]|1[0-2])$/;
-/** O PostgREST devolve no máximo mil linhas por vez; paginamos para não perder nada. */
-const PAGINA = 1000;
 
 type LinhaDoBanco = {
   id: string;
@@ -28,10 +27,15 @@ type LinhaDoBanco = {
   paid_at: string | null;
   payment_method: string | null;
   appointment_id: string | null;
+  client_id: string | null;
   category_id: string | null;
   categories: { name: string; report_group: string; cost_behavior: string | null } | null;
   transaction_cost_overrides: { cost_behavior: string; source: string; reason: string | null } | null;
 };
+
+const FONTES = ["ia", "regra", "dono"] as const;
+type Fonte = (typeof FONTES)[number];
+const eFonte = (valor: string): valor is Fonte => (FONTES as readonly string[]).includes(valor);
 
 export type MovimentoDoPeriodo = { despesas: DespesaParaCusto[]; receitas: ReceitaParaCusto[] };
 
@@ -49,10 +53,11 @@ function paraDespesa(linha: LinhaDoBanco): DespesaParaCusto {
     formaDePagamento: linha.payment_method,
     categoria: categoria?.name ?? null,
     categoriaId: linha.category_id,
+    clienteId: linha.client_id,
     grupo: categoria?.report_group ?? null,
     naturezaDaCategoria: eNatureza(categoria?.cost_behavior) ? categoria.cost_behavior : null,
     excecao:
-      excecao && eNatureza(excecao.cost_behavior) && (excecao.source === "ia" || excecao.source === "dono")
+      excecao && eNatureza(excecao.cost_behavior) && eFonte(excecao.source)
         ? { natureza: excecao.cost_behavior, fonte: excecao.source, motivo: excecao.reason }
         : null,
   };
@@ -71,11 +76,11 @@ export async function carregarMovimentoDoPeriodo(
   const despesas: DespesaParaCusto[] = [];
   const receitas: ReceitaParaCusto[] = [];
 
-  for (let inicio = 0; ; inicio += PAGINA) {
-    const { data, error } = await supabase
+  const brutas = await lerTodasAsPaginas((inicio, fim) =>
+    supabase
       .from("transactions")
       .select(
-        `id, kind, description, amount_cents, paid_at, payment_method, appointment_id, category_id,
+        `id, kind, description, amount_cents, paid_at, payment_method, appointment_id, client_id, category_id,
          categories ( name, report_group, cost_behavior ),
          transaction_cost_overrides ( cost_behavior, source, reason )`,
       )
@@ -84,24 +89,21 @@ export async function carregarMovimentoDoPeriodo(
       .gte("paid_at", de)
       .lte("paid_at", ate)
       .order("id")
-      .range(inicio, inicio + PAGINA - 1);
+      .range(inicio, fim),
+  );
+  const linhas = brutas as unknown as LinhaDoBanco[];
 
-    if (error) throw new Error(`Não foi possível ler os lançamentos: ${error.message}`);
-    const linhas = (data ?? []) as unknown as LinhaDoBanco[];
-
-    for (const linha of linhas) {
-      if (!linha.paid_at) continue;
-      if (linha.kind === "receita") {
-        receitas.push({
-          valorCents: linha.amount_cents,
-          pagoEm: linha.paid_at,
-          atendimentoId: linha.appointment_id,
-        });
-      } else {
-        despesas.push(paraDespesa(linha));
-      }
+  for (const linha of linhas) {
+    if (!linha.paid_at) continue;
+    if (linha.kind === "receita") {
+      receitas.push({
+        valorCents: linha.amount_cents,
+        pagoEm: linha.paid_at,
+        atendimentoId: linha.appointment_id,
+      });
+    } else {
+      despesas.push(paraDespesa(linha));
     }
-    if (linhas.length < PAGINA) break;
   }
 
   return { despesas, receitas };

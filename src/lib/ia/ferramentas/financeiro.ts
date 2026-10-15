@@ -173,7 +173,7 @@ type LinhaDoBanco = {
 export const resumoFinanceiro = ferramenta({
   nome: "resumo_financeiro",
   descricao:
-    "Entradas e saídas pagas no período (regime de caixa): receitas, despesas por grupo e maiores categorias, resultado, retiradas do dono à parte e comparação com o período anterior de mesma duração. Valores em centavos e já formatados em R$. Use antes de afirmar qualquer número de faturamento, lucro ou despesa.",
+    "Entradas e saídas pagas no período (regime de caixa): receitas, despesas por grupo e maiores categorias, resultado, retiradas do dono à parte e comparação com o período anterior (o mês civil anterior, ou os meses civis anteriores, quando o período é de meses inteiros; senão, o mesmo número de dias logo antes). Valores em centavos e já formatados em R$. Use antes de afirmar qualquer número de faturamento, lucro ou despesa.",
   status: "Lendo o financeiro…",
   esquema: esquemaPeriodo,
   async executar(periodo, ctx) {

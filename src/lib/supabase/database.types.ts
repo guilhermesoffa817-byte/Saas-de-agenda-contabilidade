@@ -1260,6 +1260,7 @@ export type Database = {
           organization_id: string;
           user_id: string;
           title: string;
+          system_snapshot: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1268,6 +1269,7 @@ export type Database = {
           organization_id: string;
           user_id: string;
           title: string;
+          system_snapshot?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1276,6 +1278,7 @@ export type Database = {
           organization_id?: string;
           user_id?: string;
           title?: string;
+          system_snapshot?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1343,6 +1346,7 @@ export type Database = {
           input_tokens: number;
           output_tokens: number;
           cache_read_tokens: number;
+          cache_creation_tokens: number;
           web_searches: number;
           created_at: string;
         };
@@ -1354,6 +1358,7 @@ export type Database = {
           input_tokens?: number;
           output_tokens?: number;
           cache_read_tokens?: number;
+          cache_creation_tokens?: number;
           web_searches?: number;
           created_at?: string;
         };
@@ -1365,6 +1370,7 @@ export type Database = {
           input_tokens?: number;
           output_tokens?: number;
           cache_read_tokens?: number;
+          cache_creation_tokens?: number;
           web_searches?: number;
           created_at?: string;
         };
@@ -1546,6 +1552,33 @@ export type Database = {
       uso_de_ia_no_mes: {
         Args: { p_org: string; p_feature: string };
         Returns: number;
+      };
+      reservar_uso_de_ia: {
+        Args: { p_org: string; p_feature: string; p_unidades: number; p_limite: number };
+        Returns: number[];
+      };
+      atualizar_uso_de_ia: {
+        Args: {
+          p_ids: number[];
+          p_input: number;
+          p_output: number;
+          p_cache_read: number;
+          p_cache_creation: number;
+          p_web_searches: number;
+        };
+        Returns: number;
+      };
+      cancelar_uso_de_ia: {
+        Args: { p_ids: number[]; p_org: string; p_user: string };
+        Returns: number;
+      };
+      acrescentar_mensagens_de_ia: {
+        Args: { p_conversa: string; p_apos: number | null; p_mensagens: Json };
+        Returns: number;
+      };
+      historico_de_ia: {
+        Args: { p_conversa: string };
+        Returns: { id: number; role: string; content: Json; display_text: string }[];
       };
       limpar_dados_de_ia: {
         Args: Record<string, never>;

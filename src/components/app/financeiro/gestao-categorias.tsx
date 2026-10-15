@@ -217,7 +217,7 @@ function FormularioCategoria({
             aoFechar();
           }}
         >
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Salvar categoria
         </Button>
       </DialogFooter>
@@ -309,7 +309,7 @@ function FormularioConta({ conta, aoFechar }: { conta: ContaDaTabela | null; aoF
             aoFechar();
           }}
         >
-          {salvando ? <Loader2 className="animate-spin" aria-hidden /> : null}
+          {salvando ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
           Salvar conta
         </Button>
       </DialogFooter>

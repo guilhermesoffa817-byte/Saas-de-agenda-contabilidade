@@ -2,6 +2,7 @@ import "server-only";
 
 import { addMonths, endOfMonth, format, startOfMonth, subMonths } from "date-fns";
 
+import { lerTodasAsPaginas } from "@/lib/custos/paginar";
 import { LIMITE_MEI_ANUAL_CENTS, LIMITE_MEI_POR_MES_CENTS } from "@/lib/fiscal/constantes";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,24 +31,35 @@ export function primeiroDiaDoMes(mes: string) {
   return `${mes}-01`;
 }
 
+/*
+ * As somas abaixo leem TODAS as linhas, de página em página (lerTodasAsPaginas):
+ * o PostgREST corta cada resposta em mil linhas sem avisar, e um salão com
+ * cinco atendimentos por dia passa disso no ano. É o mesmo critério da tela de
+ * custos e das ferramentas do assistente, então os números batem.
+ */
+
 /** Entrou, saiu e sobrou pelo regime de caixa: o que foi efetivamente pago no mês. */
 export async function resumoDoMes(empresaId: string, mes: string): Promise<ResumoDoMes> {
   const supabase = await createClient();
   const inicio = primeiroDiaDoMes(mes);
   const fim = dia(endOfMonth(new Date(`${inicio}T12:00:00Z`)));
 
-  const { data } = await supabase
-    .from("transactions")
-    .select("kind, amount_cents")
-    .eq("organization_id", empresaId)
-    .eq("status", "pago")
-    .gte("paid_at", inicio)
-    .lte("paid_at", fim);
+  const data = await lerTodasAsPaginas((de, ate) =>
+    supabase
+      .from("transactions")
+      .select("kind, amount_cents")
+      .eq("organization_id", empresaId)
+      .eq("status", "pago")
+      .gte("paid_at", inicio)
+      .lte("paid_at", fim)
+      .order("id")
+      .range(de, ate),
+  );
 
-  const entrouCents = (data ?? [])
+  const entrouCents = data
     .filter((item) => item.kind === "receita")
     .reduce((soma, item) => soma + item.amount_cents, 0);
-  const saiuCents = (data ?? [])
+  const saiuCents = data
     .filter((item) => item.kind === "despesa")
     .reduce((soma, item) => soma + item.amount_cents, 0);
 
@@ -61,13 +73,17 @@ export async function seisMeses(empresaId: string, mesAtual: string): Promise<Me
   const primeiro = startOfMonth(subMonths(referencia, 5));
   const ultimo = endOfMonth(referencia);
 
-  const { data } = await supabase
-    .from("transactions")
-    .select("kind, amount_cents, paid_at")
-    .eq("organization_id", empresaId)
-    .eq("status", "pago")
-    .gte("paid_at", dia(primeiro))
-    .lte("paid_at", dia(ultimo));
+  const data = await lerTodasAsPaginas((de, ate) =>
+    supabase
+      .from("transactions")
+      .select("kind, amount_cents, paid_at")
+      .eq("organization_id", empresaId)
+      .eq("status", "pago")
+      .gte("paid_at", dia(primeiro))
+      .lte("paid_at", dia(ultimo))
+      .order("id")
+      .range(de, ate),
+  );
 
   const meses: MesDoGrafico[] = Array.from({ length: 6 }, (_, indice) => {
     const data = addMonths(primeiro, indice);
@@ -79,7 +95,7 @@ export async function seisMeses(empresaId: string, mesAtual: string): Promise<Me
     };
   });
 
-  for (const item of data ?? []) {
+  for (const item of data) {
     if (!item.paid_at) continue;
     const chave = item.paid_at.slice(0, 7);
     const mes = meses.find((candidato) => candidato.mes === chave);
@@ -101,17 +117,21 @@ export async function maioresDespesas(
   const inicio = primeiroDiaDoMes(mes);
   const fim = dia(endOfMonth(new Date(`${inicio}T12:00:00Z`)));
 
-  const { data } = await supabase
-    .from("transactions")
-    .select("amount_cents, categories ( name )")
-    .eq("organization_id", empresaId)
-    .eq("kind", "despesa")
-    .eq("status", "pago")
-    .gte("paid_at", inicio)
-    .lte("paid_at", fim);
+  const data = await lerTodasAsPaginas((de, ate) =>
+    supabase
+      .from("transactions")
+      .select("amount_cents, categories ( name )")
+      .eq("organization_id", empresaId)
+      .eq("kind", "despesa")
+      .eq("status", "pago")
+      .gte("paid_at", inicio)
+      .lte("paid_at", fim)
+      .order("id")
+      .range(de, ate),
+  );
 
   const porCategoria = new Map<string, number>();
-  for (const item of data ?? []) {
+  for (const item of data) {
     const categoria = (item.categories as unknown as { name: string } | null)?.name ?? "Sem categoria";
     porCategoria.set(categoria, (porCategoria.get(categoria) ?? 0) + item.amount_cents);
   }
@@ -157,16 +177,20 @@ export async function termometroMEI(params: {
 }) {
   const supabase = await createClient();
 
-  const { data } = await supabase
-    .from("transactions")
-    .select("amount_cents")
-    .eq("organization_id", params.empresaId)
-    .eq("kind", "receita")
-    .eq("status", "pago")
-    .gte("paid_at", `${params.ano}-01-01`)
-    .lte("paid_at", `${params.ano}-12-31`);
+  const data = await lerTodasAsPaginas((de, ate) =>
+    supabase
+      .from("transactions")
+      .select("amount_cents")
+      .eq("organization_id", params.empresaId)
+      .eq("kind", "receita")
+      .eq("status", "pago")
+      .gte("paid_at", `${params.ano}-01-01`)
+      .lte("paid_at", `${params.ano}-12-31`)
+      .order("id")
+      .range(de, ate),
+  );
 
-  const recebidoCents = (data ?? []).reduce((soma, item) => soma + item.amount_cents, 0);
+  const recebidoCents = data.reduce((soma, item) => soma + item.amount_cents, 0);
 
   let limiteCents = LIMITE_MEI_ANUAL_CENTS;
   let proporcional = false;

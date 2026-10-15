@@ -38,6 +38,32 @@ const TABELAS = [
   "ai_consents",
 ] as const;
 
+type Tabela = (typeof TABELAS)[number];
+
+/** Ordem estável para paginar: a chave primária (ou a parte dela que varia dentro da empresa). */
+const CHAVE: Partial<Record<Tabela, string>> = {
+  staff_private: "staff_id",
+  service_tax_codes: "service_id",
+  transaction_cost_overrides: "transaction_id",
+  ai_consents: "user_id",
+};
+
+/** O Supabase devolve no máximo 1.000 linhas por consulta: o pacote pede página por página. */
+const TAMANHO_DA_PAGINA = 1000;
+
+type Pagina = PromiseLike<{ data: unknown[] | null; error: { message: string } | null }>;
+
+/** Lê todas as páginas, até vir uma incompleta. Erro em qualquer página vira `{ erro }` no pacote. */
+async function lerTudo(pagina: (de: number, ate: number) => Pagina) {
+  const linhas: unknown[] = [];
+  for (let de = 0; ; de += TAMANHO_DA_PAGINA) {
+    const { data, error } = await pagina(de, de + TAMANHO_DA_PAGINA - 1);
+    if (error) return { erro: error.message };
+    linhas.push(...(data ?? []));
+    if (!data || data.length < TAMANHO_DA_PAGINA) return linhas;
+  }
+}
+
 export async function GET() {
   const { vinculo } = await empresaAtual();
   if (!vinculo) return new Response("não autorizado", { status: 401 });
@@ -68,21 +94,26 @@ export async function GET() {
 
   // A RLS já limita cada consulta à empresa da sessão; o filtro é cinto e suspensório.
   for (const tabela of TABELAS) {
-    const { data, error } = await supabase
-      .from(tabela)
-      .select("*")
-      .eq("organization_id", empresa.id);
-    pacote[tabela] = error ? { erro: error.message } : (data ?? []);
+    pacote[tabela] = await lerTudo((de, ate) =>
+      supabase
+        .from(tabela)
+        .select("*")
+        .eq("organization_id", empresa.id)
+        .order(CHAVE[tabela] ?? "id", { ascending: true })
+        .range(de, ate),
+    );
   }
 
   // Mensagens do assistente: só o texto que a pessoa viu. O conteúdo bruto da API
   // (com o raciocínio do modelo) é detalhe interno e fica de fora.
-  const mensagens = await supabase
-    .from("ai_messages")
-    .select("id, conversation_id, role, display_text, created_at")
-    .eq("organization_id", empresa.id)
-    .order("id", { ascending: true });
-  pacote.ai_messages = mensagens.error ? { erro: mensagens.error.message } : (mensagens.data ?? []);
+  pacote.ai_messages = await lerTudo((de, ate) =>
+    supabase
+      .from("ai_messages")
+      .select("id, conversation_id, role, display_text, created_at")
+      .eq("organization_id", empresa.id)
+      .order("id", { ascending: true })
+      .range(de, ate),
+  );
 
   const nome = `bossa-${empresa.slug}-${new Date().toISOString().slice(0, 10)}.json`;
 

@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { addDays, addMonths, differenceInCalendarDays, format, subDays } from "date-fns";
+import { addDays, addMonths, differenceInCalendarDays, differenceInCalendarMonths, format, subDays } from "date-fns";
 import { z } from "zod";
 
 import { instanteNaEmpresa } from "@/lib/dates";
@@ -91,10 +91,25 @@ export function diasDoPeriodo(p: Periodo) {
   return differenceInCalendarDays(diaParaData(p.fim), diaParaData(p.inicio)) + 1;
 }
 
-/** O período imediatamente anterior, com o mesmo número de dias. */
+/** O período começa no dia 1º e termina no último dia de um mês? */
+function mesesInteiros(p: Periodo) {
+  return p.inicio.endsWith("-01") && p.fim === periodoDoMes(p.fim.slice(0, 7)).fim;
+}
+
+/**
+ * O período imediatamente anterior, para comparar. Mês(es) inteiro(s) se
+ * comparam com o(s) mês(es) civil(is) anterior(es) — outubro com setembro
+ * inteiro, jul–set com abr–jun —, como pensa o dono e como custos_operacionais
+ * compara. Nos demais casos, o mesmo número de dias logo antes.
+ */
 export function periodoAnterior(p: Periodo): Periodo {
+  const inicio = diaParaData(p.inicio);
+  const fim = subDays(inicio, 1);
+  if (mesesInteiros(p)) {
+    const meses = differenceInCalendarMonths(diaParaData(p.fim), inicio) + 1;
+    return { inicio: dataParaDia(addMonths(inicio, -meses)), fim: dataParaDia(fim) };
+  }
   const dias = diasDoPeriodo(p);
-  const fim = subDays(diaParaData(p.inicio), 1);
   return { inicio: dataParaDia(subDays(fim, dias - 1)), fim: dataParaDia(fim) };
 }
 

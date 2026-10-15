@@ -19,6 +19,17 @@ export const esquemaPedidoAoAssistente = z.object({
 
 export type PedidoAoAssistente = z.infer<typeof esquemaPedidoAoAssistente>;
 
+/**
+ * A pergunta que chega pelo link (/app/assistente?pergunta=…, usado pelo
+ * painel): só texto, sem espaços sobrando e no tamanho que a rota aceita. Ela
+ * só preenche o campo; enviar continua sendo decisão de quem lê (gasta franquia).
+ */
+export function perguntaDoLink(valor: unknown): string | null {
+  if (typeof valor !== "string") return null;
+  const limpa = valor.trim().slice(0, TAMANHO_MAXIMO_DA_PERGUNTA).trim();
+  return limpa || null;
+}
+
 export type FonteDaResposta = { url: string; titulo: string | null };
 
 /** O que a tela recebe de uma conversa gravada: só o texto visível, nunca o conteúdo bruto da API. */

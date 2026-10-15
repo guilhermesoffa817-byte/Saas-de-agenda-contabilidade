@@ -7,7 +7,11 @@ import { redirect } from "next/navigation";
 import { aceitouOAviso, conversaDoUsuario, listarConversas, mensagensDaConversa } from "./dados";
 import { AvisoDeConsentimento } from "@/components/app/assistente/aviso-consentimento";
 import { ChatDoAssistente } from "@/components/app/assistente/chat";
-import type { CotaDoAssistente, MensagemDaTela } from "@/components/app/assistente/protocolo";
+import {
+  perguntaDoLink,
+  type CotaDoAssistente,
+  type MensagemDaTela,
+} from "@/components/app/assistente/protocolo";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { iaConfigurada } from "@/lib/ia/cliente";
@@ -33,7 +37,12 @@ function Cabecalho() {
   );
 }
 
-export default async function PaginaAssistente({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
+export default async function PaginaAssistente({
+  searchParams,
+}: {
+  /** `c`: conversa aberta. `pergunta`: vem do painel e só preenche o campo (nunca envia sozinha). */
+  searchParams: Promise<{ c?: string | string[]; pergunta?: string | string[] }>;
+}) {
   const { vinculo } = await empresaAtual();
   if (!vinculo) redirect("/comecar");
   if (vinculo.papel !== "dono") redirect("/app");
@@ -87,8 +96,8 @@ export default async function PaginaAssistente({ searchParams }: { searchParams:
     );
   }
 
-  const { c } = await searchParams;
-  const pedida = c && UUID.test(c) ? c : null;
+  const { c, pergunta } = await searchParams;
+  const pedida = typeof c === "string" && UUID.test(c) ? c : null;
 
   const [conversas, cota, conversa] = await Promise.all([
     listarConversas(supabase, empresa.id, user.id),
@@ -98,15 +107,17 @@ export default async function PaginaAssistente({ searchParams }: { searchParams:
     pedida ? conversaDoUsuario(supabase, empresa.id, user.id, pedida) : Promise.resolve(null),
   ]);
   const mensagens: MensagemDaTela[] = conversa
-    ? await mensagensDaConversa(supabase, empresa.id, conversa.id).catch(() => [])
+    ? await mensagensDaConversa(supabase, conversa.id).catch(() => [])
     : [];
+  const perguntaInicial = conversa ? null : perguntaDoLink(pergunta);
 
   return (
     <div className="flex flex-col gap-6">
       <Cabecalho />
       <ChatDoAssistente
-        key={conversa?.id ?? "nova"}
+        key={conversa?.id ?? `nova:${perguntaInicial ?? ""}`}
         conversaInicial={conversa ? { id: conversa.id, mensagens } : null}
+        perguntaInicial={perguntaInicial}
         conversas={conversas}
         cota={cota}
         bloqueio={bloqueio}

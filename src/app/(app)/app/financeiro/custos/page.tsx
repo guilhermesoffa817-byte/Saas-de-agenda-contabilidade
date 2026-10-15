@@ -100,6 +100,7 @@ export default async function PaginaCustos({
 
         <SugerirClassificacao
           mes={mes}
+          total={resumo.despesas.length}
           pendentes={resumo.quantidadeSemClassificacao}
           iaConfigurada={iaConfigurada}
           cota={cota}

@@ -84,7 +84,8 @@ describe.skipIf(!disponivel)("0014 — comportamento padrão das categorias", ()
     expect(de("Materiais e insumos")).toBe("variavel");
     expect(de("Comissões e repasses a profissionais")).toBe("variavel");
     expect(de("Taxas de maquininha e bancárias")).toBe("variavel");
-    expect(de("Impostos (DAS, ISS, Carnê-Leão)")).toBe("variavel");
+    // DAS e ISS são variáveis, Carnê-Leão é fora da operação: decide-se por lançamento (0015).
+    expect(de("Impostos (DAS, ISS, Carnê-Leão)")).toBeNull();
     expect(de("Outras despesas")).toBeNull();
     expect(de("Retirada do dono")).toBeNull();
     for (const receita of linhas.filter((l) => l.kind === "receita")) {
@@ -201,12 +202,20 @@ async function conversa(uid: string, empresaId: string, titulo = "Como foi setem
   });
 }
 
-async function mensagem(uid: string, conversaId: string, empresaId: string, texto = "Como foi setembro?") {
+/** Grava pela função do servidor (0015): o insert direto em ai_messages não existe mais. */
+async function mensagem(uid: string, conversaId: string, texto = "Como foi setembro?") {
   return comoUsuario(uid, async (k) => {
+    const ultima = await k.query<{ id: string | null }>(
+      "select max(id)::text as id from public.ai_messages where conversation_id = $1",
+      [conversaId],
+    );
     const { rows } = await k.query<{ id: string }>(
-      `insert into public.ai_messages (conversation_id, organization_id, role, content, display_text)
-       values ($1, $2, 'user', $3::jsonb, $4) returning id`,
-      [conversaId, empresaId, JSON.stringify([{ type: "text", text: texto }]), texto],
+      "select public.acrescentar_mensagens_de_ia($1, $2, $3::json) as id",
+      [
+        conversaId,
+        ultima.rows[0]?.id ?? null,
+        JSON.stringify([{ role: "user", content: [{ type: "text", text: texto }], display_text: texto }]),
+      ],
     );
     return rows[0].id;
   });
@@ -216,7 +225,7 @@ describe.skipIf(!disponivel)("0014 — conversas com o assistente", () => {
   it("cada dono vê só as próprias conversas; os outros papéis não usam", async () => {
     const c = await cenario();
     const id = await conversa(c.dono, c.empresaId);
-    await mensagem(c.dono, id, c.empresaId);
+    await mensagem(c.dono, id);
 
     expect(await contar(c.dono, "ai_conversations")).toBe(1);
     expect(await contar(c.dono, "ai_messages")).toBe(1);
@@ -232,8 +241,8 @@ describe.skipIf(!disponivel)("0014 — conversas com o assistente", () => {
       await expect(conversa(uid, c.empresaId)).rejects.toThrow(/row-level security/i);
     }
     // Ninguém escreve na conversa alheia.
-    await expect(mensagem(c.socio, id, c.empresaId)).rejects.toThrow(/row-level security/i);
-    await expect(mensagem(c.estranho, id, c.outraEmpresa)).rejects.toThrow(/outra empresa|row-level/i);
+    await expect(mensagem(c.socio, id)).rejects.toThrow(/Conversa não encontrada/i);
+    await expect(mensagem(c.estranho, id)).rejects.toThrow(/Conversa não encontrada/i);
   });
 
   it("ninguém cria conversa em nome de outra pessoa", async () => {
@@ -251,7 +260,7 @@ describe.skipIf(!disponivel)("0014 — conversas com o assistente", () => {
   it("mensagens são só por acréscimo: sem update nem delete; apagar a conversa leva tudo", async () => {
     const c = await cenario();
     const id = await conversa(c.dono, c.empresaId);
-    const msg = await mensagem(c.dono, id, c.empresaId);
+    const msg = await mensagem(c.dono, id);
     await expect(
       comoUsuario(c.dono, (k) => k.query("update public.ai_messages set display_text = 'x' where id = $1", [msg])),
     ).rejects.toThrow(/permission denied|permissão negada/i);
@@ -275,7 +284,7 @@ describe.skipIf(!disponivel)("0014 — conversas com o assistente", () => {
     await comoAdmin((k) =>
       k.query("update public.ai_conversations set updated_at = now() - interval '10 days' where id = $1", [id]),
     );
-    await mensagem(c.dono, id, c.empresaId);
+    await mensagem(c.dono, id);
     const recente = await comoAdmin(async (k) =>
       (await k.query("select updated_at > now() - interval '1 minute' as ok from public.ai_conversations where id = $1", [id]))
         .rows[0].ok,
@@ -308,13 +317,10 @@ describe.skipIf(!disponivel)("0014 — conversas com o assistente", () => {
 });
 
 describe.skipIf(!disponivel)("0014 — uso da IA e franquia", () => {
-  it("dono lê e registra o uso; ninguém edita nem apaga; outros papéis não veem", async () => {
+  it("dono lê e reserva o uso; ninguém insere, edita nem apaga direto; outros papéis não veem", async () => {
     const c = await cenario();
     await comoUsuario(c.dono, (k) =>
-      k.query(
-        "insert into public.ai_usage_logs (organization_id, user_id, feature, input_tokens, output_tokens) values ($1, $2, 'assistente', 1200, 300)",
-        [c.empresaId, c.dono],
-      ),
+      k.query("select public.reservar_uso_de_ia($1, 'assistente', 1, 20)", [c.empresaId]),
     );
     expect(await contar(c.dono, "ai_usage_logs")).toBe(1);
     for (const uid of [c.contador, c.recepcao, c.profissional, c.estranho]) {
@@ -326,22 +332,20 @@ describe.skipIf(!disponivel)("0014 — uso da IA e franquia", () => {
     await expect(
       comoUsuario(c.dono, (k) => k.query("delete from public.ai_usage_logs")),
     ).rejects.toThrow(/permission denied|permissão negada/i);
+    // Desde a 0015, o uso só nasce pela reserva: nem o dono insere direto.
+    for (const uid of [c.dono, c.contador]) {
+      await expect(
+        comoUsuario(uid, (k) =>
+          k.query("insert into public.ai_usage_logs (organization_id, user_id, feature) values ($1, $2, 'assistente')", [
+            c.empresaId,
+            uid,
+          ]),
+        ),
+      ).rejects.toThrow(/permission denied|permissão negada/i);
+    }
     await expect(
-      comoUsuario(c.contador, (k) =>
-        k.query("insert into public.ai_usage_logs (organization_id, feature) values ($1, 'assistente')", [
-          c.empresaId,
-        ]),
-      ),
-    ).rejects.toThrow(/row-level security/i);
-    // O dono não registra uso em nome de outra pessoa.
-    await expect(
-      comoUsuario(c.dono, (k) =>
-        k.query("insert into public.ai_usage_logs (organization_id, user_id, feature) values ($1, $2, 'assistente')", [
-          c.empresaId,
-          c.socio,
-        ]),
-      ),
-    ).rejects.toThrow(/row-level security/i);
+      comoUsuario(c.contador, (k) => k.query("select public.reservar_uso_de_ia($1, 'assistente', 1, 20)", [c.empresaId])),
+    ).rejects.toThrow(/Sem permissão/i);
   });
 
   it("uso_de_ia_no_mes conta o mês corrente no fuso da empresa, por recurso", async () => {
@@ -379,7 +383,7 @@ describe.skipIf(!disponivel)("0014 — retenção dos dados de IA", () => {
     const c = await cenario();
     const velha = await conversa(c.dono, c.empresaId, "Conversa antiga");
     const nova = await conversa(c.dono, c.empresaId, "Conversa recente");
-    await mensagem(c.dono, velha, c.empresaId);
+    await mensagem(c.dono, velha);
     await comoAdmin(async (k) => {
       await k.query("update public.ai_conversations set updated_at = now() - interval '91 days' where id = $1", [
         velha,
